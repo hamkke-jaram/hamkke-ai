@@ -1,0 +1,8 @@
+node_modules/
+eval/public/
+eval/videos/
+*.mp4
+*.mov
+*.webm
+*.m4v
+*.csv

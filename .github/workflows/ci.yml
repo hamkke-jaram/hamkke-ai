@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: 표현 규칙 검수
+        run: node scripts/check-expressions.mjs
+      - name: 타입 검사
+        run: npm run typecheck
+      - name: 지표 계산 테스트 (합성 신호)
+        run: npm test

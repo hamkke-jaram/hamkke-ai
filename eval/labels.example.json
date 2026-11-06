@@ -1,0 +1,4 @@
+{
+  "staged-01.mp4": { "jointPlaySeconds": 95, "responseLatencySec": 1.2, "distressEpisodeCount": 1 },
+  "staged-02.mp4": { "jointPlaySeconds": 140, "responseLatencySec": null, "distressEpisodeCount": 0 }
+}

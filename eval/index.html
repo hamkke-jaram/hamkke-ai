@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>함께자람 지표 평가</title>
+    <style>
+      :root { --bg: #f7f5f0; --surface: #fff; --ink: #1f2a26; --ink-2: #5a6662; --line: #e2ddd2; --brand: #2f6f5e; color-scheme: light; }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) { --bg: #141917; --surface: #1c2320; --ink: #eaf0ed; --ink-2: #a9b5b0; --line: #2f3834; --brand: #6fbfa5; color-scheme: dark; }
+      }
+      body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, 'Noto Sans KR', sans-serif; }
+      main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+      section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+      p.note { color: var(--ink-2); margin: 4px 0 0; }
+      label { display: block; font-weight: 600; margin: 10px 0 4px; }
+      button { min-height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--brand); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+      button:disabled { opacity: .5; }
+      .wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+      th, td { padding: 6px 8px; border-top: 1px solid var(--line); text-align: right; white-space: nowrap; }
+      th:first-child, td:first-child { text-align: left; }
+      th { color: var(--ink-2); font-size: 13px; }
+      #status { color: var(--ink-2); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>지표 평가 (로컬 전용)</h1>
+      <p class="note">
+        팀원이 연출했거나 동의받은 영상으로 기기 분석 결과와 사람이 잰 값을 비교합니다. 영상은 이 PC의 브라우저 안에서만
+        읽히고 어디로도 전송되지 않습니다. 영상 파일을 저장소에 올리지 마세요.
+      </p>
+      <section>
+        <label for="videos">영상 (여러 개 선택 가능)</label>
+        <input id="videos" type="file" accept="video/*" multiple />
+        <label for="labels">사람이 잰 값 JSON (선택)</label>
+        <input id="labels" type="file" accept="application/json,.json" />
+        <p class="note">
+          형식: <code>{"파일명.mp4": {"jointPlaySeconds": 95, "responseLatencySec": 1.2, "distressEpisodeCount": 1}}</code>
+          — 예시는 eval/labels.example.json
+        </p>
+        <p><button id="run" disabled>분석 시작</button> <span id="status"></span></p>
+      </section>
+      <section>
+        <div class="wrap"><table id="table"></table></div>
+        <p id="summary" class="note"></p>
+        <p><button id="csv" disabled>CSV 내려받기</button></p>
+      </section>
+    </main>
+    <script type="module" src="./eval.ts"></script>
+  </body>
+</html>

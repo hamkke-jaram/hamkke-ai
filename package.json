@@ -1,0 +1,32 @@
+{
+  "name": "@hamkke-jaram/analysis",
+  "version": "0.1.0",
+  "description": "함께자람 기기 내 상호작용 분석 (metrics-v1)",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts",
+    "./audio": "./src/audio.ts",
+    "./pose": "./src/pose.ts"
+  },
+  "files": [
+    "src",
+    "scripts/prepare-models.mjs",
+    "docs"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "eval": "node scripts/prepare-models.mjs eval/public && vite eval",
+    "check:expressions": "node scripts/check-expressions.mjs"
+  },
+  "peerDependencies": {
+    "@mediapipe/tasks-vision": "0.10.35"
+  },
+  "devDependencies": {
+    "@mediapipe/tasks-vision": "0.10.35",
+    "typescript": "5.9.3",
+    "vite": "6.4.5",
+    "vitest": "3.2.7"
+  }
+}
