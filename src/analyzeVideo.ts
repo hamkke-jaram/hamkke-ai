@@ -44,6 +44,61 @@ export const POSE_MODEL_PATH = '/mediapipe/models/pose_landmarker_lite.task';
 
 let landmarkerPromise: Promise<PoseLandmarker> | null = null;
 
+/**
+ * VIDEO 모드 PoseLandmarker는 한 인스턴스 안에서 타임스탬프가 계속 커져야 한다.
+ * 페이지당 인스턴스 하나를 다시 쓰므로, 두 번째 분석부터도 이전 값보다 큰 값을 넘기도록
+ * 마지막으로 넘긴 타임스탬프(ms)를 모듈에 기억해 둔다.
+ */
+let lastTimestampMs = 0;
+
+/**
+ * 분석과 분석 사이에 비워 두는 시간(ms). 같은 인스턴스가 앞 영상의 마지막 프레임 바로 뒤
+ * 화면으로 새 영상을 받지 않도록, 프레임 간격(500ms)보다 넉넉히 띄운다.
+ */
+export const VIDEO_TIMESTAMP_GAP_MS = 10_000;
+
+/** 새 분석을 시작할 때의 기준 시각(ms). 직전에 넘긴 값보다 항상 크고, 분석 사이 간격을 둔다. */
+export function videoTimestampBase(lastMs: number): number {
+  return Math.floor(lastMs) + 1 + VIDEO_TIMESTAMP_GAP_MS;
+}
+
+/**
+ * 영상 안 위치 tSec(초)의 프레임에 붙일 타임스탬프(ms).
+ * base + 영상 안 위치를 쓰되, 직전 값(lastMs)보다 반드시 1ms 이상 크게 만든다.
+ */
+export function nextVideoTimestamp(lastMs: number, baseMs: number, tSec: number): number {
+  return Math.max(Math.floor(lastMs) + 1, baseMs + Math.round(tSec * 1000));
+}
+
+const STOPPED_MESSAGE = '분석을 멈췄어요.';
+
+function throwIfStopped(signal?: AbortSignal) {
+  if (signal?.aborted) throw new AnalysisError(STOPPED_MESSAGE);
+}
+
+/** 작업을 기다리되, 멈추기를 누르면 바로 끝낸다. 남은 작업의 실패는 조용히 흘려보낸다. (테스트용으로 내보냄) */
+export function untilStopped<T>(work: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return work;
+  if (signal.aborted) {
+    work.catch(() => undefined);
+    return Promise.reject(new AnalysisError(STOPPED_MESSAGE));
+  }
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(new AnalysisError(STOPPED_MESSAGE));
+    signal.addEventListener('abort', onAbort, { once: true });
+    work.then(
+      (v) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(v);
+      },
+      (e: unknown) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(e);
+      },
+    );
+  });
+}
+
 async function getLandmarker(): Promise<PoseLandmarker> {
   if (!landmarkerPromise) {
     landmarkerPromise = (async () => {
@@ -133,9 +188,10 @@ export async function analyzeVideo(file: File, onProgress: ProgressFn, options: 
   video.preload = 'auto';
   video.src = url;
   try {
+    throwIfStopped(signal);
     onProgress('loading-model', 0);
-    const [landmarker] = await Promise.all([getLandmarker(), once(video, 'loadedmetadata')]);
-    if (signal?.aborted) throw new AnalysisError('분석을 멈췄어요.');
+    const [landmarker] = await untilStopped(Promise.all([getLandmarker(), once(video, 'loadedmetadata')]), signal);
+    throwIfStopped(signal);
 
     const duration = video.duration;
     if (!Number.isFinite(duration) || duration < MIN_SECONDS) {
@@ -147,11 +203,15 @@ export async function analyzeVideo(file: File, onProgress: ProgressFn, options: 
 
     // 1) 오디오 (워커에서 계산)
     onProgress('reading-audio', 0);
-    const samples = await decodeAudio(file, duration);
-    const audioPromise = runAudio(samples);
+    const samples = await untilStopped(decodeAudio(file, duration), signal);
+    throwIfStopped(signal);
+    const pendingAudio = runAudio(samples);
+    // 프레임 분석 중 멈추면 이 결과를 기다리지 않는다. 나중에 실패해도 처리되지 않은 거부로 남지 않게 한다.
+    pendingAudio.catch(() => undefined);
 
     // 2) 영상 프레임 (0.5초 간격)
-    if (video.readyState < 2) await once(video, 'loadeddata');
+    if (video.readyState < 2) await untilStopped(once(video, 'loadeddata'), signal);
+    throwIfStopped(signal);
     const scale = FRAME_LONG_SIDE / Math.max(video.videoWidth, video.videoHeight, 1);
     const w = Math.max(1, Math.round(video.videoWidth * Math.min(1, scale)));
     const h = Math.max(1, Math.round(video.videoHeight * Math.min(1, scale)));
@@ -163,14 +223,17 @@ export async function analyzeVideo(file: File, onProgress: ProgressFn, options: 
 
     const together: boolean[] = [];
     const steps = Math.floor(duration / SAMPLE_STEP_SEC);
+    const baseMs = videoTimestampBase(lastTimestampMs);
     for (let i = 0; i < steps; i++) {
-      if (signal?.aborted) throw new AnalysisError('분석을 멈췄어요.');
+      throwIfStopped(signal);
       const t = i * SAMPLE_STEP_SEC;
       const seeked = once(video, 'seeked');
       video.currentTime = t;
-      await seeked;
+      await untilStopped(seeked, signal);
       g.drawImage(video, 0, 0, w, h);
-      const result = landmarker.detectForVideo(canvas, Math.round(t * 1000) + 1);
+      // 같은 인스턴스를 다시 쓰므로 이전 분석보다 큰 타임스탬프를 넘긴다.
+      lastTimestampMs = nextVideoTimestamp(lastTimestampMs, baseMs, t);
+      const result = landmarker.detectForVideo(canvas, lastTimestampMs);
       const people = result.landmarks
         .map((lm) => personFromLandmarks(lm, w, h))
         .filter((p): p is Person => p !== null);
@@ -178,7 +241,9 @@ export async function analyzeVideo(file: File, onProgress: ProgressFn, options: 
       onProgress('analyzing-video', (i + 1) / steps);
     }
 
-    const audio = await audioPromise;
+    throwIfStopped(signal);
+    const audio = await untilStopped(pendingAudio, signal);
+    throwIfStopped(signal);
     const analyzedSeconds = Math.round(Math.min(duration, MAX_SECONDS) * 10) / 10;
     const joint = Math.min(analyzedSeconds, jointPlaySeconds(together));
 

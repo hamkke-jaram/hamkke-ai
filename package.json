@@ -1,6 +1,6 @@
 {
   "name": "@hamkke-jaram/analysis",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "함께자람 기기 내 상호작용 분석 (metrics-v1)",
   "type": "module",
   "license": "MIT",

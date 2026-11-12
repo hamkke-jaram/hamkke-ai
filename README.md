@@ -4,7 +4,7 @@
 
 - 지표 정의(파트 간 약속): [docs/metrics.md](docs/metrics.md)
 - 원본 영상·음성은 기기 밖으로 나가지 않는다. 서버 없음. 결과는 숫자만.
-- 진단·선별·치료를 표방하지 않는다(`scripts/check-expressions.mjs`).
+- 의료 서비스나 아이 평가를 표방하지 않는다. 금지 표현은 `scripts/check-expressions.mjs`가 검수한다.
 
 ## 구성
 
@@ -21,7 +21,7 @@
 ```jsonc
 // package.json
 "dependencies": {
-  "@hamkke-jaram/analysis": "github:hamkke-jaram/hamkke-ai#v0.1.0",
+  "@hamkke-jaram/analysis": "https://github.com/hamkke-jaram/hamkke-ai/archive/refs/tags/v0.1.1.tar.gz",
   "@mediapipe/tasks-vision": "0.10.35"
 }
 ```
@@ -49,12 +49,17 @@ npm run eval        # http://localhost:5173 — 로컬 평가 페이지
 2. 스톱워치로 잰 값을 `labels.json`으로 적는다(`eval/labels.example.json` 참고).
 3. `npm run eval` → 영상들과 라벨 파일 선택 → 분석 시작 → 차이 표와 CSV.
 
-평가 결과는 내부 개선용이다. 앱·발표 자료에 "정확도 ○○%"로 쓰지 않는다.
+평가 결과는 내부 개선용이다. 앱·발표 자료에 "○○% 맞음" 같은 퍼센트 수치로 쓰지 않는다.
 
 ## 릴리스
 
 계산 방법을 바꾸면 `docs/metrics.md`와 `specVersion`을 함께 올리고(백엔드 지원 목록도 갱신), 태그를 단다.
 
 ```bash
-npm version minor && git push --follow-tags   # 웹은 package.json의 #vX.Y.Z 를 올려서 반영
+npm version patch && git push --follow-tags   # 버그 수정 (예: 0.1.0 → 0.1.1)
+npm version minor && git push --follow-tags   # 계산 방법·기능이 바뀔 때 (예: 0.1.1 → 0.2.0)
 ```
+
+`npm version`이 `package.json`과 `package-lock.json`의 버전을 함께 올리고 태그를 단다.
+웹은 `package.json`의 tarball 주소(`.../archive/refs/tags/vX.Y.Z.tar.gz`)에서 버전을 올린 뒤
+`npm install`로 반영한다.

@@ -113,5 +113,7 @@ csvBtn.addEventListener('click', () => {
   a.href = URL.createObjectURL(blob);
   a.download = `eval-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
-  URL.revokeObjectURL(a.href);
+  // 바로 해제하면 브라우저가 내려받기를 취소할 수 있어 잠시 뒤에 해제한다.
+  const href = a.href;
+  setTimeout(() => URL.revokeObjectURL(href), 1000);
 });
