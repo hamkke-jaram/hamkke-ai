@@ -1,0 +1,7 @@
+# AI 서버 이미지에는 package.json 과 server/src 만 들어간다.
+*
+!package.json
+!server/
+server/test/
+server/tsconfig.json
+server/Dockerfile

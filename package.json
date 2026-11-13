@@ -16,7 +16,8 @@
   ],
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p server/tsconfig.json",
+    "server": "node server/src/index.ts",
     "eval": "node scripts/prepare-models.mjs eval/public && vite eval",
     "check:expressions": "node scripts/check-expressions.mjs"
   },
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
+    "@types/node": "24.19.2",
     "typescript": "5.9.3",
     "vite": "6.4.5",
     "vitest": "3.2.7"

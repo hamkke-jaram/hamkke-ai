@@ -1,10 +1,14 @@
-# hamkke-ai — 기기 내 상호작용 분석
+# hamkke-ai — 기기 내 상호작용 분석 + AI 관찰 기록 서버
 
-함께자람의 AI 파트 저장소. 부모 폰 브라우저 안에서 영상 1개를 분석해 **지표 3개**(함께 노는 시간, 부모 반응 시간, 울음·감정 폭발 횟수)를 계산하는 패키지 `@hamkke-jaram/analysis`와, 연출 영상으로 결과를 확인하는 **로컬 평가 페이지**가 있다.
+함께자람의 AI 파트 저장소. 두 가지가 들어 있다.
+
+1. **기기 내 분석 패키지** `@hamkke-jaram/analysis` — 부모 폰 브라우저 안에서 영상 1개를 분석해 **지표 3개**(함께 노는 시간, 부모 반응 시간, 울음·감정 폭발 횟수)를 계산한다. 연출 영상으로 결과를 확인하는 **로컬 평가 페이지**가 함께 있다.
+2. **AI 관찰 기록 서버** `server/` — 보호자가 동의한 아이에 한해 웹이 보낸 **장면 사진 최대 6장**을 VL 모델에 보여 주고, 본 것을 짧게 적은 관찰 기록과 서명한 영수증을 돌려준다.
 
 - 지표 정의(파트 간 약속): [docs/metrics.md](docs/metrics.md)
-- 원본 영상·음성은 기기 밖으로 나가지 않는다. 서버 없음. 결과는 숫자만.
-- 의료 서비스나 아이 평가를 표방하지 않는다. 금지 표현은 `scripts/check-expressions.mjs`가 검수한다.
+- AI 관찰 기록 서버(받는 것, 돌려주는 것, 띄우는 법): [docs/observation.md](docs/observation.md)
+- 영상 원본과 소리는 기기 밖으로 나가지 않는다. 지표 3개는 기기 안에서 숫자로만 계산한다. AI 서버로 가는 것은 장면 사진뿐이고, 서버는 사진을 메모리에서만 다루며 저장하지도 로그에 남기지도 않는다.
+- 의료 서비스나 아이 평가를 표방하지 않는다. VL 모델은 본 것을 적기만 하고 조언 문장을 만들지 않는다. 금지 표현은 `scripts/check-expressions.mjs`가 검수한다.
 
 ## 구성
 
@@ -15,6 +19,25 @@
 | `src/analyzeVideo.ts` | 영상 파일 → MediaPipe Pose(WASM) + 오디오 디코딩 → `DeviceMetrics` |
 | `eval/` | 로컬 평가 페이지(여러 영상 일괄 분석, 사람이 잰 값과 비교, CSV) |
 | `scripts/prepare-models.mjs` | MediaPipe WASM·모델을 앱의 `public/mediapipe`에 준비 |
+| `server/src/` | AI 관찰 기록 서버(Node 24, npm 실행 의존성 없음). `app.ts` 요청 처리, `jwt.ts` 토큰·영수증, `frames.ts` 사진 검사, `observation.ts` 출력 검사, `prompt.ts` 프롬프트 `obs-v1`, `ollama.ts` 모델 제공자 |
+| `server/test/` | 서버 테스트(가짜 제공자, 네트워크·모델 없음) |
+| `server/Dockerfile` | 서버 이미지(빌드 문맥은 저장소 루트) |
+
+## AI 관찰 기록 서버 (`server/`)
+
+```bash
+ollama pull qwen3.5:4b     # 한 번만. 사진을 볼 수 있는 모델
+npm run server             # node server/src/index.ts → http://127.0.0.1:8090
+curl http://127.0.0.1:8090/ai/v1/health
+```
+
+- `POST /ai/v1/analyze` — hamkke-api 가 발급한 분석 토큰(Bearer)과 JPEG 사진 1~6장을 받아 `{ observation, receipt, modelVersion, promptVersion, analyzedFrames }` 를 돌려준다. 웹은 영수증을 hamkke-api 에 내서 저장한다.
+- `GET /ai/v1/health` — `{ status, model, modelReady }`.
+- 환경 변수: `PORT`(8090), `AI_SHARED_SECRET`(hamkke-api 와 같은 값, production 에서는 필수), `OLLAMA_URL`, `VL_MODEL`(qwen3.5:4b), `VL_MAX_CONCURRENCY`(1), `VL_MAX_WAITING`(2), `VL_TIMEOUT_MS`(180000), `VL_KEEP_ALIVE`.
+- 컨테이너: `docker build -f server/Dockerfile -t hamkke-ai .`
+- 제한, 오류 코드, 태그 목록, 문장 검사, 다른 모델 제공자를 붙이는 법은 [docs/observation.md](docs/observation.md)에 있다. 세 저장소 공통 약속은 hamkke-api 의 `docs/ai-observation.md` 다.
+
+GPU 가 없는 기기에서는 느리다(개발 기기 CPU 로 사진 6장에 1분쯤). 배포할 때는 GPU 가 있는 기기에서 Ollama 를 돌리거나 다른 제공자를 붙인다.
 
 ## 앱에서 쓰기 (hamkke-web)
 
@@ -38,9 +61,10 @@ const metrics = await analyzeVideo(file, (stage, ratio) => {}, { runAudio: runAu
 
 ```bash
 npm install
-npm test            # 합성 신호로 지표 계산 검증
-npm run typecheck
+npm test            # 합성 신호로 지표 계산 검증 + AI 서버 테스트
+npm run typecheck   # 분석 패키지 + server/
 npm run eval        # http://localhost:5173 — 로컬 평가 페이지
+npm run server      # http://127.0.0.1:8090 — AI 관찰 기록 서버 (Node 24, Ollama 필요)
 ```
 
 ### 로컬 평가

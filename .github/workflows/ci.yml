@@ -13,12 +13,23 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          # AI 서버(server/)는 Node 24 가 TypeScript 를 바로 실행한다.
+          node-version: '24'
           cache: npm
       - run: npm ci --no-audit --no-fund
       - name: 표현 규칙 검수
         run: node scripts/check-expressions.mjs
-      - name: 타입 검사
+      - name: 타입 검사 (분석 패키지 + AI 서버)
         run: npm run typecheck
-      - name: 지표 계산 테스트 (합성 신호)
+      - name: 테스트 (지표 계산 합성 신호 + AI 서버)
         run: npm test
+      - name: AI 서버 기동 확인 (모델 서버 없이)
+        run: |
+          PORT=8090 node server/src/index.ts &
+          SERVER_PID=$!
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8090/ai/v1/health > /dev/null 2>&1 && break
+            sleep 0.5
+          done
+          curl -fsS http://127.0.0.1:8090/ai/v1/health | grep -q '"status":"ok"'
+          kill "$SERVER_PID"

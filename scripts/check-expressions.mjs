@@ -7,7 +7,11 @@ import { fileURLToPath } from 'node:url';
 
 const self = resolve(fileURLToPath(import.meta.url));
 const root = join(self, '..', '..');
-const TARGETS = ['src', 'eval/index.html', 'eval/eval.ts', 'eval/labels.example.json', 'scripts', 'docs', 'README.md'];
+const TARGETS = ['src', 'server', 'eval/index.html', 'eval/eval.ts', 'eval/labels.example.json', 'scripts', 'docs', 'README.md'];
+// 검수에서 빼는 파일은 이것 하나뿐이다: AI 서버의 문장 검사 목록.
+// 모델이 쓴 문장에서 금지 표현을 걸러 내려면 그 목록을 코드로 갖고 있어야 한다(아래 FORBIDDEN 과 같은 목록).
+// 이 낱말들은 그 파일 밖에 적지 않는다. 테스트도 그 파일이 내보낸 값을 가져다 쓴다.
+const EXCLUDE = new Set([resolve(root, 'server/src/wording.ts')]);
 const EXT = new Set(['.java', '.sql', '.yml', '.ts', '.tsx', '.js', '.mjs', '.css', '.html', '.webmanifest', '.json', '.md']);
 
 const FORBIDDEN = [
@@ -17,7 +21,8 @@ const FORBIDDEN = [
   /predict/i, /prevent/i, /borderline/i,
 ];
 // 고유명사(외부 기관·서비스 이름)와 바꿀 수 없는 브라우저 API 이름만 좁게 허용한다.
-const ALLOW = [/자살예방상담전화/g, /K-DST\s*발달선별검사/g, /\.preventDefault\(\)/g];
+// num_predict 는 Ollama /api/chat 의 옵션 이름(만들 토큰 수 상한)이다. 요청 본문에 그 이름 그대로 써야 한다.
+const ALLOW = [/자살예방상담전화/g, /K-DST\s*발달선별검사/g, /\.preventDefault\(\)/g, /\bnum_predict\b/g];
 
 async function* walk(p) {
   let entries;
@@ -39,6 +44,7 @@ let problems = 0;
 for (const t of TARGETS) {
   for await (const file of walk(join(root, t))) {
     if (!EXT.has(extname(file)) || resolve(file) === self) continue; // 검수 스크립트 자신(금지 목록)은 제외
+    if (EXCLUDE.has(resolve(file))) continue;
     const lines = (await readFile(file, 'utf8')).split(/\r?\n/);
     lines.forEach((raw, i) => {
       let line = raw;
