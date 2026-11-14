@@ -5,7 +5,7 @@
 // - 사진은 메모리에서만 다루고, 모델 호출이 끝나면 참조를 버린다.
 // - 로그에는 요청 id, jti 해시 앞부분, 장수, 바이트, 걸린 시간, 결과 코드만 남긴다.
 // - CORS 헤더를 내지 않는다(웹은 같은 출처의 /ai/ 프록시로 부른다).
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { BodyTooLargeError, FrameError, MAX_BODY_BYTES, parseAnalyzeBody, readBody } from './frames.ts';
 import type { AnalyzeInput } from './frames.ts';
 import { createJtiStore } from './jtiStore.ts';
@@ -14,14 +14,17 @@ import { TokenError, signReceipt, verifySessionToken } from './jwt.ts';
 import type { SessionClaims } from './jwt.ts';
 import { normaliseObservation, parseModelJson } from './observation.ts';
 import type { Observation } from './observation.ts';
+import { createMetrics } from './metrics.ts';
+import type { Metrics, MetricsRoute } from './metrics.ts';
 import { PROMPT_VERSION, buildPrompt } from './prompt.ts';
-import { ProviderTimeoutError, ProviderUnavailableError } from './provider.ts';
+import { ProviderTimeoutError, ProviderUnavailableError, toVisionOutput } from './provider.ts';
 import type { VisionProvider } from './provider.ts';
 import { QueueFullError, createQueue } from './queue.ts';
 import type { WorkQueue } from './queue.ts';
 
 export const ANALYZE_PATH = '/ai/v1/analyze';
 export const HEALTH_PATH = '/ai/v1/health';
+export const METRICS_PATH = '/ai/v1/metrics';
 
 const MODEL_ATTEMPTS = 2;
 const HEALTH_CACHE_MS = 5_000;
@@ -49,7 +52,7 @@ export interface AppResponse {
 export interface LogEntry {
   ts: string;
   rid: string;
-  route: 'analyze' | 'health' | 'other';
+  route: MetricsRoute;
   /** jti 의 SHA-256 앞 12자. */
   jti: string | null;
   frames: number;
@@ -61,6 +64,8 @@ export interface LogEntry {
   attempts?: number;
   /** 실패한 까닭을 가리키는 짧은 코드. */
   detail?: string;
+  /** 대신 쓰는 모델(VL_FALLBACK_MODEL)이 관찰 기록을 썼을 때만 true. */
+  fallback?: true;
 }
 
 export interface AppConfig {
@@ -71,6 +76,8 @@ export interface AppConfig {
   maxWaiting: number;
   /** 차례를 기다리는 시간의 상한. 정하지 않으면 timeoutMs 의 절반(모델 호출에 적어도 절반이 남는다). */
   maxWaitMs?: number;
+  /** 정하면 GET /ai/v1/metrics 에 `Authorization: Bearer <값>` 이 있어야 한다. */
+  metricsToken?: string | null;
 }
 
 export interface AppDeps {
@@ -81,6 +88,7 @@ export interface AppDeps {
   log?: (entry: LogEntry) => void;
   jtiStore?: JtiStore;
   queue?: WorkQueue;
+  metrics?: Metrics;
 }
 
 export interface App {
@@ -116,6 +124,7 @@ const errors = {
   invalidToken: (detail: string) =>
     new HttpError(401, 'INVALID_TOKEN', '준비 시간이 지났거나 확인할 수 없는 요청이에요. 처음부터 다시 해 주세요.', detail),
   notFound: () => new HttpError(404, 'NOT_FOUND', '찾을 수 없는 주소예요.'),
+  unauthorized: () => new HttpError(401, 'UNAUTHORIZED', '확인할 수 없는 요청이에요.', undefined, { 'WWW-Authenticate': 'Bearer' }),
   methodNotAllowed: (allow: string) =>
     new HttpError(405, 'METHOD_NOT_ALLOWED', '이 주소에서는 쓸 수 없는 요청 방식이에요.', undefined, { Allow: allow }),
   alreadyUsed: () =>
@@ -155,6 +164,20 @@ function header(request: AppRequest, name: string): string | undefined {
 function pathOf(url: string): string {
   const end = url.search(/[?#]/);
   return end === -1 ? url : url.slice(0, end);
+}
+
+function queryOf(url: string): URLSearchParams {
+  const start = url.indexOf('?');
+  if (start === -1) return new URLSearchParams();
+  const end = url.indexOf('#', start);
+  return new URLSearchParams(url.slice(start + 1, end === -1 ? undefined : end));
+}
+
+/** 두 문자열이 같은지 걸리는 시간으로 드러나지 않게 비교한다(길이도 해시로 감춘다). */
+function sameSecret(given: string, expected: string): boolean {
+  const a = createHash('sha256').update(given, 'utf8').digest();
+  const b = createHash('sha256').update(expected, 'utf8').digest();
+  return timingSafeEqual(a, b);
 }
 
 function bearerToken(request: AppRequest): string {
@@ -211,6 +234,7 @@ export function createApp(deps: AppDeps): App {
   const log = deps.log ?? defaultLog;
   const jtiStore = deps.jtiStore ?? createJtiStore();
   const queue = deps.queue ?? createQueue(config.maxConcurrency, config.maxWaiting);
+  const metrics = deps.metrics ?? createMetrics(now());
   const maxWaitMs = Math.min(config.maxWaitMs ?? Math.floor(config.timeoutMs / 2), config.timeoutMs);
 
   let readiness: { at: number; ready: boolean } | null = null;
@@ -233,8 +257,51 @@ export function createApp(deps: AppDeps): App {
     return readinessCheck;
   }
 
-  async function health(): Promise<AppResponse> {
-    return json(200, { status: 'ok', model: provider.modelVersion, modelReady: await modelReady() });
+  /**
+   * 건강 확인. 기본은 '서버가 살아 있는지'(언제나 200, 모델 상태는 modelReady 로).
+   * ?strict=1 이면 모델을 쓸 수 없을 때 503 을 돌려준다(바깥 가동 감시·촬영 전 확인용).
+   */
+  async function health(request: AppRequest, entry: LogEntry): Promise<AppResponse> {
+    const strictValue = queryOf(request.url).get('strict');
+    const strict = strictValue === '1' || strictValue === 'true';
+    const ready = await modelReady();
+    const payload: Record<string, unknown> = { status: 'ok', model: provider.modelVersion, modelReady: ready };
+    if (provider.fallbackModelVersion !== undefined) payload.fallbackModel = provider.fallbackModelVersion;
+    if (strict && !ready) {
+      payload.status = 'unavailable';
+      entry.code = 'MODEL_NOT_READY';
+      return json(503, payload, { 'Retry-After': BUSY_RETRY_AFTER_SEC });
+    }
+    return json(200, payload);
+  }
+
+  async function metricsPage(request: AppRequest): Promise<AppResponse> {
+    const token = config.metricsToken ?? null;
+    if (token !== null) {
+      const value = header(request, 'authorization');
+      const match = value === undefined ? null : /^Bearer +(\S+)$/i.exec(value.trim());
+      if (!match || !sameSecret(match[1]!, token)) throw errors.unauthorized();
+    }
+    const body = metrics.render(
+      {
+        queueActive: queue.active,
+        queueWaiting: queue.waiting,
+        maxConcurrency: config.maxConcurrency,
+        maxWaiting: config.maxWaiting,
+        modelReady: await modelReady(),
+        jtiStored: jtiStore.size,
+      },
+      { model: provider.modelVersion, fallbackModel: provider.fallbackModelVersion ?? null, promptVersion: PROMPT_VERSION },
+    );
+    return {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+      },
+      body,
+    };
   }
 
   function authenticate(request: AppRequest): SessionClaims {
@@ -274,7 +341,7 @@ export function createApp(deps: AppDeps): App {
     deadline: AbortSignal,
     client: AbortSignal | undefined,
     entry: LogEntry,
-  ): Promise<Observation> {
+  ): Promise<{ observation: Observation; modelVersion: string }> {
     const frameTimes = input.frames.map((frame) => frame.t);
     const prompt = buildPrompt(frameTimes, input.durationSec);
     const images = input.frames.map((frame) => frame.jpeg);
@@ -283,16 +350,29 @@ export function createApp(deps: AppDeps): App {
       for (let attempt = 1; attempt <= MODEL_ATTEMPTS; attempt++) {
         entry.attempts = attempt;
         let text: string;
+        let modelVersion: string;
         try {
-          text = await abortable(provider.generate({ ...prompt, images, signal }), signal);
+          const result = await abortable(provider.generate({ ...prompt, images, signal }), signal);
+          ({ text, modelVersion } = toVisionOutput(result, provider.modelVersion));
         } catch (err) {
-          if (client?.aborted) throw new ClientClosedError();
-          if (deadline.aborted || err instanceof ProviderTimeoutError) throw errors.modelTimeout();
+          if (client?.aborted) {
+            metrics.recordModelCall('aborted');
+            throw new ClientClosedError();
+          }
+          if (deadline.aborted || err instanceof ProviderTimeoutError) {
+            metrics.recordModelCall('timeout');
+            throw errors.modelTimeout();
+          }
+          metrics.recordModelCall('unavailable');
           detail = err instanceof ProviderUnavailableError ? err.detail : 'provider_error';
           continue;
         }
         const observation = normaliseObservation(parseModelJson(text), frameTimes);
-        if (observation !== null) return observation;
+        if (observation !== null) {
+          metrics.recordModelCall('ok');
+          return { observation, modelVersion };
+        }
+        metrics.recordModelCall('bad_output');
         detail = 'bad_output';
       }
       throw errors.modelUnavailable(detail);
@@ -340,17 +420,22 @@ export function createApp(deps: AppDeps): App {
 
       reachedModel = true;
       let observation: Observation;
+      let modelVersion: string;
       try {
-        observation = await describe(input, signal, deadline.signal, request.signal, entry);
+        ({ observation, modelVersion } = await describe(input, signal, deadline.signal, request.signal, entry));
       } finally {
         release();
       }
+      // 대신 쓰는 모델이 썼으면 영수증 mv 와 응답 modelVersion 모두 그 모델 이름이 된다.
+      const usedFallback = modelVersion !== provider.modelVersion;
+      if (usedFallback) entry.fallback = true;
+      metrics.recordObservation(modelVersion, usedFallback);
 
       const receipt = signReceipt(
         {
           session,
           obs: observation,
-          modelVersion: provider.modelVersion,
+          modelVersion,
           promptVersion: PROMPT_VERSION,
           frameCount,
         },
@@ -360,7 +445,7 @@ export function createApp(deps: AppDeps): App {
       return json(200, {
         observation,
         receipt,
-        modelVersion: provider.modelVersion,
+        modelVersion,
         promptVersion: PROMPT_VERSION,
         analyzedFrames: frameCount,
       });
@@ -387,7 +472,12 @@ export function createApp(deps: AppDeps): App {
     if (path === HEALTH_PATH) {
       entry.route = 'health';
       if (method !== 'GET') throw errors.methodNotAllowed('GET');
-      return health();
+      return health(request, entry);
+    }
+    if (path === METRICS_PATH) {
+      entry.route = 'metrics';
+      if (method !== 'GET') throw errors.methodNotAllowed('GET');
+      return metricsPage(request);
     }
     throw errors.notFound();
   }
@@ -426,8 +516,10 @@ export function createApp(deps: AppDeps): App {
     response.headers['X-Request-Id'] = entry.rid;
     entry.status = response.status;
     entry.ms = now() - started;
-    // 문제없이 끝난 건강 확인은 적지 않는다(컨테이너가 수십 초마다 부른다).
-    if (entry.route !== 'health' || response.status !== 200) log(entry);
+    metrics.recordRequest(entry.route, entry.status, entry.code, entry.ms);
+    // 문제없이 끝난 건강 확인과 지표 수집은 적지 않는다(컨테이너·수집기가 수십 초마다 부른다).
+    const routine = (entry.route === 'health' || entry.route === 'metrics') && response.status === 200;
+    if (!routine) log(entry);
     return response;
   }
 

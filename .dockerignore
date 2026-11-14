@@ -3,5 +3,6 @@
 !package.json
 !server/
 server/test/
+server/eval/
 server/tsconfig.json
 server/Dockerfile

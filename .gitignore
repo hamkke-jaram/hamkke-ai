@@ -6,3 +6,5 @@ eval/videos/
 *.webm
 *.m4v
 *.csv
+server/eval/frames/
+server/eval/vl-labels.json

@@ -7,6 +7,7 @@ AI ↔ 프런트 ↔ 백엔드의 약속 문서. 계산은 **모두 부모 폰�
 | 항목 | 값 |
 |---|---|
 | 입력 | 폰으로 찍은 영상 1개(권장 1~3분, 최대 30분). 폰을 세워 두고 부모와 아이가 함께 화면에 나오게 촬영 |
+| 파일 크기 | 500MB 이하(`navigator.deviceMemory` 가 2GB 이하인 기기는 200MB). 소리를 읽는 `decodeAudioData` 가 파일 전체를 한 번에 받아 파일 크기만큼 메모리를 쓰기 때문. 넘으면 `AnalysisError`(실제 상한 MB 를 알려 주는 문구). 메모리를 얻지 못하면 메모리 안내 문구의 `AnalysisError`. 계산 방법과는 무관해 `specVersion`·`modelVersion` 은 그대로 |
 | 영상 프레임 | 0.5초 간격(2fps) 샘플링, 긴 변 640px로 축소 후 분석 |
 | 분석 길이 | 영상 길이 10초 이상 30분 이하만 분석. `analyzedSeconds` = 영상 길이(소수 1자리) |
 | 자세 모델 | MediaPipe Pose Landmarker **lite**(float16, `@mediapipe/tasks-vision` 0.10.35), `numPoses=2`, VIDEO 모드, 검출·존재·추적 신뢰도 0.5, GPU 실패 시 CPU |

@@ -192,3 +192,72 @@ describe('Ollama 제공자', () => {
     expect('think' in calls[1]!.body).toBe(false);
   });
 });
+
+describe('Ollama 제공자 — 인증 헤더와 미리 올리기', () => {
+  /** 헤더까지 기록하는 가짜 fetch. */
+  function recordingFetch(reply: (path: string, body: Record<string, unknown>) => Response) {
+    const seen: { path: string; headers: Record<string, string>; body: Record<string, unknown> }[] = [];
+    const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
+      const path = new URL(String(input)).pathname;
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      seen.push({ path, headers: { ...(init?.headers as Record<string, string>) }, body });
+      return reply(path, body);
+    }) as typeof fetch;
+    return { fetchImpl, seen };
+  }
+
+  function withAuth(fetchImpl: typeof fetch, authHeader: { name: string; value: string } | null, keepAlive: string | null = null) {
+    return createOllamaProvider({
+      baseUrl: 'https://ollama.example.kr',
+      model: 'qwen3.5:4b',
+      keepAlive,
+      numCtx: 8192,
+      maxOutputTokens: 480,
+      authHeader,
+      fetchImpl,
+    });
+  }
+
+  it('인증 헤더를 모든 요청에 붙이고, 없으면 붙이지 않는다', async () => {
+    const reply = (path: string) => (path === '/api/show' ? jsonReply(SHOW_VL) : jsonReply({ message: { content: 'a' } }));
+    const authed = recordingFetch(reply);
+    await withAuth(authed.fetchImpl, { name: 'Authorization', value: 'Bearer secret-token' }).generate(request());
+    expect(authed.seen.map((s) => s.headers.Authorization)).toEqual(['Bearer secret-token', 'Bearer secret-token']);
+    expect(authed.seen[0]!.headers['Content-Type']).toBe('application/json');
+
+    const plain = recordingFetch(reply);
+    await withAuth(plain.fetchImpl, null).generate(request());
+    expect(plain.seen.every((s) => !('Authorization' in s.headers))).toBe(true);
+  });
+
+  it('인증이 거절되면 auth_rejected (토큰 값은 오류에 없다)', async () => {
+    const { fetchImpl } = recordingFetch(() => jsonReply({ error: 'unauthorized' }, 401));
+    const p = withAuth(fetchImpl, { name: 'X-Api-Key', value: 'secret-token' });
+    const detail = await detailOf(p.generate(request()));
+    expect(detail).toBe('auth_rejected');
+    expect(await p.isReady(new AbortController().signal)).toBe(false);
+  });
+
+  it('모델 정보를 알아본 뒤 /api/chat 에서 거절돼도 auth_rejected', async () => {
+    const { fetchImpl } = recordingFetch((path) => (path === '/api/show' ? jsonReply(SHOW_VL) : jsonReply({ error: 'forbidden' }, 403)));
+    expect(await detailOf(withAuth(fetchImpl, { name: 'Authorization', value: 'Bearer secret-token' }).generate(request()))).toBe(
+      'auth_rejected',
+    );
+  });
+
+  it('미리 올리기: 프롬프트·사진 없이 /api/generate 에 모델과 keep_alive 만 보낸다', async () => {
+    const { fetchImpl, seen } = recordingFetch((path) =>
+      path === '/api/show' ? jsonReply(SHOW_VL) : jsonReply({ model: 'qwen3.5:4b', done: true, done_reason: 'load' }),
+    );
+    await withAuth(fetchImpl, null, '30m').warmUp!(new AbortController().signal);
+    expect(seen.map((s) => s.path)).toEqual(['/api/show', '/api/generate']);
+    expect(seen[1]!.body).toEqual({ model: 'qwen3.5:4b', stream: false, keep_alive: '30m' });
+  });
+
+  it('미리 올리기: 모델이 없거나 HTTP 오류면 짧은 코드로 알린다', async () => {
+    const missing = recordingFetch(() => jsonReply({ error: 'not found' }, 404));
+    expect(await detailOf(withAuth(missing.fetchImpl, null).warmUp!(new AbortController().signal))).toBe('model_missing');
+    const broken = recordingFetch((path) => (path === '/api/show' ? jsonReply(SHOW_VL) : jsonReply({}, 500)));
+    expect(await detailOf(withAuth(broken.fetchImpl, null).warmUp!(new AbortController().signal))).toBe('warmup_http_500');
+  });
+});

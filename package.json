@@ -18,6 +18,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc --noEmit -p server/tsconfig.json",
     "server": "node server/src/index.ts",
+    "eval:vl": "node server/eval/vl-eval.ts",
     "eval": "node scripts/prepare-models.mjs eval/public && vite eval",
     "check:expressions": "node scripts/check-expressions.mjs"
   },

@@ -11,7 +11,15 @@ export const SPEC_VERSION = 'metrics-v1';
 export const MODEL_VERSION = 'pose_landmarker_lite@0.10.35+audio-heuristic-1';
 export const MIN_SECONDS = 10;
 export const MAX_SECONDS = 1800;
-const MAX_FILE_BYTES = 1024 * 1024 * 1024; // 1GB
+/**
+ * 분석할 수 있는 영상 파일 크기의 상한.
+ * 소리를 읽을 때 브라우저의 decodeAudioData 가 인코딩된 파일 전체를 한 번에 받아야 해서(나눠 넣을 수 없음)
+ * 파일 크기만큼 메모리를 쓴다. 휴대폰 탭이 메모리 때문에 닫히지 않도록 크기를 제한한다.
+ * 권장 길이(1~3분)의 휴대폰 영상은 보통 100~400MB 안쪽이다.
+ */
+export const MAX_FILE_BYTES = 500 * 1024 * 1024; // 500MB
+/** 메모리가 적은 기기(navigator.deviceMemory 2GB 이하)에서의 상한. */
+export const LOW_MEMORY_MAX_FILE_BYTES = 200 * 1024 * 1024; // 200MB
 const FRAME_LONG_SIDE = 640;
 
 export interface DeviceMetrics extends AudioMetrics {
@@ -71,6 +79,30 @@ export function nextVideoTimestamp(lastMs: number, baseMs: number, tSec: number)
 }
 
 const STOPPED_MESSAGE = '분석을 멈췄어요.';
+const MEMORY_MESSAGE = '이 기기에서 영상을 읽을 메모리가 모자라요. 다른 앱을 닫거나 더 짧은 영상으로 다시 시도해 주세요.';
+
+/**
+ * 이 기기에서 분석할 수 있는 파일 크기(바이트). deviceMemory(GB, 대략값)를 모르면 기본 상한을 쓴다.
+ * (테스트용으로 내보냄)
+ */
+export function maxFileBytes(deviceMemoryGb?: number): number {
+  return deviceMemoryGb !== undefined && deviceMemoryGb > 0 && deviceMemoryGb <= 2 ? LOW_MEMORY_MAX_FILE_BYTES : MAX_FILE_BYTES;
+}
+
+/** 파일이 너무 클 때 보여 줄 문구. 실제 상한(MB)과 권장 길이를 함께 알려 준다. (테스트용으로 내보냄) */
+export function fileTooLargeMessage(limitBytes: number): string {
+  return `영상 파일이 너무 커요. ${Math.round(limitBytes / (1024 * 1024))}MB 이하 영상만 분석할 수 있어요. 1~3분 정도로 찍은 영상을 골라 주세요.`;
+}
+
+function deviceMemory(): number | undefined {
+  const value = (globalThis.navigator as { deviceMemory?: unknown } | undefined)?.deviceMemory;
+  return typeof value === 'number' ? value : undefined;
+}
+
+/** 메모리를 얻지 못해 생긴 오류(RangeError, NotReadableError 등)를 안내 문구로 바꾼다. */
+function isMemoryError(err: unknown): boolean {
+  return err instanceof RangeError || (err instanceof Error && /NotReadable|QuotaExceeded|memory/i.test(`${err.name} ${err.message}`));
+}
 
 function throwIfStopped(signal?: AbortSignal) {
   if (signal?.aborted) throw new AnalysisError(STOPPED_MESSAGE);
@@ -154,17 +186,34 @@ function once(target: EventTarget, ok: string, timeoutMs = 15000): Promise<void>
 }
 
 async function decodeAudio(file: File, durationSec: number): Promise<Float32Array> {
-  const buf = await file.arrayBuffer();
-  const length = Math.max(1, Math.ceil(durationSec * SAMPLE_RATE));
-  const ctx = new OfflineAudioContext(1, length, SAMPLE_RATE);
+  // 인코딩된 파일 전체를 메모리에 읽는다(decodeAudioData 는 나눠 넣을 수 없다). 크기는 analyzeVideo 에서 먼저 제한한다.
+  let buf: ArrayBuffer | null;
+  let ctx: OfflineAudioContext;
+  try {
+    buf = await file.arrayBuffer();
+    const length = Math.max(1, Math.ceil(durationSec * SAMPLE_RATE));
+    ctx = new OfflineAudioContext(1, length, SAMPLE_RATE);
+  } catch (err) {
+    if (isMemoryError(err)) throw new AnalysisError(MEMORY_MESSAGE);
+    throw new AnalysisError('영상 파일을 읽지 못했어요. 다른 영상으로 시도해 주세요.');
+  }
   let decoded: AudioBuffer;
   try {
     decoded = await ctx.decodeAudioData(buf);
-  } catch {
+  } catch (err) {
+    if (isMemoryError(err)) throw new AnalysisError(MEMORY_MESSAGE);
     throw new AnalysisError('영상의 소리를 읽지 못했어요. 소리가 함께 녹음된 영상으로 다시 시도해 주세요.');
+  } finally {
+    buf = null; // 인코딩된 바이트를 더 붙잡지 않는다(디코딩이 끝나면 버려도 된다)
   }
   // 채널 평균 → 모노 (decodeAudioData가 이미 16kHz로 맞춰 준다)
-  const out = new Float32Array(decoded.length);
+  let out: Float32Array;
+  try {
+    out = new Float32Array(decoded.length);
+  } catch (err) {
+    if (isMemoryError(err)) throw new AnalysisError(MEMORY_MESSAGE);
+    throw err;
+  }
   for (let c = 0; c < decoded.numberOfChannels; c++) {
     const ch = decoded.getChannelData(c);
     for (let i = 0; i < out.length; i++) out[i] += ch[i] / decoded.numberOfChannels;
@@ -177,8 +226,9 @@ export async function analyzeVideo(file: File, onProgress: ProgressFn, options: 
   if (!file.type.startsWith('video/') && !/\.(mp4|mov|webm|m4v|3gp)$/i.test(file.name)) {
     throw new AnalysisError('영상 파일을 골라 주세요.');
   }
-  if (file.size > MAX_FILE_BYTES) {
-    throw new AnalysisError('영상이 너무 커요. 3분 안쪽으로 찍은 영상을 권해요.');
+  const limit = maxFileBytes(deviceMemory());
+  if (file.size > limit) {
+    throw new AnalysisError(fileTooLargeMessage(limit));
   }
 
   const url = URL.createObjectURL(file);

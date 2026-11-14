@@ -3,6 +3,12 @@
 import { ProviderUnavailableError } from './provider.ts';
 import type { VisionProvider, VisionRequest } from './provider.ts';
 
+/** 모델 서버에 보낼 인증 헤더(OLLAMA_AUTH_TOKEN). 값은 로그·오류 코드에 넣지 않는다. */
+export interface ProviderAuthHeader {
+  name: string;
+  value: string;
+}
+
 export interface OllamaOptions {
   baseUrl: string;
   model: string;
@@ -12,6 +18,8 @@ export interface OllamaOptions {
   numCtx: number;
   /** 한 번에 만들 수 있는 토큰 수 상한. */
   maxOutputTokens: number;
+  /** Ollama 앞의 TLS 프록시 등이 요구하는 인증 헤더. 없으면 null. */
+  authHeader?: ProviderAuthHeader | null;
   /** 테스트에서 바꿔 끼우는 fetch. */
   fetchImpl?: typeof fetch;
 }
@@ -46,12 +54,14 @@ export function createOllamaProvider(options: OllamaOptions): VisionProvider {
   const keepAlive =
     options.keepAlive === null ? undefined : /^-?\d+$/.test(options.keepAlive) ? Number(options.keepAlive) : options.keepAlive;
   let traits: ModelTraits | null = null;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (options.authHeader) headers[options.authHeader.name] = options.authHeader.value;
 
   async function post(path: string, body: unknown, signal: AbortSignal): Promise<Response> {
     try {
       return await doFetch(`${baseUrl}${path}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(body),
         signal,
       });
@@ -67,6 +77,10 @@ export function createOllamaProvider(options: OllamaOptions): VisionProvider {
     if (response.status === 404) {
       await discard(response);
       return { present: false, vision: false, thinking: false };
+    }
+    if (response.status === 401 || response.status === 403) {
+      await discard(response);
+      throw new ProviderUnavailableError('auth_rejected');
     }
     if (!response.ok) {
       await discard(response);
@@ -111,6 +125,7 @@ export function createOllamaProvider(options: OllamaOptions): VisionProvider {
     if (!response.ok) {
       await discard(response);
       if (response.status === 404) traits = null; // 모델이 지워졌을 수 있으니 다음에 다시 알아본다
+      if (response.status === 401 || response.status === 403) throw new ProviderUnavailableError('auth_rejected');
       throw new ProviderUnavailableError(`chat_http_${response.status}`);
     }
     let data: unknown;
@@ -135,5 +150,19 @@ export function createOllamaProvider(options: OllamaOptions): VisionProvider {
     }
   }
 
-  return { modelVersion: options.model, generate, isReady };
+  /**
+   * 모델을 메모리에 올려 둔다. 프롬프트 없이 /api/generate 를 부르면 Ollama 는 모델만 불러오고 끝낸다.
+   * 사진도 문장도 보내지 않는다. keep_alive 를 함께 보내 정해 둔 시간 동안 내려가지 않게 한다.
+   */
+  async function warmUp(signal: AbortSignal): Promise<void> {
+    if (traits === null || !traits.present) traits = await inspect(signal);
+    if (!traits.present) throw new ProviderUnavailableError('model_missing');
+    const body: Record<string, unknown> = { model: options.model, stream: false };
+    if (keepAlive !== undefined) body.keep_alive = keepAlive;
+    const response = await post('/api/generate', body, signal);
+    await discard(response);
+    if (!response.ok) throw new ProviderUnavailableError(`warmup_http_${response.status}`);
+  }
+
+  return { modelVersion: options.model, generate, isReady, warmUp };
 }

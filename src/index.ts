@@ -4,6 +4,8 @@
  */
 export {
   AnalysisError,
+  LOW_MEMORY_MAX_FILE_BYTES,
+  MAX_FILE_BYTES,
   MAX_SECONDS,
   MEDIAPIPE_WASM_PATH,
   MIN_SECONDS,
@@ -11,6 +13,8 @@ export {
   POSE_MODEL_PATH,
   SPEC_VERSION,
   analyzeVideo,
+  fileTooLargeMessage,
+  maxFileBytes,
   preloadModel,
   runAudioInThread,
   type AnalyzeOptions,

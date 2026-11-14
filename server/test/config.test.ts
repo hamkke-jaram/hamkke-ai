@@ -19,6 +19,12 @@ describe('환경 변수', () => {
       timeoutMs: 180_000,
       maxWaitMs: 90_000,
       keepAlive: null,
+      fallbackModel: null,
+      fallbackUrl: 'http://localhost:11434',
+      ollamaAuth: null,
+      warmup: false,
+      metricsToken: null,
+      warnings: [],
     });
     expect(config.secret.toString('utf8')).toBe(DEV_SHARED_SECRET);
     expect(config.secret.length).toBeGreaterThanOrEqual(32);

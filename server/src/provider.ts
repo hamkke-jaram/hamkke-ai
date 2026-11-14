@@ -13,13 +13,26 @@ export interface VisionRequest {
   signal: AbortSignal;
 }
 
+/** 모델이 쓴 글과, 그 글을 실제로 쓴 모델 이름(대신 쓰는 모델로 바뀌었을 때). */
+export interface VisionOutput {
+  text: string;
+  modelVersion: string;
+}
+
 export interface VisionProvider {
-  /** 영수증의 mv 와 응답의 modelVersion 으로 나가는 이름. */
+  /** 기본 모델 이름. 글만 돌려준 호출의 영수증 mv 와 응답의 modelVersion 으로 나간다. */
   readonly modelVersion: string;
-  /** 모델이 쓴 글(JSON 이어야 함)을 그대로 돌려준다. 해석과 검사는 서버가 한다. */
-  generate(request: VisionRequest): Promise<string>;
+  /**
+   * 모델이 쓴 글(JSON 이어야 함)을 그대로 돌려준다. 해석과 검사는 서버가 한다.
+   * 다른 모델이 대신 썼으면 { text, modelVersion } 으로 그 모델 이름을 함께 돌려준다(영수증 mv 에 들어간다).
+   */
+  generate(request: VisionRequest): Promise<string | VisionOutput>;
   /** 모델을 바로 쓸 수 있는지. 사진이나 문장을 보내지 않는 가벼운 확인이어야 한다. */
   isReady(signal: AbortSignal): Promise<boolean>;
+  /** (선택) 모델을 미리 메모리에 올린다. 사진이나 문장을 보내지 않는다. 실패하면 ProviderUnavailableError. */
+  warmUp?(signal: AbortSignal): Promise<void>;
+  /** (선택) 대신 쓰는 모델 이름. 건강 확인과 지표에 보인다. */
+  readonly fallbackModelVersion?: string;
 }
 
 /** 모델 서버에 닿지 못했거나 쓸 수 없는 응답을 받았을 때. detail 은 로그용 짧은 코드다. */
@@ -39,4 +52,9 @@ export class ProviderTimeoutError extends Error {
     super('model provider timed out');
     this.name = 'ProviderTimeoutError';
   }
+}
+
+/** generate 결과를 { text, modelVersion } 으로 맞춘다. */
+export function toVisionOutput(result: string | VisionOutput, fallbackVersion: string): VisionOutput {
+  return typeof result === 'string' ? { text: result, modelVersion: fallbackVersion } : result;
 }

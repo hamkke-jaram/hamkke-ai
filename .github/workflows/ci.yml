@@ -19,17 +19,71 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: 표현 규칙 검수
         run: node scripts/check-expressions.mjs
-      - name: 타입 검사 (분석 패키지 + AI 서버)
+      - name: 타입 검사 (분석 패키지 + AI 서버 + 평가 도구)
         run: npm run typecheck
-      - name: 테스트 (지표 계산 합성 신호 + AI 서버)
+      - name: 테스트 (지표 계산 합성 신호 + AI 서버 + 평가 도구)
         run: npm test
       - name: AI 서버 기동 확인 (모델 서버 없이)
         run: |
-          PORT=8090 node server/src/index.ts &
+          # 닿지 않는 모델 서버를 가리킨다: 서버는 떠야 하고, 모델은 준비되지 않은 것으로 보여야 한다.
+          PORT=8090 OLLAMA_URL=http://127.0.0.1:9 METRICS_TOKEN=ci-only-metrics-token-0123 node server/src/index.ts &
           SERVER_PID=$!
           for i in $(seq 1 20); do
             curl -fsS http://127.0.0.1:8090/ai/v1/health > /dev/null 2>&1 && break
             sleep 0.5
           done
           curl -fsS http://127.0.0.1:8090/ai/v1/health | grep -q '"status":"ok"'
+          # ?strict=1 은 모델이 준비되지 않았으면 503
+          test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:8090/ai/v1/health?strict=1')" = 503
+          # 지표: 토큰이 없으면 401, 있으면 Prometheus 글
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8090/ai/v1/metrics)" = 401
+          curl -fsS -H 'Authorization: Bearer ci-only-metrics-token-0123' http://127.0.0.1:8090/ai/v1/metrics | grep -q '^hamkke_ai_model_ready 0$'
           kill "$SERVER_PID"
+      - name: 평가 도구 실행 확인 (라벨 파일 검사)
+        run: |
+          # 모델 없이도 라벨 파일을 읽고, 모델이 없다고 알린 뒤 0 이 아닌 값으로 끝나야 한다.
+          if out=$(OLLAMA_URL=http://127.0.0.1:9 node server/eval/vl-eval.ts --labels server/eval/vl-labels.example.json 2>&1); then
+            echo "모델 없이 평가가 끝났어요" && exit 1
+          fi
+          echo "$out"
+          echo "$out" | grep -q '모델을 쓸 수 없어요'
+
+  docker:
+    # 배포와 같은 이미지를 compose 와 같은 조건(읽기 전용, 권한 없음)으로 띄워 본다(hamkke-api deploy/docker-compose.yml 의 ai 서비스).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 이미지 빌드
+        run: docker build -f server/Dockerfile -t hamkke-ai:ci .
+      - name: 이미지에 서버 코드만 들어 있는지
+        run: |
+          docker run --rm --entrypoint sh hamkke-ai:ci -c 'test ! -e server/test && test ! -e server/eval && test ! -e node_modules && test -f server/src/index.ts'
+      - name: 비밀 없이 production 으로 띄우면 기동하지 않는다
+        run: |
+          if docker run --rm hamkke-ai:ci; then echo "AI_SHARED_SECRET 없이 떴어요" && exit 1; fi
+          if docker run --rm -e AI_SHARED_SECRET=ci-only-shared-secret-0123456789abcdefghij -e OLLAMA_URL=http://gpu.example.com:11434 hamkke-ai:ci; then
+            echo "바깥 주소를 http 로 가리키는데 떴어요" && exit 1
+          fi
+      - name: 읽기 전용·권한 없이 띄워 건강 확인
+        run: |
+          docker run -d --name ai --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
+            -e AI_SHARED_SECRET=ci-only-shared-secret-0123456789abcdefghij -e OLLAMA_URL=http://127.0.0.1:9 \
+            -p 127.0.0.1:8090:8090 hamkke-ai:ci
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:8090/ai/v1/health > /dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8090/ai/v1/health | grep -q '"modelReady":false'
+          test "$(curl -s -o /dev/null -w '%{http_code}' 'http://127.0.0.1:8090/ai/v1/health?strict=1')" = 503
+          # 컨테이너 HEALTHCHECK(살아 있는지만 본다)가 healthy 가 되는지. 첫 확인은 interval(30초) 뒤에 돈다.
+          for i in $(seq 1 45); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' ai)
+            [ "$status" = healthy ] && break
+            sleep 2
+          done
+          docker inspect -f '{{.State.Health.Status}}' ai | grep -qx healthy
+          # 로그에 비밀이 남지 않는다.
+          if docker logs ai 2>&1 | grep -q 'ci-only-shared-secret'; then echo "로그에 비밀이 있어요" && exit 1; fi
+      - name: 정리
+        if: always()
+        run: docker rm -f ai || true

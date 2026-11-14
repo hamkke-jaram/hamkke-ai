@@ -20,7 +20,9 @@
 | `eval/` | 로컬 평가 페이지(여러 영상 일괄 분석, 사람이 잰 값과 비교, CSV) |
 | `scripts/prepare-models.mjs` | MediaPipe WASM·모델을 앱의 `public/mediapipe`에 준비 |
 | `server/src/` | AI 관찰 기록 서버(Node 24, npm 실행 의존성 없음). `app.ts` 요청 처리, `jwt.ts` 토큰·영수증, `frames.ts` 사진 검사, `observation.ts` 출력 검사, `prompt.ts` 프롬프트 `obs-v1`, `ollama.ts` 모델 제공자 |
+| `server/src/` (운영) | `fallback.ts` 대신 쓰는 모델, `metrics.ts` 지표, `providers.ts` 환경 변수로 제공자 만들기 |
 | `server/test/` | 서버 테스트(가짜 제공자, 네트워크·모델 없음) |
+| `server/eval/` | VL 관찰 기록 평가 도구(사람 라벨과 태그 비교, 문장 검사에 걸린 글 수). 사진·라벨은 커밋하지 않는다 |
 | `server/Dockerfile` | 서버 이미지(빌드 문맥은 저장소 루트) |
 
 ## AI 관찰 기록 서버 (`server/`)
@@ -32,8 +34,10 @@ curl http://127.0.0.1:8090/ai/v1/health
 ```
 
 - `POST /ai/v1/analyze` — hamkke-api 가 발급한 분석 토큰(Bearer)과 JPEG 사진 1~6장을 받아 `{ observation, receipt, modelVersion, promptVersion, analyzedFrames }` 를 돌려준다. 웹은 영수증을 hamkke-api 에 내서 저장한다.
-- `GET /ai/v1/health` — `{ status, model, modelReady }`.
-- 환경 변수: `PORT`(8090), `AI_SHARED_SECRET`(hamkke-api 와 같은 값, production 에서는 필수), `OLLAMA_URL`, `VL_MODEL`(qwen3.5:4b), `VL_MAX_CONCURRENCY`(1), `VL_MAX_WAITING`(2), `VL_TIMEOUT_MS`(180000), `VL_KEEP_ALIVE`.
+- `GET /ai/v1/health` — `{ status, model, modelReady }`. 언제나 200(살아 있는지). `?strict=1` 이면 모델을 쓸 수 없을 때 503(가동 감시·촬영 전 확인).
+- `GET /ai/v1/metrics` — Prometheus 지표(요청 수·결과 코드·처리 시간·대기열·모델 준비 상태). 사진·문장·토큰 없음. `METRICS_TOKEN` 으로 막을 수 있고, nginx 가 밖에서 막는다.
+- 환경 변수: `PORT`(8090), `AI_SHARED_SECRET`(hamkke-api 와 같은 값, production 에서는 필수), `OLLAMA_URL`, `VL_MODEL`(qwen3.5:4b), `VL_MAX_CONCURRENCY`(1), `VL_MAX_WAITING`(2), `VL_TIMEOUT_MS`(180000), `VL_MAX_WAIT_MS`, `VL_KEEP_ALIVE`, `VL_NUM_CTX`, `VL_MAX_OUTPUT_TOKENS`, `VL_WARMUP`(모델 미리 올리기), `VL_FALLBACK_MODEL`·`VL_FALLBACK_URL`(대신 쓰는 모델, 영수증 `mv` 에는 실제로 쓴 모델), `OLLAMA_AUTH_TOKEN`·`OLLAMA_AUTH_HEADER`(모델 서버 앞 TLS 프록시 토큰), `OLLAMA_ALLOW_INSECURE`, `METRICS_TOKEN`. 전체 표는 [docs/observation.md](docs/observation.md) 2장.
+- 바깥 주소의 Ollama 를 평문 http 로 가리키면 production 에서 기동하지 않는다(장면 사진이 지나가는 구간). https(TLS 프록시)나 사설망을 쓴다.
 - 컨테이너: `docker build -f server/Dockerfile -t hamkke-ai .`
 - 제한, 오류 코드, 태그 목록, 문장 검사, 다른 모델 제공자를 붙이는 법은 [docs/observation.md](docs/observation.md)에 있다. 세 저장소 공통 약속은 hamkke-api 의 `docs/ai-observation.md` 다.
 
@@ -65,7 +69,10 @@ npm test            # 합성 신호로 지표 계산 검증 + AI 서버 테스�
 npm run typecheck   # 분석 패키지 + server/
 npm run eval        # http://localhost:5173 — 로컬 평가 페이지
 npm run server      # http://127.0.0.1:8090 — AI 관찰 기록 서버 (Node 24, Ollama 필요)
+npm run eval:vl -- --labels server/eval/vl-labels.json   # VL 관찰 기록 평가(server/eval/README.md)
 ```
+
+영상 파일은 500MB(메모리가 2GB 이하인 기기는 200MB)까지 분석한다. 소리를 읽는 `decodeAudioData` 가 파일 전체를 한 번에 받아야 해서(나눠 넣을 수 없다) 파일 크기만큼 메모리를 쓰기 때문이다. 넘으면 실제 상한을 알려 주는 `AnalysisError` 를 던진다(`maxFileBytes`, `fileTooLargeMessage` 로 앱이 촬영 전에 미리 안내할 수 있다).
 
 ### 로컬 평가
 
@@ -74,6 +81,8 @@ npm run server      # http://127.0.0.1:8090 — AI 관찰 기록 서버 (Node 24
 3. `npm run eval` → 영상들과 라벨 파일 선택 → 분석 시작 → 차이 표와 CSV.
 
 평가 결과는 내부 개선용이다. 앱·발표 자료에 "○○% 맞음" 같은 퍼센트 수치로 쓰지 않는다.
+
+AI 관찰 기록(VL)의 품질 비교는 `server/eval/` 의 CLI 로 한다. 연출 영상에서 뽑은 장면 사진과 사람이 붙인 태그(`vl-labels.json`)를 서버와 같은 코드로 모델에 보내 일치·놓침·더함 수를 센다. 사용법은 [server/eval/README.md](server/eval/README.md).
 
 ## 릴리스
 

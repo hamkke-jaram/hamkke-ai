@@ -1,0 +1,34 @@
+{
+  "clips": [
+    {
+      "id": "staged-01-blocks",
+      "durationSec": 60,
+      "frames": [
+        { "t": 0, "file": "frames/staged-01-blocks/01.jpg" },
+        { "t": 10, "file": "frames/staged-01-blocks/02.jpg" },
+        { "t": 20, "file": "frames/staged-01-blocks/03.jpg" },
+        { "t": 30, "file": "frames/staged-01-blocks/04.jpg" },
+        { "t": 40, "file": "frames/staged-01-blocks/05.jpg" },
+        { "t": 50, "file": "frames/staged-01-blocks/06.jpg" }
+      ],
+      "expected": {
+        "childStates": ["PLAYING_TOGETHER", "REFUSING"],
+        "adultResponses": ["WAITING", "TALKING"],
+        "peopleCount": 2
+      }
+    },
+    {
+      "id": "staged-02-empty-room",
+      "durationSec": 30,
+      "frames": [
+        { "t": 0, "file": "frames/staged-02-empty-room/01.jpg" },
+        { "t": 15, "file": "frames/staged-02-empty-room/02.jpg" }
+      ],
+      "expected": {
+        "childStates": [],
+        "adultResponses": [],
+        "peopleCount": 0
+      }
+    }
+  ]
+}
