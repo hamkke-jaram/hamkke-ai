@@ -101,6 +101,12 @@ describe('분석 토큰 검증', () => {
     expect(verify({ iat: undefined })).toBe('iat');
   });
 
+  it('수명이 10분(반올림 여유 1분)을 넘는 토큰을 거절한다', () => {
+    expect(verify({ iat: NOW_SEC - 60, exp: NOW_SEC + 3600 })).toBe('lifetime');
+    expect(verify({ iat: NOW_SEC, exp: NOW_SEC + 661 })).toBe('lifetime');
+    expect(verify({ iat: NOW_SEC, exp: NOW_SEC + 660 })).toBe('accepted');
+  });
+
   it('필수 클레임이 없거나 형식이 다르면 거절한다', () => {
     expect(verify({ sub: undefined })).toBe('sub');
     expect(verify({ sub: 42 })).toBe('sub');

@@ -7,6 +7,11 @@ export const SESSION_AUDIENCE = 'hamkke-ai';
 export const RECEIPT_ISSUER = 'hamkke-ai';
 export const RECEIPT_AUDIENCE = 'hamkke-api';
 export const RECEIPT_TTL_SEC = 15 * 60;
+/**
+ * 분석 토큰의 수명(exp - iat) 상한. hamkke-api 는 정확히 10분짜리를 발급하고 기동할 때 10분이 넘는 설정을 막는다.
+ * 여기서도 막아 두어, 설정이 잘못된 api 가 긴 토큰을 내도 받지 않는다. 초 단위 반올림 여유로 1분을 더한다.
+ */
+export const SESSION_MAX_LIFETIME_SEC = 10 * 60 + 60;
 
 /** 토큰 문자열 길이 상한. 분석 토큰은 수백 자 수준이다. */
 const MAX_TOKEN_LENGTH = 4096;
@@ -102,6 +107,7 @@ export function verifySessionToken(token: string, secret: Buffer, nowSec: number
   if (!isWholeSeconds(payload.iat) || payload.iat > nowSec + CLOCK_SKEW_SEC || payload.iat > payload.exp) {
     throw new TokenError('iat');
   }
+  if (payload.exp - payload.iat > SESSION_MAX_LIFETIME_SEC) throw new TokenError('lifetime');
   if (typeof payload.sub !== 'string' || payload.sub.length === 0 || payload.sub.length > 64) {
     throw new TokenError('sub');
   }
