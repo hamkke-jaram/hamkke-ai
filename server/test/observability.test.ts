@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { AppRequest } from '../src/app.ts';
 import { verifyJwt } from '../src/jwt.ts';
 import { LATENCY_BUCKETS_SEC, createMetrics, labelValue } from '../src/metrics.ts';
+import { PROMPT_VERSION } from '../src/prompt.ts';
 import { ProviderUnavailableError } from '../src/provider.ts';
 import {
   GOOD_OUTPUT,
@@ -95,7 +96,7 @@ describe('GET /ai/v1/metrics', () => {
     expect(sample(text, 'hamkke_ai_queue_max_waiting')).toBe(2);
     expect(sample(text, 'hamkke_ai_model_ready')).toBe(1);
     expect(sample(text, 'hamkke_ai_used_sessions')).toBe(1);
-    expect(text).toContain('hamkke_ai_info{model="fake-vl:1",prompt_version="obs-v1"} 1');
+    expect(text).toContain(`hamkke_ai_info{model="fake-vl:1",prompt_version="${PROMPT_VERSION}"} 1`);
     expect(text).toContain('# TYPE hamkke_ai_request_duration_seconds histogram');
     // 성공한 지표 수집은 로그에 남지 않는다.
     expect(logs.map((l) => l.route)).toEqual(['analyze', 'analyze']);

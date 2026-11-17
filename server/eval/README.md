@@ -3,7 +3,7 @@
 hamkke-api `docs/ai-observation.md` 10장의 열린 항목 "VL이 쓴 문장의 품질을 사람이 본 것과 비교"를 위한 도구다.
 사람이 장면 사진에 붙인 태그(라벨)와 모델이 붙인 태그를 비교해 **일치·놓침·더함 수**를 세고, 모델이 쓴 글이 문장 검사에 얼마나 걸리는지 센다.
 
-- 서버와 **같은 코드**로 처리한다: 사진 검사(`frames.ts`) → 프롬프트 `obs-v1`(`prompt.ts`) → 모델 호출(최대 2번) → 해석·다듬기(`observation.ts`) → 문장 검사(`wording.ts`).
+- 서버와 **같은 코드**로 처리한다: 사진 검사(`frames.ts`) → 프롬프트 `obs-v2`(`prompt.ts`) → 모델 호출(최대 2번) → 해석·다듬기(`observation.ts`) → 문장 검사(`wording.ts`).
 - 서버를 띄우지 않고 모델 제공자를 직접 부른다(토큰·영수증 없음). 환경 변수는 서버와 같다: `OLLAMA_URL`, `VL_MODEL`, `VL_FALLBACK_MODEL`, `OLLAMA_AUTH_TOKEN`, `VL_TIMEOUT_MS`, `VL_NUM_CTX` …
 - 결과(화면·CSV)에는 **태그 이름과 숫자만** 남는다. 사진과 관찰 문장은 저장하지 않는다. 사람이 문장을 직접 읽어 비교하려면 `--show-text`를 붙인다(화면에만 보이고 CSV 에는 들어가지 않는다).
 - 결과는 내부 개선용이다. 앱·발표 자료에 퍼센트 수치로 옮기지 않는다.
@@ -82,6 +82,6 @@ CSV 열: `clip, outcome, attempts, ms, model, child_matched, child_missed, child
 
 ## 4. 볼 것
 
-- 프롬프트(`obs-v1` → `obs-v2`)나 모델을 바꾸기 전후에 같은 라벨로 돌려 **놓침·더함이 어느 태그에서 늘었는지** 본다(`missed_tags`, `extra_tags`).
+- 프롬프트(`obs-v2` → `obs-v3`)나 모델을 바꾸기 전후에 같은 라벨로 돌려 **놓침·더함이 어느 태그에서 늘었는지** 본다(`missed_tags`, `extra_tags`).
 - `texts_wording_rejected` 가 자주 나오면 프롬프트 규칙을 고칠 신호다(서버는 그 글을 버리므로 사용자에게는 보이지 않는다).
 - 계산 부분은 `harness.ts` 에 있고 `server/test/vl-eval.test.ts` 가 가짜 제공자로 확인한다.

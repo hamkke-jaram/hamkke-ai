@@ -86,9 +86,18 @@ describe('환경 변수', () => {
   });
 });
 
-describe('프롬프트 obs-v1', () => {
+describe('프롬프트 obs-v2', () => {
   it('버전 이름', () => {
-    expect(PROMPT_VERSION).toBe('obs-v1');
+    expect(PROMPT_VERSION).toBe('obs-v2');
+    // hamkke-api 는 영수증 pv 를 40자까지만 받는다(AiReceiptVerifier.MAX_PROMPT_VERSION_CHARS).
+    expect(PROMPT_VERSION.length).toBeLessThanOrEqual(40);
+  });
+
+  it('문장 검사가 버리는 글이 덜 나오게 하는 규칙이 들어 있다', () => {
+    const { system } = buildPrompt([0], null);
+    for (const rule of ['높임말을 쓰지 않아요', "'아이', '어른'이라고만 불러요", '기분이나 까닭을 짐작하지 않아요', '견주지 않아요', '읽어서 옮기지 않아요']) {
+      expect(system).toContain(rule);
+    }
   });
 
   it('사진마다 시각을 알려 주고, 스키마의 t 는 그 시각만 허용한다', () => {

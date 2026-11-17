@@ -1,6 +1,6 @@
 // 관찰 기록 객체(명세 6장): 태그 목록, 모델 출력 해석, 검사와 다듬기.
 // 모델이 쓴 글은 믿지 않는다. 목록에 없는 태그와 문장 검사에 걸린 글은 버리고, 길이를 맞춘다.
-import { passesWordingCheck } from './wording.ts';
+import { normaliseForCheck, passesWordingCheck } from './wording.ts';
 
 export const CHILD_STATES = [
   'PLAYING_TOGETHER',
@@ -100,9 +100,10 @@ export function parseModelJson(text: string): unknown {
  * 남겨 두면 hamkke-api 가 영수증을 통째로 받지 않는다.
  */
 function tidy(text: string): string {
-  return text
-    .replace(/[\p{Cs}�]/gu, '')
-    .replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]+/gu, ' ')
+  // 글자를 고르게 맞추고(NFKC) 보이지 않는 글자를 지운 뒤에 검사한다. 보이지 않는 글자를 공백으로 바꾸면
+  // 낱말 사이에 끼워 넣어 문장 검사를 비켜 갈 수 있다. 저장되는 글도 이렇게 맞춘 글이다.
+  return normaliseForCheck(text.replace(/[\p{Cs}�]/gu, ''))
+    .replace(/[\p{Cc}\p{Zl}\p{Zp}]+/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }

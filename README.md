@@ -19,7 +19,7 @@
 | `src/analyzeVideo.ts` | 영상 파일 → MediaPipe Pose(WASM) + 오디오 디코딩 → `DeviceMetrics` |
 | `eval/` | 로컬 평가 페이지(여러 영상 일괄 분석, 사람이 잰 값과 비교, CSV) |
 | `scripts/prepare-models.mjs` | MediaPipe WASM·모델을 앱의 `public/mediapipe`에 준비 |
-| `server/src/` | AI 관찰 기록 서버(Node 24, npm 실행 의존성 없음). `app.ts` 요청 처리, `jwt.ts` 토큰·영수증, `frames.ts` 사진 검사, `observation.ts` 출력 검사, `prompt.ts` 프롬프트 `obs-v1`, `ollama.ts` 모델 제공자 |
+| `server/src/` | AI 관찰 기록 서버(Node 24, npm 실행 의존성 없음). `app.ts` 요청 처리, `jwt.ts` 토큰·영수증, `frames.ts` 사진 검사, `observation.ts` 출력 검사, `prompt.ts` 프롬프트 `obs-v2`, `ollama.ts` 모델 제공자 |
 | `server/src/` (운영) | `fallback.ts` 대신 쓰는 모델, `metrics.ts` 지표, `providers.ts` 환경 변수로 제공자 만들기 |
 | `server/test/` | 서버 테스트(가짜 제공자, 네트워크·모델 없음) |
 | `server/eval/` | VL 관찰 기록 평가 도구(사람 라벨과 태그 비교, 문장 검사에 걸린 글 수). 사진·라벨은 커밋하지 않는다 |

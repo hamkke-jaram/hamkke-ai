@@ -54,7 +54,7 @@ describe('POST /ai/v1/analyze — 성공', () => {
       jti: payload.jti,
       obs: GOOD_OUTPUT,
       mv: 'fake-vl:1',
-      pv: 'obs-v1',
+      pv: 'obs-v2',
       fc: 3,
       iat: NOW_SEC,
       exp: NOW_SEC + 900,
