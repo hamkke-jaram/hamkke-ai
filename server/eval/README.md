@@ -85,3 +85,21 @@ CSV 열: `clip, outcome, attempts, ms, model, child_matched, child_missed, child
 - 프롬프트(`obs-v2` → `obs-v3`)나 모델을 바꾸기 전후에 같은 라벨로 돌려 **놓침·더함이 어느 태그에서 늘었는지** 본다(`missed_tags`, `extra_tags`).
 - `texts_wording_rejected` 가 자주 나오면 프롬프트 규칙을 고칠 신호다(서버는 그 글을 버리므로 사용자에게는 보이지 않는다).
 - 계산 부분은 `harness.ts` 에 있고 `server/test/vl-eval.test.ts` 가 가짜 제공자로 확인한다.
+
+## 5. 엣지 케이스·품질 시험 (`edge.ts`)
+
+사람 라벨 없이 **깨지는 곳**을 찾는 시험이다. 사람 사진은 쓰지 않는다. 결과에는 갈래 이름·상태 코드·숫자만 남는다.
+
+```bash
+node server/eval/make-edge-scenes.mjs        # 합성 장면 → server/eval/frames/edge/, 입력 낱장 → server/eval/frames/edge-inputs/ (ffmpeg 필요)
+node server/eval/edge.ts scenes --runs 5 [--only text-heavy,injection] [--frames 3] [--long-edge 384] [--retry-hint] [--csv out.csv]
+node server/eval/edge.ts inputs --server http://127.0.0.1:18090 [--model-cases]   # 이상한 입력을 실제 서버에 보낸다
+node server/eval/edge.ts load --server http://127.0.0.1:18090 --concurrency 5      # 동시 요청(대기열·429)
+```
+
+- **장면**: 테스트 무늬, 글자가 많은 사진, 사진 안 글귀로 지시를 넣은 것, 캐릭터·코칭 그림(`hamkke-web/public`), 흐린·세로·같은 사진 6장, 검은·흰·잡음 사진.
+- `scenes` 는 서버와 같은 순서(사진 검사 → 프롬프트 → 모델 최대 2번 → 다듬기·문장 검사)로 모델을 직접 부른다. 요청마다 사진 귀퉁이 2×2 픽셀을 바꿔 새 사진으로 보낸다(같은 사진을 다시 보내면 Ollama 가 앞서 읽은 결과를 재사용해 실제보다 빠르게 나온다. `--reuse` 로 끌 수 있다).
+- 장면 줄: `ok n/N`, `bad`(두 번 모두 쓸 수 없음 = 서버라면 502), `retry 다시 부름(+살아남)`, 걸린 시간 중앙값/최댓값, `drop 빠진 글/쓴 글`, 사람 수 분포, 빠진 까닭(`wording:<갈래>`, `not_haeyo`, `not_korean` …).
+- 갈래 이름은 `wording.ts` 목록 이름에서 `_PATTERNS` 를 뗀 것이다(`READING` = 사진 속 글자 옮겨 적기, `INNER_STATE` = 짐작하는 말투 …). 갈래 가르기는 `edge-lib.ts`, 확인은 `server/test/edge-lib.test.ts`(예문 파일 전체로 `passesWordingCheck` 와 같은지 본다).
+- `inputs`·`load` 는 개발용 비밀(또는 `AI_SHARED_SECRET`)로 분석 토큰을 만든다. 8090 이 아닌 포트에 띄운 서버에 쓴다.
+- 기기 내 분석 엣지 케이스는 `node scripts/edge-videos.mjs` 로 합성 영상을 만든 뒤 평가 페이지 `eval/edge-videos.html` 에서 돌린다.

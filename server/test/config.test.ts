@@ -18,7 +18,7 @@ describe('환경 변수', () => {
       maxWaiting: 2,
       timeoutMs: 180_000,
       maxWaitMs: 90_000,
-      keepAlive: null,
+      keepAlive: '30m',
       fallbackModel: null,
       fallbackUrl: 'http://localhost:11434',
       ollamaAuth: null,

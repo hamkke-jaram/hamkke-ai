@@ -8,6 +8,7 @@ import {
   parseAnalyzeBody,
   readBody,
   readJpegSize,
+  withoutMetadata,
 } from '../src/frames.ts';
 import { chunked, frame, framesBody, makeJpeg } from './helpers.ts';
 
@@ -164,5 +165,48 @@ describe('분석 요청 본문 검사', () => {
       expect(String(err)).not.toContain(secretText);
       expect((err as Error).message).toBe('frames rejected');
     }
+  });
+});
+
+describe('메타데이터 빼기 (EXIF 위치 등)', () => {
+  /** SOI 바로 뒤에 구획 하나를 끼운다. */
+  function withSegment(jpeg: Buffer, marker: number, payload: Buffer): Buffer {
+    const head = Buffer.from([0xff, marker, (payload.length + 2) >> 8, (payload.length + 2) & 0xff]);
+    return Buffer.concat([jpeg.subarray(0, 2), head, payload, jpeg.subarray(2)]);
+  }
+  /** SOI·APP0·SOF0·SOS·그림 자료·EOI 를 갖춘 작은 JPEG(진짜 파일과 같은 구획 순서). */
+  function jpegWithScan(): Buffer {
+    const head = makeJpeg().subarray(0, 33); // SOI + APP0 + SOF0
+    const sos = Buffer.from([0xff, 0xda, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x3f, 0x00]);
+    return Buffer.concat([head, sos, Buffer.alloc(64, 0x5a), Buffer.from([0xff, 0xd9])]);
+  }
+  const exif = Buffer.concat([Buffer.from('Exif', 'latin1'), Buffer.alloc(2), Buffer.from('II*', 'latin1'), Buffer.alloc(40, 7)]);
+
+  it('APP1(EXIF)·APP13·주석을 빼고 나머지 바이트는 그대로 둔다', () => {
+    const plain = jpegWithScan();
+    const tagged = withSegment(withSegment(withSegment(plain, 0xe1, exif), 0xed, Buffer.alloc(12, 1)), 0xfe, Buffer.from('comment', 'latin1'));
+    const cleaned = withoutMetadata(tagged)!;
+    expect(cleaned.equals(plain)).toBe(true);
+    expect(readJpegSize(cleaned)).toEqual(readJpegSize(plain));
+  });
+
+  it('뺄 것이 없거나 구조가 어긋나면 null(원본을 그대로 쓴다)', () => {
+    expect(withoutMetadata(jpegWithScan())).toBeNull();
+    expect(withoutMetadata(withSegment(makeJpeg(), 0xe1, exif))).toBeNull(); // SOS 없이 끝나는 이상한 파일
+    expect(withoutMetadata(Buffer.from([0xff, 0xd8, 0xff, 0xe1, 0x40, 0x00, 1, 2]))).toBeNull(); // 길이가 파일보다 김
+    expect(withoutMetadata(Buffer.from([0x89, 0x50, 0x4e, 0x47]))).toBeNull();
+  });
+
+  it('검사를 지난 사진에서 메타데이터가 빠진 채로 모델에 넘어간다', () => {
+    const tagged = withSegment(jpegWithScan(), 0xe1, exif);
+    const { frames } = parseOf({ frames: [frame(0, tagged)] });
+    const sent = Buffer.from(frames[0]!.jpeg, 'base64');
+    expect(sent.includes(Buffer.from('Exif', 'latin1'))).toBe(false);
+    expect(sent.equals(jpegWithScan())).toBe(true);
+  });
+
+  it('메타데이터가 없는 사진은 보낸 문자열 그대로다', () => {
+    const plain = frame(0);
+    expect(parseOf({ frames: [plain] }).frames[0]!.jpeg).toBe(plain.jpeg);
   });
 });

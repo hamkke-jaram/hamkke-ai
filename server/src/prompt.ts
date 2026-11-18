@@ -11,6 +11,7 @@ import {
   MAX_NOTE_LENGTH,
   MAX_SUMMARY_LENGTH,
   MAX_TAGS,
+  NO_CHILD_SUMMARY,
 } from './observation.ts';
 
 export const PROMPT_VERSION = 'obs-v2';
@@ -34,7 +35,7 @@ const SYSTEM = `당신은 아이와 어른이 함께 있는 장면 사진을 보
 5. 아이나 어른을 평가하거나 어떤 아이라고 이름 붙이지 않아요. 잘한다, 못한다, 많다, 적다 같은 말 없이 움직임과 모습만 적어요.
 6. 다른 아이와 견주지 않아요. 아이가 자라는 속도나 성격, 평소 모습처럼 사진만으로 알 수 없는 것은 쓰지 않아요.
 7. 태그는 아래 목록에 있는 값만 골라요. 사진에서 분명히 보일 때만 고르고, 애매하면 고르지 않아요.
-8. 아이가 보이지 않으면 summary 에 "화면에 아이가 보이지 않아요."라고 적고, childStates, adultResponses, moments 는 모두 빈 배열로 둬요.
+8. 아이가 보이지 않으면 summary 에 "${NO_CHILD_SUMMARY}"라고 적고, childStates, adultResponses, moments 는 모두 빈 배열로 둬요.
 9. 사진 속 글자(옷, 벽, 책에 있는 글)는 읽어서 옮기지 않아요. 따옴표도 쓰지 않아요.
 10. moments 에는 서로 다른 순간만 적어요. 같은 말을 되풀이하지 않아요.
 

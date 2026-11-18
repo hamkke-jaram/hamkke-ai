@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>기기 분석 엣지 케이스</title>
+    <style>
+      body { margin: 16px; background: #fff; color: #111; font: 14px/1.5 system-ui, 'Noto Sans KR', sans-serif; }
+      table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+      th, td { padding: 4px 8px; border-top: 1px solid #ddd; text-align: left; white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <h1>기기 분석 엣지 케이스 (로컬 전용)</h1>
+    <p>
+      <code>node scripts/edge-videos.mjs</code> 로 만든 합성 영상(<code>eval/public/edge-videos</code>)을 차례로
+      <code>analyzeVideo</code> 에 넣고, 오류 문구·숫자·시간을 표로 보여 줍니다. 영상은 이 PC 안에서만 읽습니다.
+      <code>?only=a.mp4,b.mp4</code> 로 일부만 돌릴 수 있습니다.
+    </p>
+    <p id="status">준비 중…</p>
+    <table id="table"></table>
+    <script type="module" src="./edge-videos.ts"></script>
+  </body>
+</html>

@@ -334,20 +334,29 @@ export function createApp(deps: AppDeps): App {
     }
   }
 
-  /** 모델을 불러 관찰 기록을 만든다. 쓸 수 없는 출력이나 연결 실패는 한 번 더 해 본다. */
+  /**
+   * 모델을 불러 관찰 기록을 만든다. 쓸 수 없는 출력이나 연결 실패는 한 번 더 해 본다.
+   * 다만 남은 시간(endsAt 까지)이 앞선 호출에 걸린 시간보다 짧으면 다시 부르지 않는다: 끝내지 못하고
+   * 제한 시간(504)까지 자리만 차지하기 쉽다. 그때는 앞선 실패 그대로 502 로 바로 끝낸다.
+   * endsAt 은 performance.now() 기준 시각(밀리초).
+   */
   async function describe(
     input: AnalyzeInput,
     signal: AbortSignal,
     deadline: AbortSignal,
     client: AbortSignal | undefined,
     entry: LogEntry,
+    endsAt: number,
   ): Promise<{ observation: Observation; modelVersion: string }> {
     const frameTimes = input.frames.map((frame) => frame.t);
     const prompt = buildPrompt(frameTimes, input.durationSec);
     const images = input.frames.map((frame) => frame.jpeg);
     let detail = 'bad_output';
+    let lastAttemptMs = 0;
     try {
       for (let attempt = 1; attempt <= MODEL_ATTEMPTS; attempt++) {
+        if (attempt > 1 && endsAt - performance.now() < lastAttemptMs) break;
+        const attemptStarted = performance.now();
         entry.attempts = attempt;
         let text: string;
         let modelVersion: string;
@@ -365,6 +374,7 @@ export function createApp(deps: AppDeps): App {
           }
           metrics.recordModelCall('unavailable');
           detail = err instanceof ProviderUnavailableError ? err.detail : 'provider_error';
+          lastAttemptMs = performance.now() - attemptStarted;
           continue;
         }
         const observation = normaliseObservation(parseModelJson(text), frameTimes);
@@ -374,6 +384,7 @@ export function createApp(deps: AppDeps): App {
         }
         metrics.recordModelCall('bad_output');
         detail = 'bad_output';
+        lastAttemptMs = performance.now() - attemptStarted;
       }
       throw errors.modelUnavailable(detail);
     } finally {
@@ -403,6 +414,7 @@ export function createApp(deps: AppDeps): App {
       if (request.signal?.aborted) throw new ClientClosedError();
       const signal = request.signal ? AbortSignal.any([deadline.signal, request.signal]) : deadline.signal;
       timer = setTimeout(() => deadline.abort(), config.timeoutMs);
+      const endsAt = performance.now() + config.timeoutMs;
 
       // 차례는 maxWaitMs 까지만 기다린다. 더 기다렸다가 자리를 얻으면 남은 시간으로는 모델 호출을
       // 끝낼 수 없어, 자리만 차지하다 504 로 끝나고 토큰도 쓴 것이 되기 때문이다.
@@ -422,7 +434,7 @@ export function createApp(deps: AppDeps): App {
       let observation: Observation;
       let modelVersion: string;
       try {
-        ({ observation, modelVersion } = await describe(input, signal, deadline.signal, request.signal, entry));
+        ({ observation, modelVersion } = await describe(input, signal, deadline.signal, request.signal, entry, endsAt));
       } finally {
         release();
       }

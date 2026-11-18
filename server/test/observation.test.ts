@@ -4,13 +4,15 @@ import {
   MAX_NOTE_LENGTH,
   MAX_SUMMARY_LENGTH,
   MAX_TAGS,
+  NO_CHILD_SUMMARY,
   endsInHaeyo,
   limitText,
   normaliseObservation,
   parseModelJson,
   snapToFrameTime,
 } from '../src/observation.ts';
-import { EVALUATIVE_TERMS } from '../src/wording.ts';
+import { buildPrompt } from '../src/prompt.ts';
+import { EVALUATIVE_TERMS, passesWordingCheck } from '../src/wording.ts';
 import { GOOD_OUTPUT } from './helpers.ts';
 
 const TIMES = [0, 10, 20, 30];
@@ -64,6 +66,23 @@ describe('normaliseObservation', () => {
       moments: [],
       peopleCount: 0,
     });
+  });
+
+  it('사람이 없고 요약이 검사에 걸리면 프롬프트 규칙 8 의 문장을 쓴다(사진 속 글자를 옮겨 적은 경우)', () => {
+    const reading = { peopleCount: 0, summary: '벽에 11월 시간표라고 적혀 있어요.', moments: [{ t: 0, note: '숫자 3이 보여요.' }] };
+    expect(normalise(reading)).toEqual({ summary: NO_CHILD_SUMMARY, childStates: [], adultResponses: [], moments: [], peopleCount: 0 });
+    expect(normalise({ peopleCount: 0, summary: null })!.summary).toBe(NO_CHILD_SUMMARY);
+    expect(normalise({ peopleCount: 0, summary: 'The screen is empty.' })!.summary).toBe(NO_CHILD_SUMMARY);
+  });
+
+  it('규칙 8 의 문장은 문장 검사와 해요체 검사를 지나간다', () => {
+    expect(passesWordingCheck(NO_CHILD_SUMMARY)).toBe(true);
+    expect(endsInHaeyo(NO_CHILD_SUMMARY)).toBe(true);
+    expect(buildPrompt([0], 10).system).toContain(`"${NO_CHILD_SUMMARY}"`);
+  });
+
+  it('사람이 있는데 남은 것이 없으면 그대로 null(지어낸 요약을 넣지 않는다)', () => {
+    expect(normalise({ peopleCount: 2, summary: '벽에 11월 시간표라고 적혀 있어요.', childStates: [], adultResponses: [], moments: [] })).toBeNull();
   });
 
   it('목록에 없는 태그와 겹친 태그는 빼고 3개까지만 둔다', () => {

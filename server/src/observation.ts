@@ -57,6 +57,12 @@ export const MAX_PEOPLE_COUNT = 3;
 
 /** 모델이 moments 를 지나치게 많이 내도 이만큼만 들여다본다. */
 const MAX_MOMENTS_EXAMINED = 12;
+/**
+ * 사람이 보이지 않는 장면의 요약(프롬프트 규칙 8 의 문장 그대로).
+ * 모델이 사람 수를 0 으로 적고 요약이 검사에 걸리면(사진 속 글자를 옮겨 적는 경우가 많다) 이 문장을 쓴다.
+ */
+export const NO_CHILD_SUMMARY = '화면에 아이가 보이지 않아요.';
+
 /** 다듬기 전에 받아들이는 글 길이. 이보다 길면 통째로 버린다. */
 const MAX_RAW_TEXT_LENGTH = 2000;
 
@@ -202,9 +208,11 @@ export function normaliseObservation(raw: unknown, frameTimes: readonly number[]
   const peopleCount = Math.min(MAX_PEOPLE_COUNT, Math.max(0, Math.round(raw.peopleCount)));
 
   // 사람이 한 명도 보이지 않는 장면에는 아이 모습·어른 반응·순간 메모가 있을 수 없다.
+  // 요약은 모델이 쓴 글이 검사를 지나가면 그 글, 아니면 프롬프트 규칙 8 의 문장(NO_CHILD_SUMMARY).
   const nobody = peopleCount === 0;
+  const summary = acceptText(raw.summary, MAX_SUMMARY_SENTENCES, MAX_SUMMARY_LENGTH);
   const observation: Observation = {
-    summary: acceptText(raw.summary, MAX_SUMMARY_SENTENCES, MAX_SUMMARY_LENGTH),
+    summary: summary ?? (nobody ? NO_CHILD_SUMMARY : null),
     childStates: nobody ? [] : pickTags(raw.childStates, CHILD_STATES),
     adultResponses: nobody ? [] : pickTags(raw.adultResponses, ADULT_RESPONSES),
     moments: nobody ? [] : pickMoments(raw.moments, frameTimes),

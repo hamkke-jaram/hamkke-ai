@@ -43,6 +43,8 @@ curl http://127.0.0.1:8090/ai/v1/health
 
 GPU 가 없는 기기에서는 느리다(개발 기기 CPU 로 사진 6장에 1분쯤). 배포할 때는 GPU 가 있는 기기에서 Ollama 를 돌리거나 다른 제공자를 붙인다.
 
+**내장 GPU 노트북(Intel Arc·AMD Radeon 내장)**: Ollama 는 내장 GPU 를 찾아도 기본으로는 쓰지 않는다(Ollama 로그 `dropping integrated GPU; to enable, set OLLAMA_IGPU_ENABLE=1`). 환경 변수 `OLLAMA_IGPU_ENABLE=1`, `OLLAMA_VULKAN=1` 을 두고 Ollama 를 다시 시작하면 GPU 로 돈다. `curl http://127.0.0.1:11434/api/ps` 의 `size_vram` 이 0 이 아니면 GPU 를 쓰는 것이다. Core Ultra 7 258V(Arc 140V, RAM 32GB)에서 사진 6장 한 번이 CPU 약 55초 → 내장 GPU 약 18초였다(2026-11-18, 테스트 무늬 사진).
+
 ## 앱에서 쓰기 (hamkke-web)
 
 ```jsonc

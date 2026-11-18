@@ -2,6 +2,9 @@
 // 이 파일이 읽는 이름은 모두 docs/observation.md 2장 표에 있어야 한다(server/test/config.test.ts 가 확인한다).
 import { isIP } from 'node:net';
 
+/** 모델을 메모리에 두는 기본 시간(VL_KEEP_ALIVE 가 없을 때). */
+export const DEFAULT_KEEP_ALIVE = '30m';
+
 /** 개발용 기본 비밀. NODE_ENV 가 production 이면 쓸 수 없다. */
 export const DEV_SHARED_SECRET = 'local-dev-only-ai-shared-secret-change-me-0123456789';
 const MIN_SECRET_BYTES = 32;
@@ -227,7 +230,9 @@ export function loadConfig(env: Env): Config {
     timeoutMs,
     // 기본값은 제한 시간의 절반: 오래 기다린 요청은 429 로 돌려보내 모델 호출에 적어도 절반을 남긴다.
     maxWaitMs: integer(env, 'VL_MAX_WAIT_MS', Math.floor(timeoutMs / 2), 0, timeoutMs),
-    keepAlive: text(env, 'VL_KEEP_ALIVE'),
+    // 기본 30분(compose 와 같다). Ollama 기본값(5분)이면 잠시 쉬었다 온 요청마다 모델을 다시 올리느라
+    // 6~9초가 더 걸린다(2026-11 내장 GPU 측정, pm/reports/ai-1/T-016.md).
+    keepAlive: text(env, 'VL_KEEP_ALIVE') ?? DEFAULT_KEEP_ALIVE,
     numCtx: integer(env, 'VL_NUM_CTX', 8192, 2048, 131_072),
     maxOutputTokens: integer(env, 'VL_MAX_OUTPUT_TOKENS', 480, 64, 4096),
     metricsToken,

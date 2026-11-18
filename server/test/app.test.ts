@@ -423,6 +423,26 @@ describe('모델 출력 검사와 다시 시도', () => {
     expect(logs[0]).toMatchObject({ status: 502, attempts: 2, detail: 'bad_output' });
   });
 
+  it('남은 시간이 앞선 호출에 걸린 시간보다 짧으면 다시 부르지 않고 바로 502', async () => {
+    const slowBad = () => new Promise<string>((resolve) => setTimeout(() => resolve('{}'), 120));
+    const provider = fakeProvider([slowBad, GOOD]);
+    const { app, logs } = testApp({ provider, config: { timeoutMs: 200 } });
+    const started = performance.now();
+    const response = await app.handle(analyzeRequest());
+    expect([response.status, parse(response).code]).toEqual([502, 'MODEL_UNAVAILABLE']);
+    expect(provider.calls).toHaveLength(1);
+    expect(performance.now() - started).toBeLessThan(190); // 제한 시간(200ms)까지 기다리지 않았다
+    expect(logs[0]).toMatchObject({ status: 502, attempts: 1, detail: 'bad_output' });
+  });
+
+  it('남은 시간이 넉넉하면 느린 첫 호출 뒤에도 다시 부른다', async () => {
+    const slowBad = () => new Promise<string>((resolve) => setTimeout(() => resolve('{}'), 30));
+    const provider = fakeProvider([slowBad, GOOD]);
+    const { app } = testApp({ provider, config: { timeoutMs: 1_000 } });
+    expect((await app.handle(analyzeRequest())).status).toBe(200);
+    expect(provider.calls).toHaveLength(2);
+  });
+
   it('두 번째 출력이 쓸 만하면 200', async () => {
     const provider = fakeProvider(['{}', GOOD]);
     const { app, logs } = testApp({ provider });

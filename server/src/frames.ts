@@ -127,11 +127,51 @@ function isSeconds(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= MAX_SECONDS;
 }
 
+/**
+ * 그림 자료와 상관없는 메타데이터 구획(APP1~APP15: EXIF 위치·촬영 기기·썸네일 등, COM: 주석)을 뺀 사본.
+ * 뺄 것이 없거나 구조가 예상과 다르면 null(원본을 그대로 쓴다). 그림 자료(SOS 뒤)는 건드리지 않는다.
+ * 웹은 캔버스로 사진을 만들어 메타데이터가 없다. 다른 클라이언트가 보낸 위치 정보가 모델 서버로 가지 않게 한다.
+ */
+export function withoutMetadata(bytes: Uint8Array): Buffer | null {
+  if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) return null;
+  const keep: Array<[number, number]> = [[0, 2]];
+  let removed = false;
+  let i = 2;
+  while (i + 1 < bytes.length) {
+    if (bytes[i] !== 0xff) return null;
+    const marker = bytes[i + 1]!;
+    if (marker === 0xff) {
+      keep.push([i, i + 1]); // 채움 바이트
+      i++;
+      continue;
+    }
+    if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
+      keep.push([i, i + 2]);
+      i += 2;
+      continue;
+    }
+    if (marker === 0xda || marker === 0xd9) {
+      keep.push([i, bytes.length]); // 그림 자료와 끝 표식은 그대로
+      i = bytes.length;
+      break;
+    }
+    if (i + 3 >= bytes.length) return null;
+    const end = i + 2 + ((bytes[i + 2]! << 8) | bytes[i + 3]!);
+    if (end > bytes.length) return null;
+    if ((marker >= 0xe1 && marker <= 0xef) || marker === 0xfe) removed = true;
+    else keep.push([i, end]);
+    i = end;
+  }
+  if (!removed) return null;
+  return Buffer.concat(keep.map(([start, end]) => bytes.subarray(start, end)));
+}
+
 function checkJpeg(base64: unknown): string {
   if (typeof base64 !== 'string') throw new FrameError('jpeg_type');
   if (base64.length > MAX_BASE64_LENGTH) throw new FrameError('frame_too_large');
   if (base64.length < 8 || base64.length % 4 !== 0 || !BASE64.test(base64)) throw new FrameError('base64');
   const bytes = Buffer.from(base64, 'base64');
+  let cleaned: Buffer | null = null;
   try {
     if (bytes.length > MAX_FRAME_BYTES) throw new FrameError('frame_too_large');
     const size = readJpegSize(bytes);
@@ -139,10 +179,12 @@ function checkJpeg(base64: unknown): string {
     const longest = Math.max(size.width, size.height);
     const shortest = Math.min(size.width, size.height);
     if (longest > MAX_FRAME_SIDE_PX || shortest < MIN_FRAME_SIDE_PX) throw new FrameError('frame_dimensions');
+    cleaned = withoutMetadata(bytes);
+    return cleaned === null ? base64 : cleaned.toString('base64');
   } finally {
     bytes.fill(0);
+    cleaned?.fill(0);
   }
-  return base64;
 }
 
 /**
