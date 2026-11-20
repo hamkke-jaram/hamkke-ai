@@ -22,7 +22,17 @@ it('손과 귀 사이의 간격을 확인하면 첫 가림 분류를 보류한�
   const generate = vi.fn(async (request: VisionRequest) => request.system.startsWith('Check spatial contact')
     ? '{"left":"VISIBLE_GAP_OR_OTHER_LOCATION","right":"UNCLEAR"}' : '{"position":"COVERING"}');
   await expect(verifyEarPhoto(provider(generate),'frame',new AbortController().signal)).resolves.toBe('UNCLEAR');
-  expect(generate.mock.calls.map(([request])=>request.images)).toEqual([['frame'],['frame']]);
+  expect(generate.mock.calls.map(([request])=>request.images)).toEqual([['frame'],['frame'],['frame']]);
+});
+
+it('두 확인 결과가 다르면 동일 사진에서 손과 귀의 접촉을 다시 확인한다', async () => {
+  const generate = vi.fn(async (request: VisionRequest) => {
+    if (request.system.startsWith('Check spatial contact')) return '{"left":"UNCLEAR","right":"UNCLEAR"}';
+    if (request.system.startsWith('Check the connection')) return '{"contact":"HAND_PRESSED_OVER_EAR"}';
+    return '{"position":"COVERING"}';
+  });
+  await expect(verifyEarPhoto(provider(generate),'frame',new AbortController().signal)).resolves.toBe('COVERING');
+  expect(generate.mock.calls.map(([request])=>request.images)).toEqual([['frame'],['frame'],['frame']]);
 });
 
 it.each(['invalid json', '["COVERING"]', '{"position":"NEAR_EARS"}', '{"position":"COVERING","extra":true}'])('계약 밖 판정을 사용하지 않는다: %s', async reply => {

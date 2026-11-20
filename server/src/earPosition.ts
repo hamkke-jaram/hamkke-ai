@@ -2,6 +2,7 @@ import { toVisionOutput, type VisionProvider } from './provider.ts';
 
 const positions = ['COVERING', 'TOUCHING', 'HANDS_RAISED', 'NO_COVER', 'UNCLEAR'] as const;
 const placements = ['OVER_EAR', 'VISIBLE_GAP_OR_OTHER_LOCATION', 'UNCLEAR'] as const;
+const contacts = ['HAND_PRESSED_OVER_EAR', 'HAND_HELD_AWAY', 'CANNOT_TELL'] as const;
 const MAX_CHECK_MS = 10_000;
 export type EarPosition = typeof positions[number];
 
@@ -26,6 +27,12 @@ const contactPrompt = {
   schema: {type:'object', additionalProperties:false, required:['left','right'],properties:{left:placement,right:placement}},
 };
 
+const posePrompt = {
+  system: 'Check the connection between the child\'s wrist and head in this still image.',
+  user: `Look for spatial evidence without guessing a reaction. Compare a hand resting tightly against the ear at the side of the head, with a hand suspended in midair next to or in front of the face. Follow the wrist to the palm. Choose HAND_PRESSED_OVER_EAR only if the hand visibly meets and cups or spans the ear area on the side of the child's head. A strip of background between the hand and head, a palm held out, or contact only with a cheek or the top of the head is HAND_HELD_AWAY. Use CANNOT_TELL when any required part is hidden or ambiguous.`,
+  schema:{type:'object',additionalProperties:false,required:['contact'],properties:{contact:{type:'string',enum:contacts}}},
+};
+
 function decode(text: string): EarPosition | null {
   const value: unknown = JSON.parse(text);
   if (!value || typeof value !== 'object' || Object.keys(value).length !== 1) return null;
@@ -41,6 +48,12 @@ function confirmsCover(text: string): boolean {
     (fields.left === 'OVER_EAR' || fields.right === 'OVER_EAR');
 }
 
+function pressedAgainstEar(text: string): boolean {
+  const value: unknown = JSON.parse(text);
+  return !!value && typeof value === 'object' && Object.keys(value).length === 1 &&
+    (value as Record<string,unknown>).contact === 'HAND_PRESSED_OVER_EAR';
+}
+
 /** Inspect a single sampled image under the request deadline and an optional-check budget. */
 export async function verifyEarPhoto(provider: VisionProvider, image: string, signal: AbortSignal): Promise<EarPosition | null> {
   signal.throwIfAborted();
@@ -51,7 +64,7 @@ export async function verifyEarPhoto(provider: VisionProvider, image: string, si
     check.addEventListener('abort', onAbort, { once: true });
   });
   try {
-    async function ask(specification: typeof prompt | typeof contactPrompt): Promise<string> {
+    async function ask(specification: typeof prompt | typeof contactPrompt | typeof posePrompt): Promise<string> {
       const inference = Promise.resolve().then(() => {
         check.throwIfAborted();
         return provider.generate({ ...specification, images:[image], signal:check });
@@ -61,7 +74,7 @@ export async function verifyEarPhoto(provider: VisionProvider, image: string, si
       return toVisionOutput(output,provider.modelVersion).text;
     }
     const position = decode(await ask(prompt));
-    if (position === 'COVERING' && !confirmsCover(await ask(contactPrompt))) return 'UNCLEAR';
+    if (position === 'COVERING' && !confirmsCover(await ask(contactPrompt)) && !pressedAgainstEar(await ask(posePrompt))) return 'UNCLEAR';
     return position;
   } catch {
     signal.throwIfAborted();

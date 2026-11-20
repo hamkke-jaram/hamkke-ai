@@ -296,7 +296,7 @@ async function reconcileEarTiming(observation: Observation, provider: VisionProv
   const check = AbortSignal.any([signal, AbortSignal.timeout(10_000)]);
   for (const i of [anchor, anchor + 1, anchor + 2]) {
     const t = times[i], image = images[i];
-    if (anchor < 0 || t === undefined || !image || Math.abs(t - times[anchor]!) > EAR_GESTURE_RADIUS_SECONDS) continue;
+    if (anchor < 0 || t === undefined || !image || (i > anchor && t - times[i - 1]! > EAR_GESTURE_RADIUS_SECONDS)) break;
     try {
       const position = await verifyEarPhoto(provider, image, check);
       if (position) positions.set(t, position);

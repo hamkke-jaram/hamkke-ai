@@ -543,9 +543,9 @@ describe('입 모양과 미소 확인', () => {
 describe('귀 가림의 사진 시각 확인', () => {
   const clipTimes = [10.5,12.5,13.1,13.8,15.4];
   const clipImages = ['block','raise','near','cover','later'];
-  const testTiming = async (before: Observation, states: Record<string,string>) => {
+  const testTiming = async (before: Observation, states: Record<string,string>, times = clipTimes) => {
     const inspected: string[] = [];
-    const input: VisionRequest = {...buildPrompt(clipTimes,20.1),images:clipImages,signal:new AbortController().signal};
+    const input: VisionRequest = {...buildPrompt(times,20.1),images:clipImages,signal:new AbortController().signal};
     const provider = mockProvider(async req => {
       if (req === input) return JSON.stringify(before);
       if (req.system.startsWith('Inspect this exact single silent photograph')) {
@@ -555,7 +555,7 @@ describe('귀 가림의 사진 시각 확인', () => {
       if (req.system.startsWith('Check spatial contact')) return '{"left":"OVER_EAR","right":"UNCLEAR"}';
       return JSON.stringify({appearance:'CLEAR_CHILDREN_ONLY',participants:'ONE_VISIBLE_PARTICIPANT',activity:'SOLO_PLAY'});
     });
-    const {observation} = await reviewedObservation(provider,input,clipTimes);
+    const {observation} = await reviewedObservation(provider,input,times);
     return {observation,inspected};
   };
 
@@ -603,5 +603,16 @@ describe('귀 가림의 사진 시각 확인', () => {
     ]);
     const unclear = await testTiming(before,{cover:'UNCLEAR',later:'NO_COVER'});
     expect(unclear.observation?.moments).toEqual(before.moments);
+  });
+
+  it('시작 후보보다 두 번째 인접 사진에서 처음 가렸으면 그 사진의 시각을 사용한다',async () => {
+    const before = draft('아이가 귀를 가려요.',{moments:[
+      {t:10.9,note:'아이가 귀를 막아요.'},
+      {t:12.5,note:'아이가 손을 들어요.'},
+    ]});
+    const {observation,inspected} = await testTiming(before,{block:'NO_COVER',raise:'HANDS_RAISED',near:'COVERING'},
+      [10.9,12.5,14.1,15.8,17.4]);
+    expect(inspected).toEqual(['block','raise','near']);
+    expect(observation?.moments).toEqual([before.moments[1],{t:14.1,note:'아이가 손으로 귀를 가려요.'}]);
   });
 });
