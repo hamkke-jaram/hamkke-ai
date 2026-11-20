@@ -495,6 +495,10 @@ describe('입 모양과 미소 확인', () => {
         snapshots.push([...frame.images]);
         return JSON.stringify({child:frame.images[0] === 'a' ? child : 'UNCLEAR',adult});
       }
+      if (frame.system.startsWith('Inspect this exact single silent photograph')) {
+        return JSON.stringify({position:frame.images[0] === 'b' ? 'COVERING' : 'NO_COVER'});
+      }
+      if (frame.system.startsWith('Check spatial contact')) return '{"left":"OVER_EAR","right":"UNCLEAR"}';
       return JSON.stringify(roleReview);
     });
     return { ...await reviewedObservation(provider,input,times), snapshots };
@@ -533,5 +537,71 @@ describe('입 모양과 미소 확인', () => {
     });
     expect(screenLines(checked)?.childLine).toBeUndefined();
     expect(screenLines(checked)?.parentLine).toBe('어른이 옆에 앉아요.');
+  });
+});
+
+describe('귀 가림의 사진 시각 확인', () => {
+  const clipTimes = [10.5,12.5,13.1,13.8,15.4];
+  const clipImages = ['block','raise','near','cover','later'];
+  const testTiming = async (before: Observation, states: Record<string,string>) => {
+    const inspected: string[] = [];
+    const input: VisionRequest = {...buildPrompt(clipTimes,20.1),images:clipImages,signal:new AbortController().signal};
+    const provider = mockProvider(async req => {
+      if (req === input) return JSON.stringify(before);
+      if (req.system.startsWith('Inspect this exact single silent photograph')) {
+        inspected.push(req.images[0]!);
+        return JSON.stringify({position:states[req.images[0]!] ?? 'UNCLEAR'});
+      }
+      if (req.system.startsWith('Check spatial contact')) return '{"left":"OVER_EAR","right":"UNCLEAR"}';
+      return JSON.stringify({appearance:'CLEAR_CHILDREN_ONLY',participants:'ONE_VISIBLE_PARTICIPANT',activity:'SOLO_PLAY'});
+    });
+    const {observation} = await reviewedObservation(provider,input,clipTimes);
+    return {observation,inspected};
+  };
+
+  it('귀에 손이 닿기 전 기록을 확인된 사진으로 옮기고 독립적인 동작의 시각은 바꾸지 않는다',async () => {
+    const before = draft('아이가 블록을 쌓아요. 아이가 귀를 가려요.',{moments:[
+      {t:10.5,note:'아이가 블록을 쌓아요.'},
+      {t:12.5,note:'아이가 손을 들어 올려요.'},
+      {t:13.1,note:'아이가 귀를 가려요.'},
+      {t:13.8,note:'아이가 고개를 돌려요.'},
+    ]});
+    const {observation,inspected} = await testTiming(before,{raise:'HANDS_RAISED',near:'HANDS_RAISED',cover:'COVERING'});
+    expect(inspected).toEqual(['near','cover']);
+    expect(observation?.moments).toEqual([
+      before.moments[0],before.moments[1],
+      {t:13.1,note:'아이가 손을 들어 올린 채 있어요.'},
+      {t:13.8,note:'아이가 고개를 돌려요. 아이가 손으로 귀를 가려요.'},
+    ]);
+  });
+
+  it('앞 시각의 사진 때문에 귀 가림 기록을 더 앞당기지 않는다',async () => {
+    const before = draft('아이가 귀를 막아요.',{moments:[{t:15.4,note:'아이가 귀를 막아요.'}]});
+    const {observation,inspected} = await testTiming(before,{cover:'COVERING',later:'COVERING'});
+    expect(inspected).toEqual(['later']);
+    expect(observation?.moments).toEqual([{t:15.4,note:'아이가 손으로 귀를 가려요.'}]);
+  });
+
+  it('닿은 손과 가림을 구분하고 확인되지 않은 가림을 요약과 교사용 문장에도 남기지 않는다',async () => {
+    const before = draft('아이가 귀를 가려요.',{
+      childLine:'아이가 귀를 막아요.',moments:[{t:13.1,note:'아이가 귀를 막아요.'}],
+    });
+    const {observation} = await testTiming(before,{raise:'HANDS_RAISED',near:'TOUCHING',cover:'UNCLEAR'});
+    expect(observation?.moments).toEqual([{t:13.1,note:'아이가 귀에 손을 대고 있어요.'}]);
+    expect(observation?.summary).toBeNull();
+    expect(observation?.childLine).toBeUndefined();
+  });
+
+  it('머리를 감싸는 자세를 해당 사진에서 귀 가림으로 확인한 경우만 구체화한다',async () => {
+    const before = draft('아이가 두 손으로 머리를 감싸요.',{moments:[
+      {t:12.5,note:'아이가 손을 들어 올려요.'},
+      {t:13.8,note:'아이가 두 손으로 머리를 감싸요.'},
+    ]});
+    const confirmed = await testTiming(before,{cover:'COVERING'});
+    expect(confirmed.observation?.moments).toEqual([
+      before.moments[0],{t:13.8,note:'아이가 손으로 귀를 가려요.'},
+    ]);
+    const unclear = await testTiming(before,{cover:'UNCLEAR',later:'NO_COVER'});
+    expect(unclear.observation?.moments).toEqual(before.moments);
   });
 });

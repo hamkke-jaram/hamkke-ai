@@ -2,7 +2,7 @@ import {
   limitText, MAX_MOMENTS, MAX_SUMMARY_LENGTH, MAX_SUMMARY_SENTENCES, MAX_TAGS, type Moment, type Observation,
 } from './observation.ts';
 
-export const WINDOWED_PROMPT_VERSION = 'obs-v6.8-windowed';
+export const WINDOWED_PROMPT_VERSION = 'obs-v6.9-windowed';
 
 const childSubject = /(?:아이|유아|영아|어린이|아기)(?:가|는)(?=\s)/;
 const crying = /(?:아이|유아|영아|어린이|아기)(?:가|는)\s[^.!?…]{0,48}(?:울고|울어요|울었|흐느[끼껴])/;

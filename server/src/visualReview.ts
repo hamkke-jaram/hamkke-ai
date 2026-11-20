@@ -11,6 +11,7 @@ import { reconcilePresence } from './presence.ts';
 import { throwClaim, impactClaim, checkObjectMotion, objectMotionPrompt, releaseTime } from './releasedObject.ts';
 import { confirmedHairNote, hairClaim, verifyHairPhoto } from './hairContact.ts';
 import { verifyFacePhoto, type FaceExpression, type FaceExpressions } from './faceExpression.ts';
+import { verifyEarPhoto, type EarPosition } from './earPosition.ts';
 
 const appearances = ['UNRESOLVED', 'CLEAR_CHILDREN_ONLY', 'CLEAR_ADULTS_ONLY', 'MIXED_AGES', 'PARTS_ONLY'] as const;
 const participants = ['ONE_VISIBLE_PARTICIPANT', 'MULTIPLE_VISIBLE_PARTICIPANTS', 'UNRESOLVED'] as const;
@@ -64,6 +65,7 @@ const isolated = /혼자|홀로|단독|(?:아이|어른|한\s*사람)만\s*(?:�
 const genericPosture = /^(?:(?:아이(?:가|는)|어른(?:이|은)|(?:한\s*)?사람(?:이|은))\s+)?(?:서|앉아)\s+있(?:어요|네요)[.!?…]?$/;
 const comforting = /달래|진정시켜|진정시키|위로(?:해|하)/;
 const coversEars = /귀(?:를)?\s*(?:손으로\s*)?(?:가리|가려|막|덮)/;
+const handsAroundHead = /머리(?:를|\s*양옆을)?\s*(?:두\s*손으로\s*|양손으로\s*)?(?:감싸|감싼)/;
 const earPosition = String.raw`귀(?:에|\s*(?:옆|쪽|뒤|근처)에)`;
 const handAtEar = new RegExp(String.raw`(?:손(?:을)?\s*${earPosition}|${earPosition}\s*(?:(?:두|양)\s*)?손(?:을)?)\s*(?:올|대|가져)`);
 const handAtHead = /손(?:을)?\s*(?:자기\s*)?머리(?:에|로|\s*(?:옆|쪽)(?:에|으로))\s*(?:올|얹|대|가져)|머리(?:에|\s*(?:옆|쪽)(?:에|으로))\s*(?:(?:두|양)\s*)?손(?:을)?\s*(?:올|얹|대|가져)/;
@@ -91,6 +93,22 @@ function unconfirmedHandContact(text: string, witnesses: readonly FrameWitness[]
 
 function earGesture(text: string): boolean {
   return coversEars.test(text) || handAtEar.test(text);
+}
+
+function childGesture(text: string, gesture: RegExpExecArray | null): boolean {
+  if (!gesture || /않|못|듯|척|하려고|하려는/.test(text)) return false;
+  const before = text.slice(0, gesture.index);
+  const actor = [...before.matchAll(/(?:^|[\s,])(아이(?:가|는)|어른(?:이|은))\s/g)].at(-1)?.[1];
+  return !actor?.startsWith('어른') &&
+    !/(?:어른|다른\s*아이|인형|장난감)(?:의)?\s*귀/.test(text);
+}
+
+function childEarClaim(text: string): boolean {
+  return childGesture(text,coversEars.exec(text) ?? handAtEar.exec(text));
+}
+
+function childHeadCover(text: string): boolean {
+  return childGesture(text,handsAroundHead.exec(text));
 }
 
 function ambiguousHeadGesture(text: string): boolean {
@@ -260,6 +278,64 @@ async function reconcileFaceExpressions(observation: Observation, provider: Visi
     return updated ? [{t,note:limitText(updated,Number.POSITIVE_INFINITY,MAX_NOTE_LENGTH)}] : [];
   });
   const summary = limitText(checkedText(observation.summary ?? ''),MAX_SUMMARY_SENTENCES,MAX_SUMMARY_LENGTH);
+  return { ...observation, moments, summary:summary || (moments.length ? null : '확인한 장면에서 구체적인 동작을 구별하기 어려워요.') };
+}
+
+/** Require visible contact at the first claimed moment or a following nearby photo. */
+async function reconcileEarTiming(observation: Observation, provider: VisionProvider, images: readonly string[],
+  times: readonly number[], witnessTimes: readonly number[], signal: AbortSignal): Promise<Observation> {
+  const sentences = (text: string) => text.split(/(?<=[.!?…])\s+|(?<=요[.!?])(?=[가-힣])/);
+  const hasClaim = (text: string) => sentences(text).some(childEarClaim);
+  const hasSummaryClaim = hasClaim(observation.summary ?? '');
+  const hasSummaryHint = sentences(observation.summary ?? '').some(childHeadCover);
+  const first = observation.moments.find(moment=>hasClaim(moment.note))
+    ?? observation.moments.find(moment=>sentences(moment.note).some(childHeadCover));
+  if (!hasSummaryClaim && !hasSummaryHint && !first) return observation;
+  const anchor = times.indexOf(first?.t ?? witnessTimes[0] ?? times[Math.floor(times.length / 2)]!);
+  const positions = new Map<number, EarPosition>();
+  const check = AbortSignal.any([signal, AbortSignal.timeout(10_000)]);
+  for (const i of [anchor, anchor + 1, anchor + 2]) {
+    const t = times[i], image = images[i];
+    if (anchor < 0 || t === undefined || !image || Math.abs(t - times[anchor]!) > EAR_GESTURE_RADIUS_SECONDS) continue;
+    try {
+      const position = await verifyEarPhoto(provider, image, check);
+      if (position) positions.set(t, position);
+      if (position === 'COVERING') break;
+    } catch {
+      signal.throwIfAborted();
+      break;
+    }
+  }
+
+  function withoutClaim(text: string, confirmed = false): string {
+    return sentences(text).map(sentence=>keepVisibleClauses(sentence,
+      clause=>childEarClaim(clause) || (confirmed && childHeadCover(clause)))).filter(Boolean).join(' ');
+  }
+  const cover = [...positions].find(([,position])=>position === 'COVERING')?.[0];
+  const moments = observation.moments.flatMap(({t,note}) => {
+    if (!hasClaim(note) && t !== cover) return [{t,note}];
+    const visible = withoutClaim(note,t === cover);
+    const position = positions.get(t);
+    const gesture = position === 'TOUCHING' ? '아이가 귀에 손을 대고 있어요.'
+      : position === 'HANDS_RAISED' && !raisedHands.test(visible) ? '아이가 손을 들어 올린 채 있어요.' : '';
+    const revised = limitText([visible,gesture].filter(Boolean).join(' '),Number.POSITIVE_INFINITY,MAX_NOTE_LENGTH);
+    return revised ? [{t,note:revised}] : [];
+  });
+  let included = false;
+  if (cover !== undefined) {
+    const sameTime = moments.find(moment => moment.t === cover);
+    if (sameTime) {
+      sameTime.note = limitText([sameTime.note,earCoverNote].join(' '),Number.POSITIVE_INFINITY,MAX_NOTE_LENGTH);
+      included = sameTime.note.includes(earCoverNote);
+    } else if (moments.length < MAX_MOMENTS) {
+      moments.push({t:cover,note:earCoverNote});
+      moments.sort((a,b)=>a.t-b.t);
+      included = true;
+    }
+  }
+  const remainder = withoutClaim(observation.summary ?? '',cover !== undefined);
+  const contact = cover !== undefined && (hasSummaryClaim || hasSummaryHint || !included) ? earCoverNote : '';
+  const summary = limitText([contact,remainder].filter(Boolean).join(' '),MAX_SUMMARY_SENTENCES,MAX_SUMMARY_LENGTH);
   return { ...observation, moments, summary:summary || (moments.length ? null : '확인한 장면에서 구체적인 동작을 구별하기 어려워요.') };
 }
 
@@ -544,7 +620,7 @@ export function screenLines(obs: Observation | null): Observation | null {
   const claims = [speech, throwClaim, impactClaim, together, play, childCrying];
   // A one-line claim has no timestamp to tie it to a checked point of contact.
   const supported = (line: string | undefined) => line !== undefined && !hairClaim.test(line) && !otherPersonHand.test(line)
-    && !comforting.test(line) && !smileClaim.test(line) && claims.every(p => !p.test(line) || p.test(reviewed));
+    && !comforting.test(line) && !smileClaim.test(line) && !childEarClaim(line) && claims.every(p => !p.test(line) || p.test(reviewed));
   const { childLine, parentLine, ...rest } = obs;
   return {
     ...rest,
@@ -594,11 +670,13 @@ export async function reviewedObservation(provider: VisionProvider, request: Vis
   // Optional local evaluation observer. The HTTP service supplies no observer.
   // Only validated categories and box counts are exposed, never image data or prose.
   onEvidence?.({frames:witnesses, detectedPeople:boxes});
-  const checked = applyReview(draft, review, witnesses, boxes, releasedAt,
-    images.map(image=>frameTimes[request.images.indexOf(image)]!));
+  const witnessTimes = images.map(image=>frameTimes[request.images.indexOf(image)]!);
+  const checked = applyReview(draft, review, witnesses, boxes, releasedAt, witnessTimes);
   const present = reconcilePresence(checked,draft);
   const contactChecked = present && await reconcileHairContact(present,provider,request.images,frameTimes,request.signal);
-  const observation = contactChecked && await reconcileFaceExpressions(contactChecked,provider,request.images,frameTimes,request.signal);
+  const expressionChecked = contactChecked && await reconcileFaceExpressions(contactChecked,provider,request.images,frameTimes,request.signal);
+  const earWitnessTimes = witnessTimes.filter((_time,i)=>witnesses[i]?.childCoversOwnEars);
+  const observation = expressionChecked && await reconcileEarTiming(expressionChecked,provider,request.images,frameTimes,earWitnessTimes,request.signal);
   // 선생님용 두 줄: 재확인 결과가 초안과 다르면 빼고(keepLinesIfUnchanged), 재확인을 지나지 않은 주장이 있으면 그 줄만 뺀다
   // (screenLines). 서로 다른 사진이 두 장 미만이면 시간에 걸친 행동을 확인할 수 없어 뺀다.
   const final = keepLinesIfUnchanged(observation, draft);
