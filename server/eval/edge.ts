@@ -17,7 +17,9 @@ import { FrameError, parseAnalyzeBody } from '../src/frames.ts';
 import { signJwt } from '../src/jwt.ts';
 import { ADULT_RESPONSES, CHILD_STATES } from '../src/observation.ts';
 import { buildPrompt } from '../src/prompt.ts';
-import { ProviderTimeoutError, ProviderUnavailableError, toVisionOutput } from '../src/provider.ts';
+import { ProviderTimeoutError, ProviderUnavailableError } from '../src/provider.ts';
+import type { Observation } from '../src/observation.ts';
+import { reviewedObservation } from '../src/visualReview.ts';
 import { createProviderFromConfig } from '../src/providers.ts';
 import { analyseOutput, SCENE_CSV_HEADER, sceneCsvRow, sceneLine, summariseScene } from './edge-lib.ts';
 import type { AttemptRecord, RunRecord } from './edge-lib.ts';
@@ -84,6 +86,10 @@ async function scenes(): Promise<number> {
     const res = await fetch(input, init);
     if (String(input).endsWith('/api/chat') && res.ok) {
       try {
+        // The token counts describe the writer's JSON. A subsequent visual review
+        // is included in elapsed time but must not replace the writer's counters.
+        const sent = JSON.parse(String(init?.body));
+        if (sent.format?.required?.includes('appearance')) return res;
         const data = (await res.clone().json()) as Record<string, unknown>;
         last.meta = {
           doneReason: typeof data.done_reason === 'string' ? data.done_reason : null,
@@ -133,9 +139,10 @@ async function scenes(): Promise<number> {
         const t0 = performance.now();
         last.meta = null;
         let text: string;
+        let reviewed: Observation | null;
         try {
           const user = a > 1 && values['retry-hint'] ? `${prompt.user}\n${RETRY_HINT}` : prompt.user;
-          ({ text } = toVisionOutput(await provider.generate({ ...prompt, user, images, signal: deadline }), provider.modelVersion));
+          ({ text, observation: reviewed } = await reviewedObservation(provider, { ...prompt, user, images, signal: deadline }, frameTimes));
         } catch (err) {
           const timedOut = deadline.aborted || err instanceof ProviderTimeoutError;
           attempts.push({
@@ -149,7 +156,7 @@ async function scenes(): Promise<number> {
           outcome = 'unavailable';
           continue;
         }
-        const analysis = analyseOutput(text, frameTimes, TAGS);
+        const analysis = analyseOutput(text, frameTimes, TAGS, reviewed);
         const m = last.meta as Meta | null; // fetch 안에서 채워진다
         attempts.push({
           ms: performance.now() - t0, result: analysis.result,

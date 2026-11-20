@@ -3,7 +3,9 @@
 hamkke-api `docs/ai-observation.md` 10장의 열린 항목 "VL이 쓴 문장의 품질을 사람이 본 것과 비교"를 위한 도구다.
 사람이 장면 사진에 붙인 태그(라벨)와 모델이 붙인 태그를 비교해 **일치·놓침·더함 수**를 세고, 모델이 쓴 글이 문장 검사에 얼마나 걸리는지 센다.
 
-- 서버와 **같은 코드**로 처리한다: 사진 검사(`frames.ts`) → 프롬프트 `obs-v2`(`prompt.ts`) → 모델 호출(최대 2번) → 해석·다듬기(`observation.ts`) → 문장 검사(`wording.ts`).
+- 서버와 같은 코드로 초안과 전체 장면을 확인한다. 공동놀이 또는 여러 행위자가 등장하는 경우에는 첫·가운데·마지막 사진을 독립적으로 점검한다. 같은 사진의 독립 CPU 인물 검출 결과도 적용한다. 무음 입력에서 대화가 포함된 문장은 시각 행동 절을 복원한 뒤 평가한다. 초안과 점검에 같은 요청 제한시간을 적용하고 재시도는 최대 한 번이다.
+- 버전 `obs-v6.3-preserved`는 `obs-v6.2-witnessbox`와 모델 요청 문구, 사진 선택, CPU 모델 파일이 같다. 같은 모델 원응답을 재생해 보정 규칙의 효과를 확인할 수 있다. 새로 생성했을 때의 성능은 전체 추론을 별도로 실행해 측정한다.
+- `obs-v6.3.1-preserved`는 같은 요청과 검출 결과를 사용하고 최종 반환 직전에 `server/src/presence.ts`의 `reconcilePresence(observation, originalNormalisedDraft)`를 적용한다. 이전 버전에서 저장한 반환값과 같은 초안으로 이 마지막 변화를 그대로 재현할 수 있다.
 - 서버를 띄우지 않고 모델 제공자를 직접 부른다(토큰·영수증 없음). 환경 변수는 서버와 같다: `OLLAMA_URL`, `VL_MODEL`, `VL_FALLBACK_MODEL`, `OLLAMA_AUTH_TOKEN`, `VL_TIMEOUT_MS`, `VL_NUM_CTX` …
 - 결과(화면·CSV)에는 **태그 이름과 숫자만** 남는다. 사진과 관찰 문장은 저장하지 않는다. 사람이 문장을 직접 읽어 비교하려면 `--show-text`를 붙인다(화면에만 보이고 CSV 에는 들어가지 않는다).
 - 결과는 내부 개선용이다. 앱·발표 자료에 퍼센트 수치로 옮기지 않는다.
@@ -36,7 +38,7 @@ ffmpeg -i staged-01.mp4 -vf "fps=1/10,scale='if(gt(iw,ih),512,-2)':'if(gt(iw,ih)
       "frames": [{ "t": 0, "file": "frames/staged-01-blocks/01.jpg" }],
       "expected": {
         "childStates": ["PLAYING_TOGETHER", "REFUSING"],
-        "adultResponses": ["WAITING", "TALKING"],
+        "adultResponses": ["WAITING"],
         "peopleCount": 2
       }
     }
@@ -52,7 +54,7 @@ ffmpeg -i staged-01.mp4 -vf "fps=1/10,scale='if(gt(iw,ih),512,-2)':'if(gt(iw,ih)
 | `expected.childStates`, `expected.adultResponses` | 사진에서 **분명히 보이는** 태그만(`docs/observation.md` 5장 목록). 목록에 없는 값이면 시작하기 전에 알려 준다 |
 | `expected.peopleCount` | 0~3 (3은 '3명 이상'). 없으면 사람 수는 비교하지 않는다 |
 
-라벨은 두 사람이 따로 붙인 뒤 맞춰 보는 것이 좋다. 애매한 태그는 넣지 않는다(프롬프트도 애매하면 고르지 말라고 한다).
+라벨은 두 사람이 따로 붙인 뒤 맞춰 보는 것이 좋다. 애매한 태그는 넣지 않는다. 사진만 입력하는 관찰에서는 대화를 확인할 수 없으며 최종 기록의 `TALKING`은 항상 비운다.
 
 ## 3. 실행
 
@@ -98,7 +100,8 @@ node server/eval/edge.ts load --server http://127.0.0.1:18090 --concurrency 5   
 ```
 
 - **장면**: 테스트 무늬, 글자가 많은 사진, 사진 안 글귀로 지시를 넣은 것, 캐릭터·코칭 그림(`hamkke-web/public`), 흐린·세로·같은 사진 6장, 검은·흰·잡음 사진.
-- `scenes` 는 서버와 같은 순서(사진 검사 → 프롬프트 → 모델 최대 2번 → 다듬기·문장 검사)로 모델을 직접 부른다. 요청마다 사진 귀퉁이 2×2 픽셀을 바꿔 새 사진으로 보낸다(같은 사진을 다시 보내면 Ollama 가 앞서 읽은 결과를 재사용해 실제보다 빠르게 나온다. `--reuse` 로 끌 수 있다).
+- `scenes` 는 서버와 같은 순서(사진 검사 → 초안 작성·다듬기 → 무음 사진으로 호칭·놀이 점검)로 모델을 직접 부른다. 요청마다 사진 귀퉁이 2×2 픽셀을 바꿔 새 사진으로 보낸다(같은 사진을 다시 보내면 Ollama 가 앞서 읽은 결과를 재사용해 실제보다 빠르게 나온다. `--reuse` 로 끌 수 있다).
+- 토큰 수는 초안 모델의 응답에서 가져오고 총 소요 시간은 점검 호출까지 포함한다.
 - 장면 줄: `ok n/N`, `bad`(두 번 모두 쓸 수 없음 = 서버라면 502), `retry 다시 부름(+살아남)`, 걸린 시간 중앙값/최댓값, `drop 빠진 글/쓴 글`, 사람 수 분포, 빠진 까닭(`wording:<갈래>`, `not_haeyo`, `not_korean` …).
 - 갈래 이름은 `wording.ts` 목록 이름에서 `_PATTERNS` 를 뗀 것이다(`READING` = 사진 속 글자 옮겨 적기, `INNER_STATE` = 짐작하는 말투 …). 갈래 가르기는 `edge-lib.ts`, 확인은 `server/test/edge-lib.test.ts`(예문 파일 전체로 `passesWordingCheck` 와 같은지 본다).
 - `inputs`·`load` 는 개발용 비밀(또는 `AI_SHARED_SECRET`)로 분석 토큰을 만든다. 8090 이 아닌 포트에 띄운 서버에 쓴다.

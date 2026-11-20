@@ -1,8 +1,13 @@
 // 서버 테스트 공용 도구. 네트워크도 실제 모델도 쓰지 않는다.
+import { vi } from 'vitest';
 import { createApp } from '../src/app.ts';
 import type { App, AppDeps, AppRequest, AppResponse, LogEntry } from '../src/app.ts';
 import { signJwt } from '../src/jwt.ts';
 import type { VisionProvider, VisionRequest } from '../src/provider.ts';
+
+// Unit-test deadlines are intentionally short. Real detector inference is
+// exercised by the image benchmark and its subprocess smoke test.
+vi.mock('../src/personBoxes.ts', () => ({independentPeople: async () => null}));
 
 export const SECRET = Buffer.from('test-only-shared-secret-0123456789-abcdefghij', 'utf8');
 export const OTHER_SECRET = Buffer.from('another-secret-that-is-not-shared-0123456789', 'utf8');
@@ -118,13 +123,20 @@ export interface FakeProvider extends VisionProvider {
 }
 
 /** 정해 둔 순서대로 답하는 가짜 제공자. 순서가 끝나면 마지막 답을 되풀이한다. */
-export function fakeProvider(steps: Step[] = [JSON.stringify(GOOD_OUTPUT)]): FakeProvider {
+export function fakeProvider(steps: Step[] = [JSON.stringify(GOOD_OUTPUT)],
+  visualCheck = { appearance: 'MIXED_AGES', participants: 'MULTIPLE_VISIBLE_PARTICIPANTS', activity: 'SHARED_PLAY' }): FakeProvider {
   const provider: FakeProvider = {
     modelVersion: 'fake-vl:1',
     calls: [],
     readyChecks: 0,
     ready: true,
     async generate(request) {
+      if (request.schema.required instanceof Array && request.schema.required.includes('actor1')) {
+        return JSON.stringify({actor1:'UNCLEAR',actor2:'UNCLEAR',visible:'UNCLEAR',secondAction:'UNCLEAR',focusAction:'UNCLEAR',singleRole:'UNCLEAR'});
+      }
+      if (request.schema.required instanceof Array && request.schema.required.includes('appearance')) {
+        return JSON.stringify(visualCheck);
+      }
       const step = steps[Math.min(provider.calls.length, steps.length - 1)]!;
       provider.calls.push({ ...request, images: [...request.images] });
       if (typeof step === 'string') return step;

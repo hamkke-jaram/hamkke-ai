@@ -2,10 +2,11 @@
 // 사람이 붙인 태그(라벨)와 모델이 붙인 태그를 비교해 일치·놓침·더함 수를 센다.
 // 결과는 내부 개선용이다. 앱·발표 자료에 퍼센트 수치로 쓰지 않는다.
 import { FrameError, parseAnalyzeBody } from '../src/frames.ts';
-import { ADULT_RESPONSES, CHILD_STATES, normaliseObservation, parseModelJson } from '../src/observation.ts';
+import { ADULT_RESPONSES, CHILD_STATES } from '../src/observation.ts';
 import type { Observation } from '../src/observation.ts';
 import { buildPrompt } from '../src/prompt.ts';
-import { ProviderTimeoutError, ProviderUnavailableError, toVisionOutput } from '../src/provider.ts';
+import { ProviderTimeoutError, ProviderUnavailableError } from '../src/provider.ts';
+import { reviewedObservation } from '../src/visualReview.ts';
 import type { VisionProvider } from '../src/provider.ts';
 import { passesWordingCheck } from '../src/wording.ts';
 
@@ -211,13 +212,11 @@ export async function runClip(
   try {
     for (let attempt = 1; attempt <= EVAL_ATTEMPTS; attempt++) {
       base.attempts = attempt;
-      let text: string;
+      let raw: unknown;
+      let observation: Observation | null;
       let model: string;
       try {
-        ({ text, modelVersion: model } = toVisionOutput(
-          await provider.generate({ ...prompt, images, signal: deadline }),
-          provider.modelVersion,
-        ));
+        ({ raw, observation, modelVersion: model } = await reviewedObservation(provider, { ...prompt, images, signal: deadline }, frameTimes));
       } catch (err) {
         if (deadline.aborted || err instanceof ProviderTimeoutError) {
           outcome = 'timeout';
@@ -226,8 +225,6 @@ export async function runClip(
         outcome = `unavailable:${err instanceof ProviderUnavailableError ? err.detail : 'provider_error'}`;
         continue;
       }
-      const raw = parseModelJson(text);
-      const observation = normaliseObservation(raw, frameTimes);
       base.text = textStats(raw, observation);
       base.model = model;
       if (observation === null) {

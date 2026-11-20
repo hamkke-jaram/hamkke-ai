@@ -26,6 +26,7 @@ export interface Config {
   secret: Buffer;
   usingDevSecret: boolean;
   ollamaUrl: string;
+  daycareApiOrigin: string | null;
   model: string;
   /** 첫 모델을 쓸 수 없을 때 대신 쓰는 모델. null 이면 대신 쓰지 않는다. */
   fallbackModel: string | null;
@@ -165,6 +166,18 @@ function authHeader(env: Env): AuthHeader | null {
   return { name, value };
 }
 
+/** A teacher's bearer token may go only to the configured API origin. */
+function daycareOrigin(value: string | null): string | null {
+  if (!value) return null;
+  const url = URL.canParse(value) ? new URL(value) : null;
+  const loopback = url && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  if (!url || !(url.protocol === 'https:' || (loopback && url.protocol === 'http:')) ||
+      url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
+    throw new ConfigError('DAYCARE_API_ORIGIN 에는 https 또는 로컬 루프백의 API 출처만 쓸 수 있어요.');
+  }
+  return url.origin;
+}
+
 export function loadConfig(env: Env): Config {
   const production = env.NODE_ENV === 'production';
   const warnings: string[] = [];
@@ -220,6 +233,7 @@ export function loadConfig(env: Env): Config {
     secret,
     usingDevSecret,
     ollamaUrl,
+    daycareApiOrigin: daycareOrigin(text(env, 'DAYCARE_API_ORIGIN')),
     model,
     fallbackModel,
     fallbackUrl,

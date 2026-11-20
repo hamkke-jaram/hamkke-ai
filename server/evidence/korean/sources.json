@@ -1,0 +1,44 @@
+[
+  {
+    "sourceKey": "MOE-CARE-2024",
+    "title": "표준보육과정 고시 (교육부고시 제2024-23호)",
+    "publisher": "교육부",
+    "url": "https://www.law.go.kr/LSW/flDownload.do?bylClsCd=&flSeq=146173277",
+    "license": "대한민국 저작권법 제7조 제2호에 해당하는 국가 고시",
+    "licenseUrl": "https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1029423769",
+    "asset": "text/standard-care-2024.txt",
+    "originalAsset": "standard-care-2024.pdf",
+    "downloadUrl": "https://www.law.go.kr/LSW/flDownload.do?bylClsCd=&flSeq=146173277",
+    "description": "국가법령정보센터의 14쪽 원문. PDF 페이지 기준. 각 장의 연령별 보육 범위와 제1장 교수·학습 원칙을 함께 읽었다. 구체적인 대응은 해당 원칙을 관찰 상황에 적용한 예이다.",
+    "sha256": "02770ca625d14a63f3b828a7a9b4598ad51a9e93bb931995bf61c5840ef82663",
+    "originalSha256": "1bd6dd1413f07e41a7188ba5bd0ea1525c4c2a95fcc3552fda5954d4513549e8",
+    "retrievedOn": "2026-11-20"
+  },
+  {
+    "sourceKey": "MOHW-POSITIVE-129",
+    "title": "긍정 양육 129원칙",
+    "publisher": "보건복지부",
+    "url": "https://www.mohw.go.kr/upload/140/202112/1639703984207_20211217101944.pdf",
+    "license": "공공누리 제1유형 (출처표시). 2021-12-17 보도참고자료 원본 PDF 3쪽 하단에 명시.",
+    "licenseUrl": "https://www.mohw.go.kr/upload/140/202112/1639703984207_20211217101944.pdf#page=3",
+    "asset": "text/positive-parenting-129.txt",
+    "downloadUrl": "https://www.mohw.go.kr/upload/140/202112/1639703984207_20211217101944.pdf",
+    "description": "보건복지부와 유관 아동권리 기관의 원본 포스터 중 실천방법 두 항목을 직접 대조해 전사했다. 추천은 그림과 로고를 사용하지 않는다.",
+    "sha256": "1b8d97c07798335822760370347c71859a4b01fa04f5c5997431d6da5b597805",
+    "originalSha256": "2cf11ce945c80c0bd422ad9077aa1299f5f9c8e14c4a22e4798949d05febc1b0",
+    "retrievedOn": "2026-11-20"
+  },
+  {
+    "sourceKey": "MOHW-ROUTINES-2024",
+    "title": "100인의 아빠단 실천 미션 ④ · 생활계획표 만들기",
+    "publisher": "정책브리핑·보건복지부 (손정선)",
+    "url": "https://www.korea.kr/news/policyNewsView.do?newsId=148933841",
+    "license": "공공누리 제1유형 (출처표시), 본문 텍스트에 한함",
+    "licenseUrl": "https://www.korea.kr/news/policyNewsView.do?newsId=148933841",
+    "asset": "text/everyday-routines.txt",
+    "downloadUrl": "https://www.korea.kr/news/policyNewsView.do?newsId=148933841",
+    "description": "손정선 전문가 멘토의 2024년 일상 미션. 세부 항목의 적용 연령을 따른다. 본문 단락의 텍스트만 추출하고 사진·삽화·영상·로고는 수집하지 않았다.",
+    "sha256": "9a55da2d53f6b41966b10ea3108801a1ae950ba1b0833fd004580374e413947a",
+    "retrievedOn": "2026-11-20"
+  }
+]

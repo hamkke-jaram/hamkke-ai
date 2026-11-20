@@ -14,7 +14,8 @@ import {
   NO_CHILD_SUMMARY,
 } from './observation.ts';
 
-export const PROMPT_VERSION = 'obs-v2';
+// 같은 모델 지시문을 사용하고, 관찰 정규화 변경을 영수증 버전에 기록한다.
+export const PROMPT_VERSION = 'obs-v6.3.2-actions';
 
 export interface Prompt {
   system: string;

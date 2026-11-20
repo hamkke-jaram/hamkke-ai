@@ -38,7 +38,7 @@ describe('POST /ai/v1/analyze — 성공', () => {
     );
     expect(response.status).toBe(200);
     const body = parse(response);
-    expect(body.observation).toEqual(GOOD_OUTPUT);
+    expect(body.observation).toEqual({ ...GOOD_OUTPUT, adultResponses: ['WAITING'] });
     expect(body.modelVersion).toBe('fake-vl:1');
     expect(body.promptVersion).toBe(PROMPT_VERSION);
     expect(body.analyzedFrames).toBe(3);
@@ -52,9 +52,9 @@ describe('POST /ai/v1/analyze — 성공', () => {
       cid: 12,
       src: 'INSTITUTION',
       jti: payload.jti,
-      obs: GOOD_OUTPUT,
+      obs: { ...GOOD_OUTPUT, adultResponses: ['WAITING'] },
       mv: 'fake-vl:1',
-      pv: 'obs-v2',
+      pv: 'obs-v6.3.2-actions',
       fc: 3,
       iat: NOW_SEC,
       exp: NOW_SEC + 900,
@@ -112,7 +112,7 @@ describe('POST /ai/v1/analyze — 성공', () => {
         moments: [{ t: 12.4, note: '아이가 자동차를 굴려요.' }],
         peopleCount: 5,
       }),
-    ]);
+    ], { appearance: 'CLEAR_CHILDREN_ONLY', participants: 'ONE_VISIBLE_PARTICIPANT', activity: 'SOLO_PLAY' });
     const { app } = testApp({ provider });
     const response = await app.handle(analyzeRequest({ body: { frames: [frame(0), frame(12.483), frame(25)] } }));
     expect(parse(response).observation).toEqual({

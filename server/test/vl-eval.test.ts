@@ -86,7 +86,7 @@ describe('클립 하나 돌리기', () => {
       ms: 250,
       model: 'fake-vl:1',
       childStates: { matched: ['PLAYING_TOGETHER'], missed: ['UPSET_CRYING'], extra: ['REFUSING'] },
-      adultResponses: { matched: ['WAITING'], missed: [], extra: ['TALKING'] },
+      adultResponses: { matched: ['WAITING'], missed: [], extra: [] },
       peopleExpected: 2,
       peopleGot: 2,
       text: { written: 2, wordingRejected: 0, dropped: 0, invalidTags: 0 },
@@ -127,7 +127,7 @@ describe('모아 보기와 CSV', () => {
     const failed = await runClip(fakeProvider([new ProviderUnavailableError('connect')]), CLIP, FRAMES, 5_000);
     const totals = summarise([ok, failed]);
     expect(totals).toMatchObject({ clips: 2, ok: 1, peopleMatched: 1, peopleLabelled: 1, retried: 1 });
-    expect(totals.allTags).toEqual({ matched: 2, missed: 1, extra: 2, precision: 0.5, recall: 2 / 3 });
+    expect(totals.allTags).toEqual({ matched: 2, missed: 1, extra: 1, precision: 2 / 3, recall: 2 / 3 });
     expect(totals.childStates.precision).toBe(0.5);
   });
 

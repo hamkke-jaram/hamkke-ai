@@ -22,7 +22,7 @@ const FORBIDDEN = [
 ];
 // 고유명사(외부 기관·서비스 이름)와 바꿀 수 없는 브라우저 API 이름만 좁게 허용한다.
 // num_predict 는 Ollama /api/chat 의 옵션 이름(만들 토큰 수 상한)이다. 요청 본문에 그 이름 그대로 써야 한다.
-const ALLOW = [/자살예방상담전화/g, /K-DST\s*발달선별검사/g, /\.preventDefault\(\)/g, /\bnum_predict\b/g];
+const ALLOW = [/자살예방상담전화/g, /K-DST\s*발달선별검사/g, /\bCenters for Disease Control and Prevention\b/g, /\.preventDefault\(\)/g, /\bnum_predict\b/g];
 
 async function* walk(p) {
   let entries;

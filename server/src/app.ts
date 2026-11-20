@@ -6,23 +6,30 @@
 // - 로그에는 요청 id, jti 해시 앞부분, 장수, 바이트, 걸린 시간, 결과 코드만 남긴다.
 // - CORS 헤더를 내지 않는다(웹은 같은 출처의 /ai/ 프록시로 부른다).
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
+import { createDaycareCoaching, parseCoachingRequest } from './daycareCoaching.ts';
+import { createObservationGuidance, parseGuidanceInput } from './observationGuidance.ts';
+import { createTeacherStoryDraft, parseDraftInput } from './teacherStoryDraft.ts';
+import { HttpError } from './httpError.ts';
 import { BodyTooLargeError, FrameError, MAX_BODY_BYTES, parseAnalyzeBody, readBody } from './frames.ts';
 import type { AnalyzeInput } from './frames.ts';
 import { createJtiStore } from './jtiStore.ts';
 import type { JtiStore } from './jtiStore.ts';
 import { TokenError, signReceipt, verifySessionToken } from './jwt.ts';
 import type { SessionClaims } from './jwt.ts';
-import { normaliseObservation, parseModelJson } from './observation.ts';
 import type { Observation } from './observation.ts';
 import { createMetrics } from './metrics.ts';
 import type { Metrics, MetricsRoute } from './metrics.ts';
 import { PROMPT_VERSION, buildPrompt } from './prompt.ts';
-import { ProviderTimeoutError, ProviderUnavailableError, toVisionOutput } from './provider.ts';
+import { ProviderTimeoutError, ProviderUnavailableError } from './provider.ts';
+import { reviewedObservation } from './visualReview.ts';
 import type { VisionProvider } from './provider.ts';
 import { QueueFullError, createQueue } from './queue.ts';
 import type { WorkQueue } from './queue.ts';
 
 export const ANALYZE_PATH = '/ai/v1/analyze';
+export const OBSERVATION_GUIDANCE_PATH = '/ai/v1/observation-guidance';
+export const DAYCARE_COACHING_PATH = '/ai/v1/daycare-coaching';
+export const TEACHER_STORY_DRAFT_PATH = '/ai/v1/teacher-story-draft';
 export const HEALTH_PATH = '/ai/v1/health';
 export const METRICS_PATH = '/ai/v1/metrics';
 
@@ -70,6 +77,7 @@ export interface LogEntry {
 
 export interface AppConfig {
   secret: Buffer;
+  daycareApiOrigin?: string | null;
   /** 요청 하나의 제한 시간: 차례를 기다린 시간과 모델 호출(다시 시도 포함)을 합쳐서 잰다. */
   timeoutMs: number;
   maxConcurrency: number;
@@ -83,6 +91,8 @@ export interface AppConfig {
 export interface AppDeps {
   config: AppConfig;
   provider: VisionProvider;
+  coachingFetch?: typeof fetch;
+  draftModel?: VisionProvider | null;
   /** 지금 시각(밀리초). 테스트에서 바꿔 끼운다. */
   now?: () => number;
   log?: (entry: LogEntry) => void;
@@ -93,22 +103,6 @@ export interface AppDeps {
 
 export interface App {
   handle(request: AppRequest): Promise<AppResponse>;
-}
-
-class HttpError extends Error {
-  readonly status: number;
-  readonly code: string;
-  readonly detail: string | undefined;
-  readonly headers: Record<string, string>;
-
-  constructor(status: number, code: string, message: string, detail?: string, headers: Record<string, string> = {}) {
-    super(message);
-    this.name = 'HttpError';
-    this.status = status;
-    this.code = code;
-    this.detail = detail;
-    this.headers = headers;
-  }
 }
 
 class ClientClosedError extends Error {
@@ -234,6 +228,9 @@ export function createApp(deps: AppDeps): App {
   const log = deps.log ?? defaultLog;
   const jtiStore = deps.jtiStore ?? createJtiStore();
   const queue = deps.queue ?? createQueue(config.maxConcurrency, config.maxWaiting);
+  const daycareCoaching = createDaycareCoaching(config.daycareApiOrigin, provider, queue, deps.coachingFetch);
+  const teacherStoryDraft = createTeacherStoryDraft(config.daycareApiOrigin, deps.draftModel ?? null, queue, deps.coachingFetch);
+  const observationGuidance = createObservationGuidance(config.daycareApiOrigin, config.secret, deps.draftModel ?? null, queue, now, deps.coachingFetch);
   const metrics = deps.metrics ?? createMetrics(now());
   const maxWaitMs = Math.min(config.maxWaitMs ?? Math.floor(config.timeoutMs / 2), config.timeoutMs);
 
@@ -358,11 +355,10 @@ export function createApp(deps: AppDeps): App {
         if (attempt > 1 && endsAt - performance.now() < lastAttemptMs) break;
         const attemptStarted = performance.now();
         entry.attempts = attempt;
-        let text: string;
+        let observation: Observation | null;
         let modelVersion: string;
         try {
-          const result = await abortable(provider.generate({ ...prompt, images, signal }), signal);
-          ({ text, modelVersion } = toVisionOutput(result, provider.modelVersion));
+          ({ observation, modelVersion } = await abortable(reviewedObservation(provider, { ...prompt, images, signal }, frameTimes), signal));
         } catch (err) {
           if (client?.aborted) {
             metrics.recordModelCall('aborted');
@@ -377,7 +373,6 @@ export function createApp(deps: AppDeps): App {
           lastAttemptMs = performance.now() - attemptStarted;
           continue;
         }
-        const observation = normaliseObservation(parseModelJson(text), frameTimes);
         if (observation !== null) {
           metrics.recordModelCall('ok');
           return { observation, modelVersion };
@@ -473,9 +468,64 @@ export function createApp(deps: AppDeps): App {
     }
   }
 
+  async function daycare(request: AppRequest): Promise<AppResponse> {
+    const token = bearerToken(request);
+    if (!isJsonContent(request)) throw errors.unsupportedMediaType();
+    let raw: Buffer;
+    try {
+      raw = await readBody(request.body, 256);
+    } catch (err) {
+      if (err instanceof BodyTooLargeError) throw new HttpError(413, 'PAYLOAD_TOO_LARGE', '요청이 너무 커요.');
+      throw new ClientClosedError();
+    }
+    const input = parseCoachingRequest(raw);
+    return json(200, { recommendation: await daycareCoaching(token, input, request.signal) });
+  }
+
+  async function draft(request: AppRequest): Promise<AppResponse> {
+    const token = bearerToken(request);
+    if (!isJsonContent(request)) throw errors.unsupportedMediaType();
+    let raw: Buffer;
+    try {
+      raw = await readBody(request.body, 8 * 1024);
+    } catch (err) {
+      if (err instanceof BodyTooLargeError) throw new HttpError(413, 'PAYLOAD_TOO_LARGE', '메모는 1,000자까지 쓸 수 있어요.');
+      throw new ClientClosedError();
+    }
+    const input = parseDraftInput(raw);
+    return json(200, await teacherStoryDraft(token, input, request.signal));
+  }
+
+  async function guidance(request: AppRequest): Promise<AppResponse> {
+    const token = bearerToken(request);
+    if (!isJsonContent(request)) throw errors.unsupportedMediaType();
+    let raw: Buffer;
+    try { raw = await readBody(request.body, 8192); }
+    catch (err) {
+      if (err instanceof BodyTooLargeError) throw new HttpError(413, 'PAYLOAD_TOO_LARGE', '검토할 관찰 문장이 너무 길어요.');
+      throw new ClientClosedError();
+    }
+    return json(200, await observationGuidance(parseGuidanceInput(raw), token, request.signal));
+  }
+
   function route(request: AppRequest, entry: LogEntry): Promise<AppResponse> {
     const path = pathOf(request.url);
     const method = request.method.toUpperCase();
+    if (path === OBSERVATION_GUIDANCE_PATH) {
+      entry.route = 'observation_guidance';
+      if (method !== 'POST') throw errors.methodNotAllowed('POST');
+      return guidance(request);
+    }
+    if (path === TEACHER_STORY_DRAFT_PATH) {
+      entry.route = 'teacher_story_draft';
+      if (method !== 'POST') throw errors.methodNotAllowed('POST');
+      return draft(request);
+    }
+    if (path === DAYCARE_COACHING_PATH) {
+      entry.route = 'daycare_coaching';
+      if (method !== 'POST') throw errors.methodNotAllowed('POST');
+      return daycare(request);
+    }
     if (path === ANALYZE_PATH) {
       entry.route = 'analyze';
       if (method !== 'POST') throw errors.methodNotAllowed('POST');

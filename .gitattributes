@@ -5,3 +5,4 @@
 *.png binary
 *.task binary
 *.wasm binary
+*.onnx binary

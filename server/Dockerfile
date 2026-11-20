@@ -3,14 +3,16 @@
 FROM node:24-alpine
 
 ENV NODE_ENV=production \
+    HAMKKE_PERSON_PYTHON=/usr/bin/python3 \
     PORT=8090
 
 WORKDIR /app
 
-# 실행에 필요한 것은 Node 와 server/src 뿐이다(npm 의존성 없음, 타입은 실행할 때 지워진다).
-# package.json 은 "type": "module" 을 알려 주려고 함께 넣는다.
+RUN apk add --no-cache py3-opencv py3-numpy
 COPY package.json ./
 COPY server/src ./server/src
+COPY server/evidence/care-2026-11-20-v2.sqlite ./server/evidence/care-2026-11-20-v2.sqlite
+COPY server/vision ./server/vision
 
 # 사진을 디스크에 쓰지 않는 서버다. 쓰기 권한이 없는 사용자로 돌린다.
 USER node

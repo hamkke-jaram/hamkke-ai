@@ -1,4 +1,4 @@
-# AI 서버 이미지에는 package.json 과 server/src 만 들어간다.
+# 로컬 Python 환경은 컨테이너가 설치하는 OpenCV와 분리한다.
 *
 !package.json
 !server/
@@ -6,3 +6,5 @@ server/test/
 server/eval/
 server/tsconfig.json
 server/Dockerfile
+server/vision/.venv/
+server/vision/__pycache__/

@@ -86,9 +86,9 @@ describe('환경 변수', () => {
   });
 });
 
-describe('프롬프트 obs-v2', () => {
+describe('관찰 지시문', () => {
   it('버전 이름', () => {
-    expect(PROMPT_VERSION).toBe('obs-v2');
+    expect(PROMPT_VERSION).toBe('obs-v6.3.2-actions');
     // hamkke-api 는 영수증 pv 를 40자까지만 받는다(AiReceiptVerifier.MAX_PROMPT_VERSION_CHARS).
     expect(PROMPT_VERSION.length).toBeLessThanOrEqual(40);
   });

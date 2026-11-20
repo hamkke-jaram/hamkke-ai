@@ -5,7 +5,7 @@ import type { Config } from './config.ts';
 import { createHttpServer } from './http.ts';
 import { ProviderUnavailableError } from './provider.ts';
 import type { VisionProvider } from './provider.ts';
-import { createProviderFromConfig } from './providers.ts';
+import { createLocalDraftProvider, createProviderFromConfig } from './providers.ts';
 
 const SHUTDOWN_GRACE_MS = 10_000;
 
@@ -34,7 +34,7 @@ function start(config: Config): void {
     // 사진·문장 없이 첫 모델이 실패한 짧은 코드만 남긴다.
     onFallback: (detail) => note('warn', 'fallback_model_used', { model: config.fallbackModel, detail }),
   });
-  const app = createApp({ config, provider });
+  const app = createApp({ config, provider, draftModel: createLocalDraftProvider(config) });
 
   const server = createHttpServer(app);
 

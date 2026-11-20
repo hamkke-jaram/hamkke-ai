@@ -1,0 +1,4 @@
+# Preserve the acquired bytes checked by the source manifest across platforms.
+*.txt -text
+*.pdf binary
+*.sqlite binary

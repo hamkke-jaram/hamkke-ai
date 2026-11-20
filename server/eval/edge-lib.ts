@@ -110,9 +110,9 @@ export interface OutputAnalysis {
   invalidTags: number;
 }
 
-export function analyseOutput(text: string, frameTimes: readonly number[], allowedTags: readonly string[]): OutputAnalysis {
+export function analyseOutput(text: string, frameTimes: readonly number[], allowedTags: readonly string[], reviewed?: Observation | null): OutputAnalysis {
   const raw = parseModelJson(text);
-  const observation = normaliseObservation(raw, frameTimes);
+  const observation = reviewed === undefined ? normaliseObservation(raw, frameTimes) : reviewed;
   const out: OutputAnalysis = { result: 'ok', observation, verdicts: [], groupHits: {}, peopleCount: null, invalidTags: 0 };
   if (!isPlainObject(raw)) {
     out.result = 'not_json';

@@ -35,6 +35,27 @@ describe('parseModelJson', () => {
 });
 
 describe('normaliseObservation', () => {
+  it('한 시점이나 중복 시각의 프레임은 시간적 근거가 필요한 태그만 제외한다', () => {
+    const raw = { ...GOOD_OUTPUT, childStates: ['MOVING_AROUND', 'PLAYING_TOGETHER'],
+      adultResponses: ['TALKING', 'JOINING_PLAY', 'WAITING'] };
+    for (const times of [[10], [10, 10]]) {
+      const obs = normaliseObservation(raw, times)!;
+      expect(obs.childStates).toEqual(['PLAYING_TOGETHER']);
+      expect(obs.adultResponses).toEqual(['JOINING_PLAY']);
+      expect(obs.summary).toBe(raw.summary);
+      expect(obs.moments[0]?.note).toBe(raw.moments[0]?.note);
+    }
+    const multiple = normaliseObservation(raw, [0, 10])!;
+    expect(multiple.childStates).toEqual(raw.childStates);
+    expect(multiple.adultResponses).toEqual(raw.adultResponses);
+  });
+
+  it('한 시점에서 근거 없는 태그만 남을 경우 기록을 만들어내지 않는다', () => {
+    const raw = { peopleCount: 2, summary: null, childStates: ['MOVING_AROUND'],
+      adultResponses: ['WAITING'], moments: [] };
+    expect(normaliseObservation(raw, [0])).toBeNull();
+    expect(normaliseObservation(raw, [0, 1])).not.toBeNull();
+  });
   it('쓸 수 있는 출력은 그대로 남긴다', () => {
     const obs = normalise();
     expect(obs).not.toBeNull();

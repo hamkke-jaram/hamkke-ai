@@ -2,7 +2,7 @@
 // 담는 것: 경로·상태·결과 코드별 요청 수, 걸린 시간 분포, 모델 호출 결과, 대기열 길이, 모델 준비 상태.
 // 담지 않는 것: 사진, 관찰 문장, 토큰, jti, 요청 id, 아이·사용자 식별 값. 라벨 값은 정해 둔 목록(경로·코드)과 모델 이름뿐이다.
 
-export type MetricsRoute = 'analyze' | 'health' | 'metrics' | 'other';
+export type MetricsRoute = 'analyze' | 'daycare_coaching' | 'teacher_story_draft' | 'observation_guidance' | 'health' | 'metrics' | 'other';
 export type ModelCallResult = 'ok' | 'bad_output' | 'unavailable' | 'timeout' | 'aborted';
 
 /** 걸린 시간 구간(초). 건강 확인(수 밀리초)부터 모델 제한 시간(180초)까지 본다. */

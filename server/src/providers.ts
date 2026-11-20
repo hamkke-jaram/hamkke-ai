@@ -25,3 +25,13 @@ export function createProviderFromConfig(config: Config, hooks: ProviderHooks = 
   const fallback = createOllamaProvider({ ...common, baseUrl: config.fallbackUrl, model: config.fallbackModel });
   return createFallbackProvider(primary, fallback, { onFallback: hooks.onFallback });
 }
+
+/** Private teacher memos only go to the primary model on this computer. */
+export function createLocalDraftProvider(config: Config, fetchImpl?: typeof fetch): VisionProvider | null {
+  const url = new URL(config.ollamaUrl);
+  if (!['127.0.0.1', '[::1]', 'localhost'].includes(url.hostname) || /(?:-|:)cloud(?:$|:)/i.test(config.model)) return null;
+  return createOllamaProvider({
+    baseUrl: config.ollamaUrl, model: config.model, keepAlive: config.keepAlive, numCtx: config.numCtx,
+    maxOutputTokens: 1500, authHeader: config.ollamaAuth, localOnly: true, fetchImpl,
+  });
+}

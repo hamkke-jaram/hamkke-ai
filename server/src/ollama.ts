@@ -22,6 +22,8 @@ export interface OllamaOptions {
   authHeader?: ProviderAuthHeader | null;
   /** 테스트에서 바꿔 끼우는 fetch. */
   fetchImpl?: typeof fetch;
+  /** Restrict private text drafting to the local model, including model metadata and redirects. */
+  localOnly?: boolean;
 }
 
 interface ModelTraits {
@@ -62,6 +64,7 @@ export function createOllamaProvider(options: OllamaOptions): VisionProvider {
       return await doFetch(`${baseUrl}${path}`, {
         method: 'POST',
         headers,
+        ...(options.localOnly ? { redirect: 'error' as const } : {}),
         body: JSON.stringify(body),
         signal,
       });
@@ -93,6 +96,10 @@ export function createOllamaProvider(options: OllamaOptions): VisionProvider {
       if (isAbort(err) || signal.aborted) throw err;
       throw new ProviderUnavailableError('show_bad_response');
     }
+    if (options.localOnly && (!isPlainObject(data) || !isPlainObject(data.model_info) ||
+        Object.keys(data.model_info).length === 0 || data.remote_model || data.remote_host)) {
+      throw new ProviderUnavailableError('local_model_required');
+    }
     const capabilities = isPlainObject(data) && Array.isArray(data.capabilities) ? data.capabilities : null;
     // 능력 목록을 주지 않는 옛 버전이면 사진은 된다고 보고, 생각 단계 설정은 보내지 않는다.
     return {
@@ -105,7 +112,7 @@ export function createOllamaProvider(options: OllamaOptions): VisionProvider {
   async function generate(request: VisionRequest): Promise<string> {
     if (traits === null || !traits.present) traits = await inspect(request.signal);
     if (!traits.present) throw new ProviderUnavailableError('model_missing');
-    if (!traits.vision) throw new ProviderUnavailableError('model_without_vision');
+    if (!traits.vision && request.images.length) throw new ProviderUnavailableError('model_without_vision');
 
     const body: Record<string, unknown> = {
       model: options.model,

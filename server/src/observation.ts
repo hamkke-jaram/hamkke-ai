@@ -218,6 +218,12 @@ export function normaliseObservation(raw: unknown, frameTimes: readonly number[]
     moments: nobody ? [] : pickMoments(raw.moments, frameTimes),
     peopleCount,
   };
+  // 같은 시점의 한 장 또는 중복 시각에서는 반복 이동·기다림·발화의 시간적 증거를 확인할 수 없다.
+  // 관찰 가능한 자세·놀이 태그와 모델이 실제로 쓴 문장은 기존 검사를 그대로 거친다.
+  if (frameTimes.length > 0 && frameTimes.every(t => t === frameTimes[0])) {
+    observation.childStates = observation.childStates.filter(tag => tag !== 'MOVING_AROUND');
+    observation.adultResponses = observation.adultResponses.filter(tag => tag !== 'WAITING' && tag !== 'TALKING');
+  }
   const nothingLeft =
     observation.summary === null &&
     observation.childStates.length === 0 &&

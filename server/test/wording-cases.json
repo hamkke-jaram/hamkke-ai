@@ -1,6 +1,12 @@
 {
   "about": "AI 관찰 기록 문장 검사 예문. hamkke-ai(server/src/wording.ts)와 hamkke-api(ObservationSentenceFilter)가 바이트 단위로 같은 사본을 돌린다. pass 가 true 면 지나가야 하고 false 면 걸려야(버려져야) 한다. 보이지 않는 글자와 풀어 쓴 자모는 \\u 로 적는다. 고칠 때는 두 저장소의 사본을 함께 바꾼다.",
   "cases": [
+    {"group": "속마음과 관찰 구별", "pass": false, "text": "아이가 새 블록을 받을 걸 기대해서 블록을 가리켜요."},
+    {"group": "속마음과 관찰 구별", "pass": false, "text": "아이가 새 놀이를 앞두고 설레서 방울을 흔들어요."},
+    {"group": "속마음과 관찰 구별", "pass": false, "text": "아이가 더는 걱정하지 않아 웃어요."},
+    {"group": "속마음과 관찰 구별", "pass": true, "text": "아이가 등받이에 기대서 종이를 들어요."},
+    {"group": "속마음과 관찰 구별", "pass": true, "text": "아이가 걱정 인형을 바구니에 놓아요."},
+    {"group": "속마음과 관찰 구별", "pass": true, "text": "아이가 리본을 잡고 좌우로 흔들어요."},
     { "group": "발달·또래 견주기, 이름 붙이기", "pass": false, "text": "아이의 발달이 느려 보여요." },
     { "group": "발달·또래 견주기, 이름 붙이기", "pass": false, "text": "발달이 느려 보여요." },
     { "group": "발달·또래 견주기, 이름 붙이기", "pass": false, "text": "아이의 발달이 빨라요." },
