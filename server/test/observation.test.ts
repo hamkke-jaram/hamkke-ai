@@ -11,7 +11,9 @@ import {
   normaliseObservation,
   parseModelJson,
   snapToFrameTime,
+  withoutLines,
 } from '../src/observation.ts';
+import { screenLines } from '../src/visualReview.ts';
 import { buildPrompt } from '../src/prompt.ts';
 import { EVALUATIVE_TERMS, passesWordingCheck } from '../src/wording.ts';
 import { GOOD_OUTPUT } from './helpers.ts';
@@ -293,5 +295,44 @@ describe('선생님용 두 줄(childLine·parentLine)', () => {
     expect(system).toContain('childLine');
     expect(system).toContain('parentLine');
     expect(JSON.stringify(schema)).toContain('"childLine"');
+  });
+});
+
+describe('선생님용 두 줄 — 재확인을 지나지 않은 주장 거르기(screenLines)', () => {
+  const base = normalise({ childLine: '아이가 블록을 밀어내요.', parentLine: '어른이 곁에서 기다려요.' })!;
+
+  it('말소리·대화를 담은 줄은 늘 뺀다(사진으로 확인할 수 없다)', () => {
+    const obs = screenLines({ ...base, parentLine: '어른이 아이에게 말을 걸어요.' })!;
+    expect(obs.parentLine).toBeUndefined();
+    expect(obs.childLine).toBe('아이가 블록을 밀어내요.');
+  });
+
+  it('재확인을 지난 요약·메모에 없는 던지기·함께 놀기 주장은 그 줄만 뺀다', () => {
+    const plain = { ...base, summary: '아이가 블록 옆에 앉아 있어요.', moments: [] };
+    expect(screenLines({ ...plain, childLine: '아이가 블록을 던져요.' })!.childLine).toBeUndefined();
+    expect(screenLines({ ...plain, childLine: '아이가 어른과 함께 놀아요.' })!.childLine).toBeUndefined();
+  });
+
+  it('같은 종류의 주장이 재확인을 지난 글에 있으면 줄을 남긴다', () => {
+    const obs = { ...base, summary: '아이가 블록을 가지고 놀아요.', childLine: '아이가 블록을 쌓으며 놀아요.' };
+    expect(screenLines(obs)!.childLine).toBe('아이가 블록을 쌓으며 놀아요.');
+  });
+
+  it('주장이 없는 줄은 그대로 둔다', () => {
+    expect(screenLines(base)).toEqual(base);
+  });
+
+  it('순간 메모가 바뀌어도 두 줄을 뺀다', () => {
+    const changed = { ...base, moments: [] };
+    const kept = keepLinesIfUnchanged(changed, base)!;
+    expect(kept.childLine).toBeUndefined();
+    expect(kept.parentLine).toBeUndefined();
+  });
+
+  it('withoutLines 는 두 줄만 뺀다', () => {
+    const obs = withoutLines(base)!;
+    expect('childLine' in obs).toBe(false);
+    expect(obs.childStates).toEqual(base.childStates);
+    expect(withoutLines(null)).toBeNull();
   });
 });

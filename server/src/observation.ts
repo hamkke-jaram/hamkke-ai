@@ -200,11 +200,13 @@ function withLines(obs: Observation, raw: Record<string, unknown>): Observation 
   };
 }
 
-/** 사진을 다시 확인하는 단계가 요약이나 태그를 바꿨으면, 처음 쓴 두 줄은 고친 결과와 어긋날 수 있어 뺀다. */
+/** 사진을 다시 확인하는 단계가 요약·태그·순간 메모를 바꿨으면, 처음 쓴 두 줄은 고친 결과와 어긋날 수 있어 뺀다. */
 export function keepLinesIfUnchanged(final: Observation | null, draft: Observation): Observation | null {
   if (!final || (draft.childLine === undefined && draft.parentLine === undefined)) return final;
   const same = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
-  const unchanged = final.summary === draft.summary && final.peopleCount === draft.peopleCount &&
+  const sameMoments = final.moments.length === draft.moments.length &&
+    final.moments.every((m, i) => m.t === draft.moments[i]!.t && m.note === draft.moments[i]!.note);
+  const unchanged = final.summary === draft.summary && final.peopleCount === draft.peopleCount && sameMoments &&
     same(final.childStates, draft.childStates) && same(final.adultResponses, draft.adultResponses);
   const { childLine: _c, parentLine: _p, ...rest } = final;
   if (!unchanged) return rest;
@@ -213,6 +215,13 @@ export function keepLinesIfUnchanged(final: Observation | null, draft: Observati
     ...(draft.childLine !== undefined && { childLine: draft.childLine }),
     ...(draft.parentLine !== undefined && { parentLine: draft.parentLine }),
   };
+}
+
+/** 두 줄을 모두 뺀다(줄이 없으면 그대로). */
+export function withoutLines(obs: Observation | null): Observation | null {
+  if (!obs || (obs.childLine === undefined && obs.parentLine === undefined)) return obs;
+  const { childLine: _c, parentLine: _p, ...rest } = obs;
+  return rest;
 }
 
 function pickTags<T extends string>(value: unknown, allowed: readonly T[]): T[] {
