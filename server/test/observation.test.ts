@@ -7,10 +7,13 @@ import {
   NO_CHILD_SUMMARY,
   endsInHaeyo,
   limitText,
+  keepLinesIfUnchanged,
   normaliseObservation,
   parseModelJson,
   snapToFrameTime,
+  withoutLines,
 } from '../src/observation.ts';
+import { screenLines } from '../src/visualReview.ts';
 import { buildPrompt } from '../src/prompt.ts';
 import { EVALUATIVE_TERMS, passesWordingCheck } from '../src/wording.ts';
 import { GOOD_OUTPUT } from './helpers.ts';
@@ -212,5 +215,134 @@ describe('도우미', () => {
     expect(snapToFrameTime(16, TIMES)).toBe(20);
     expect(snapToFrameTime(-5, TIMES)).toBe(0);
     expect(snapToFrameTime(99, TIMES)).toBe(30);
+  });
+});
+
+describe('선생님용 두 줄(childLine·parentLine)', () => {
+  const LINES = {
+    childLine: '아이가 블록을 밀어내요.',
+    parentLine: '어른이 곁에서 기다린 뒤 말을 걸어요.',
+  };
+
+  it('검사를 지나간 두 줄을 그대로 붙인다', () => {
+    const obs = normalise(LINES)!;
+    expect(obs.childLine).toBe(LINES.childLine);
+    expect(obs.parentLine).toBe(LINES.parentLine);
+  });
+
+  it('줄이 없거나 빈 문자열이면 키 자체를 두지 않는다(예전 영수증과 같은 모양)', () => {
+    expect('childLine' in normalise()!).toBe(false);
+    const obs = normalise({ childLine: '', parentLine: '' })!;
+    expect('childLine' in obs).toBe(false);
+    expect('parentLine' in obs).toBe(false);
+  });
+
+  it.each([
+    ['40자를 넘으면 자르지 않고 버린다', '아이가 블록을 하나씩 들어 올려 바구니에 넣고 다시 꺼내 바닥에 줄지어 놓아요.'],
+    ['숫자가 있으면 버린다', '아이가 블록을 3개 쌓아요.'],
+    ['두 문장이면 버린다', '아이가 블록을 쌓아요. 아이가 웃어요.'],
+    ['해요체가 아니면 버린다', '아이가 블록을 쌓는다.'],
+    ['주인공(아이)이 없으면 버린다', '블록이 바닥에 흩어져 있어요.'],
+    ['속마음을 짐작하면 버린다', '아이가 화가 나서 블록을 밀어내요.'],
+    ['평가하면 버린다', '아이가 블록을 잘 쌓아요.'],
+  ])('아이 줄: %s', (_, line) => {
+    expect(normalise({ childLine: line })!.childLine).toBeUndefined();
+  });
+
+  it.each([
+    ['보호자를 평가하면 버린다', '어른이 침착하게 잘 대응해요.'],
+    ['식구를 가리키는 말이 있으면 버린다', '엄마가 아이를 안아 줘요.'],
+    ['주인공(어른)이 없으면 버린다', '아이가 어른 곁으로 가요.'],
+  ])('어른 줄: %s', (_, line) => {
+    expect(normalise({ ...LINES, parentLine: line })!.parentLine).toBeUndefined();
+  });
+
+  it('한 줄이 걸려도 다른 줄과 태그는 그대로 넘긴다', () => {
+    const obs = normalise({ ...LINES, parentLine: '어른이 침착하게 잘 대응해요.' })!;
+    expect(obs.childLine).toBe(LINES.childLine);
+    expect(obs.parentLine).toBeUndefined();
+    expect(obs.adultResponses).toEqual(['WAITING', 'TALKING']);
+  });
+
+  it('사람이 한 명뿐이면 어른 줄이 없고, 아무도 없으면 두 줄 모두 없다', () => {
+    const one = normalise({ ...LINES, peopleCount: 1 })!;
+    expect(one.childLine).toBe(LINES.childLine);
+    expect(one.parentLine).toBeUndefined();
+    const none = normalise({ ...LINES, peopleCount: 0 })!;
+    expect(none.childLine).toBeUndefined();
+    expect(none.parentLine).toBeUndefined();
+  });
+
+  it('한 시점 사진이면(시간에 걸친 행동을 확인할 수 없어 태그를 빼는 경우) 두 줄을 붙이지 않는다', () => {
+    const obs = normaliseObservation({ ...GOOD_OUTPUT, ...LINES }, [5, 5, 5])!;
+    expect(obs.childLine).toBeUndefined();
+    expect(obs.parentLine).toBeUndefined();
+  });
+
+  it('다시 확인하는 단계가 요약이나 태그를 바꾸면 두 줄을 뺀다', () => {
+    const draft = normalise(LINES)!;
+    expect(keepLinesIfUnchanged(draft, draft)).toEqual(draft);
+    const changed = { ...draft, adultResponses: ['WAITING' as const] };
+    const kept = keepLinesIfUnchanged(changed, draft)!;
+    expect(kept.childLine).toBeUndefined();
+    expect(kept.parentLine).toBeUndefined();
+    expect(kept.adultResponses).toEqual(['WAITING']);
+    expect(keepLinesIfUnchanged(null, draft)).toBeNull();
+  });
+
+  it('지시문과 스키마에 두 줄이 있다', () => {
+    const { system, schema } = buildPrompt(TIMES, 30);
+    expect(system).toContain('childLine');
+    expect(system).toContain('parentLine');
+    expect(JSON.stringify(schema)).toContain('"childLine"');
+  });
+});
+
+describe('선생님용 두 줄 — 재확인을 지나지 않은 주장 거르기(screenLines)', () => {
+  const base = normalise({ childLine: '아이가 블록을 밀어내요.', parentLine: '어른이 곁에서 기다려요.' })!;
+
+  it('말소리·대화를 담은 줄은 늘 뺀다(사진으로 확인할 수 없다)', () => {
+    const obs = screenLines({ ...base, parentLine: '어른이 아이에게 말을 걸어요.' })!;
+    expect(obs.parentLine).toBeUndefined();
+    expect(obs.childLine).toBe('아이가 블록을 밀어내요.');
+  });
+
+  it('재확인을 지난 요약·메모에 없는 던지기·함께 놀기 주장은 그 줄만 뺀다', () => {
+    const plain = { ...base, summary: '아이가 블록 옆에 앉아 있어요.', moments: [] };
+    expect(screenLines({ ...plain, childLine: '아이가 블록을 던져요.' })!.childLine).toBeUndefined();
+    expect(screenLines({ ...plain, childLine: '아이가 어른과 함께 놀아요.' })!.childLine).toBeUndefined();
+  });
+
+  it('같은 종류의 주장이 재확인을 지난 글에 있으면 줄을 남긴다', () => {
+    const obs = { ...base, summary: '아이가 블록을 가지고 놀아요.', childLine: '아이가 블록을 쌓으며 놀아요.' };
+    expect(screenLines(obs)!.childLine).toBe('아이가 블록을 쌓으며 놀아요.');
+  });
+
+  it('주장이 없는 줄은 그대로 둔다', () => {
+    expect(screenLines(base)).toEqual(base);
+  });
+
+  it('시각이 없는 역할별 머리카락 주장에는 다른 사람이 한 접촉을 근거로 쓰지 않는다', () => {
+    const obs = {
+      ...base,
+      moments: [{ t: 10, note: '어른이 아이의 머리카락에 손을 대고 있어요.' }],
+      childLine: '아이가 어른의 머리카락을 잡아요.',
+    };
+    expect(screenLines(obs)?.childLine).toBeUndefined();
+    expect(screenLines(obs)?.parentLine).toBe(base.parentLine);
+  });
+
+  it('순간 메모가 바뀌어도 두 줄을 뺀다', () => {
+    const changed = { ...base, moments: [] };
+    const kept = keepLinesIfUnchanged(changed, base)!;
+    expect(kept.childLine).toBeUndefined();
+    expect(kept.parentLine).toBeUndefined();
+  });
+
+  it('withoutLines 는 두 줄만 뺀다', () => {
+    const obs = withoutLines(base)!;
+    expect('childLine' in obs).toBe(false);
+    expect(obs.childStates).toEqual(base.childStates);
+    expect(withoutLines(null)).toBeNull();
   });
 });

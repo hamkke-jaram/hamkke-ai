@@ -1,6 +1,6 @@
 // Review an existing observation against the same images. The writer always sees its
 // original instructions and never receives this review or the evaluator's labels.
-import { normaliseObservation, parseModelJson, MAX_SUMMARY_SENTENCES, MAX_SUMMARY_LENGTH, MAX_NOTE_LENGTH, MAX_MOMENTS, limitText } from './observation.ts';
+import { normaliseObservation, parseModelJson, keepLinesIfUnchanged, withoutLines, MAX_SUMMARY_SENTENCES, MAX_SUMMARY_LENGTH, MAX_NOTE_LENGTH, MAX_MOMENTS, limitText } from './observation.ts';
 import type { Observation } from './observation.ts';
 import { toVisionOutput, ProviderTimeoutError } from './provider.ts';
 import type { VisionProvider, VisionRequest } from './provider.ts';
@@ -392,6 +392,26 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
   return { summary, moments, childStates, adultResponses, peopleCount };
 }
 
+/**
+ * 선생님용 두 줄은 재확인 단계(applyReview)를 거치지 않는다. 그래서 재확인을 지난 요약·메모에 남지 않은 종류의 주장
+ * (말소리·대화, 던지기, 부딪치기, 함께 놀기, 놀기)이 한 줄에만 있으면 그 줄을 뺀다. 말소리는 사진으로 확인할 수 없어
+ * 재확인이 늘 지우므로, 말소리를 담은 줄은 늘 빠진다. 다른 줄과 태그는 그대로 둔다.
+ */
+export function screenLines(obs: Observation | null): Observation | null {
+  if (!obs || (obs.childLine === undefined && obs.parentLine === undefined)) return obs;
+  const reviewed = [obs.summary ?? '', ...obs.moments.map(m => m.note)].join(' ');
+  const claims = [speech, throwClaim, impactClaim, together, play];
+  // A one-line claim has no timestamp to tie it to a checked point of contact.
+  const supported = (line: string | undefined) => line !== undefined && !hairClaim.test(line)
+    && claims.every(p => !p.test(line) || p.test(reviewed));
+  const { childLine, parentLine, ...rest } = obs;
+  return {
+    ...rest,
+    ...(supported(childLine) && { childLine }),
+    ...(supported(parentLine) && { parentLine }),
+  };
+}
+
 export async function reviewedObservation(provider: VisionProvider, request: VisionRequest, frameTimes: readonly number[],
   onEvidence?: (result:{frames:readonly FrameWitness[]; detectedPeople:readonly number[]|null})=>void) {
   const generated = toVisionOutput(await provider.generate(request), provider.modelVersion);
@@ -435,5 +455,8 @@ export async function reviewedObservation(provider: VisionProvider, request: Vis
   const checked = applyReview(draft, review, witnesses, boxes, releasedAt);
   const present = reconcilePresence(checked,draft);
   const observation = present && await reconcileHairContact(present,provider,request.images,frameTimes,request.signal);
-  return { ...generated, raw, observation };
+  // 선생님용 두 줄: 재확인 결과가 초안과 다르면 빼고(keepLinesIfUnchanged), 재확인을 지나지 않은 주장이 있으면 그 줄만 뺀다
+  // (screenLines). 서로 다른 사진이 두 장 미만이면 시간에 걸친 행동을 확인할 수 없어 뺀다.
+  const final = keepLinesIfUnchanged(observation, draft);
+  return { ...generated, raw, observation:distinctImages < 2 ? withoutLines(final) : screenLines(final) };
 }

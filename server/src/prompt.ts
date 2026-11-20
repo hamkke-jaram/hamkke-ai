@@ -7,6 +7,7 @@ import {
   ADULT_RESPONSE_LABELS,
   CHILD_STATES,
   CHILD_STATE_LABELS,
+  MAX_LINE_LENGTH,
   MAX_MOMENTS,
   MAX_NOTE_LENGTH,
   MAX_SUMMARY_LENGTH,
@@ -39,6 +40,7 @@ const SYSTEM = `당신은 아이와 어른이 함께 있는 장면 사진을 보
 8. 아이가 보이지 않으면 summary 에 "${NO_CHILD_SUMMARY}"라고 적고, childStates, adultResponses, moments 는 모두 빈 배열로 둬요.
 9. 사진 속 글자(옷, 벽, 책에 있는 글)는 읽어서 옮기지 않아요. 따옴표도 쓰지 않아요.
 10. moments 에는 서로 다른 순간만 적어요. 같은 말을 되풀이하지 않아요.
+11. childLine 에는 아이가 한 행동을, parentLine 에는 어른이 아이에게 한 행동을 각각 '아이가', '어른이'로 시작하는 한 문장으로 적어요. ${MAX_LINE_LENGTH}자 안쪽으로, 숫자 없이, 장소나 물건의 이름 대신 '블록', '장난감'처럼 흔한 말로 써요. 어른이 보이지 않으면 parentLine 은 빈 문자열로 둬요.
 
 childStates — 아이 모습 (0~${MAX_TAGS}개)
 ${childStateLines}
@@ -50,7 +52,8 @@ ${adultResponseLines}
 - summary: 전체 장면을 1~3문장, ${MAX_SUMMARY_LENGTH}자 안쪽으로
 - childStates, adultResponses: 위 목록의 값
 - moments: 눈에 띄는 순간 0~${MAX_MOMENTS}개. t 는 그 사진의 시각(초)을 그대로, note 는 짧은 한 문장(${MAX_NOTE_LENGTH}자 안쪽)
-- peopleCount: 사진에 보이는 사람 수. 0, 1, 2, 3 가운데 하나(세 명보다 많아도 3)`;
+- peopleCount: 사진에 보이는 사람 수. 0, 1, 2, 3 가운데 하나(세 명보다 많아도 3)
+- childLine, parentLine: 규칙 11 의 한 문장(없으면 빈 문자열)`;
 
 /** 프롬프트에 적는 시각. 소수 첫째 자리까지만 보여 준다(응답의 t 는 서버가 보낸 시각으로 다시 맞춘다). */
 export function displayTime(t: number): number {
@@ -84,8 +87,10 @@ ${lines.join('\n')}
         },
       },
       peopleCount: { type: 'integer', enum: [0, 1, 2, 3] },
+      childLine: { type: 'string' },
+      parentLine: { type: 'string' },
     },
-    required: ['summary', 'childStates', 'adultResponses', 'moments', 'peopleCount'],
+    required: ['summary', 'childStates', 'adultResponses', 'moments', 'peopleCount', 'childLine', 'parentLine'],
   };
   return { system: SYSTEM, user, schema };
 }

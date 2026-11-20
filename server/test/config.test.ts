@@ -120,7 +120,7 @@ describe('관찰 지시문', () => {
     expect(schema.properties.childStates.items.enum).toHaveLength(9);
     expect(schema.properties.adultResponses.items.enum).toHaveLength(6);
     expect(schema.properties.peopleCount.enum).toEqual([0, 1, 2, 3]);
-    expect(schema.required).toEqual(['summary', 'childStates', 'adultResponses', 'moments', 'peopleCount']);
+    expect(schema.required).toEqual(['summary', 'childStates', 'adultResponses', 'moments', 'peopleCount', 'childLine', 'parentLine']);
   });
 
   it('길이를 모르면 길이 문장을 빼고, 같은 시각은 한 번만 적는다', () => {
