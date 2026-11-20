@@ -88,7 +88,7 @@ describe('환경 변수', () => {
 
 describe('관찰 지시문', () => {
   it('버전 이름', () => {
-    expect(PROMPT_VERSION).toBe('obs-v6.4-release');
+    expect(PROMPT_VERSION).toBe('obs-v6.5-lines');
     // hamkke-api 는 영수증 pv 를 40자까지만 받는다(AiReceiptVerifier.MAX_PROMPT_VERSION_CHARS).
     expect(PROMPT_VERSION.length).toBeLessThanOrEqual(40);
   });
@@ -120,7 +120,7 @@ describe('관찰 지시문', () => {
     expect(schema.properties.childStates.items.enum).toHaveLength(9);
     expect(schema.properties.adultResponses.items.enum).toHaveLength(6);
     expect(schema.properties.peopleCount.enum).toEqual([0, 1, 2, 3]);
-    expect(schema.required).toEqual(['summary', 'childStates', 'adultResponses', 'moments', 'peopleCount']);
+    expect(schema.required).toEqual(['summary', 'childStates', 'adultResponses', 'moments', 'peopleCount', 'childLine', 'parentLine']);
   });
 
   it('길이를 모르면 길이 문장을 빼고, 같은 시각은 한 번만 적는다', () => {
