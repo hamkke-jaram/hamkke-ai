@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createApp, DAYCARE_COACHING_PATH } from '../src/app.ts';
 import { ConfigError, loadConfig } from '../src/config.ts';
 import { createDaycareCoaching } from '../src/daycareCoaching.ts';
+import { classroomActivities, classroomEvidence } from '../src/daycareActivities.ts';
 import { createQueue } from '../src/queue.ts';
 import { SECRET, analyzeRequest, deferred, fakeProvider } from './helpers.ts';
 
@@ -18,7 +19,12 @@ describe('어린이집 코칭 추천', () => {
     const result = await app.handle(analyzeRequest({ url: DAYCARE_COACHING_PATH, token: 'teacher.secret.token', body: input }));
     expect(result.status).toBe(200);
     expect(result.headers['Cache-Control']).toBe('no-store');
-    expect(JSON.parse(result.body).recommendation).toMatchObject({ sourceCode: source.code, sourceTitle: source.title, title: '교실을 옮기기 전에 미리 알리기', action: expect.stringContaining('바깥놀이') });
+    expect(JSON.parse(result.body).recommendation).toMatchObject({
+      sourceCode: source.code, sourceTitle: source.title, title: '교실을 옮기기 전에 미리 알리기', action: expect.stringContaining('바깥놀이'),
+      evidence: { reason: expect.stringContaining('그림'), sourceId: 'dfe-interactions-visual', sourceTitle: 'Interactions',
+        sourcePublisher: '영국 교육부(DfE)', sourceSection: expect.stringContaining('사물과 그림'),
+        sourceUrl: 'https://help-for-early-years-providers.education.gov.uk/areas-of-learning/communication-and-language/interactions' },
+    });
     expect(api.mock.calls).toHaveLength(2);
     for (const [url, options] of api.mock.calls) {
       expect(String(url)).toBe(origin + '/api/v1/teacher/children/51/daycare-coaching/cards?month=2026-11');
@@ -31,6 +37,17 @@ describe('어린이집 코칭 추천', () => {
       expect(model.calls[0]!.user).not.toContain(secret);
       expect(JSON.stringify(log.mock.calls)).not.toContain(secret);
     }
+  });
+
+  it('모든 교실 활동의 출처 문단을 내려받은 자료에서 확인하고, 활동별 이유를 연결한다', () => {
+    for (const activity of classroomActivities) {
+      expect(classroomEvidence(activity), activity.title).toMatchObject({
+        reason: activity.reason, sourceTitle: expect.any(String), sourcePublisher: expect.any(String),
+        sourceSection: expect.any(String), sourceUrl: expect.stringMatching(/^https:\/\//),
+      });
+    }
+    const recording = classroomActivities.find(activity => activity.reference === 'observation')!;
+    expect(classroomEvidence(recording)?.sourceUrl).toMatch(/#page=4$/);
   });
 
   it('같은 코칭은 추론을 공유하고 모든 교사의 현재 공유 권한은 각각 확인한다', async () => {

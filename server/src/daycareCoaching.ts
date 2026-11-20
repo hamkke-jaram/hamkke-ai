@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { classroomActivities } from './daycareActivities.ts';
+import { classroomActivities, classroomEvidence } from './daycareActivities.ts';
 import { HttpError } from './httpError.ts';
 import { toVisionOutput } from './provider.ts';
 import type { VisionProvider } from './provider.ts';
@@ -7,7 +7,10 @@ import type { WorkQueue } from './queue.ts';
 
 interface CoachingRequest { childId: number; month: string }
 interface Card { code: string; title: string; body: string }
-interface Recommendation { sourceCode: string; sourceTitle: string; title: string; action: string }
+interface Recommendation {
+  sourceCode: string; sourceTitle: string; title: string; action: string;
+  evidence: NonNullable<ReturnType<typeof classroomEvidence>>;
+}
 
 const unavailable = () => new HttpError(503, 'COACHING_UNAVAILABLE', '어린이집 추천을 불러오지 못했어요. 잠시 뒤에 다시 시도해 주세요.');
 const busy = () => new HttpError(429, 'BUSY', '지금 다른 요청을 살펴보고 있어요. 잠시 뒤에 다시 시도해 주세요.', undefined, { 'Retry-After': '5' });
@@ -39,14 +42,16 @@ function signature(cards: Card[]): string {
 
 async function chooseActivity(cards: Card[], provider: VisionProvider, queue: WorkQueue): Promise<Recommendation | null> {
   const candidates = cards.flatMap(card => classroomActivities.filter(activity => activity.codes.includes(card.code))
-    .map(({ title, action }) => ({ sourceCode: card.code, sourceTitle: card.title, title, action })));
+    .map(activity => ({ card, activity })));
   if (!candidates.length) return null;
   // Leave the model queue available to observation requests while it is busy.
   if (queue.active || queue.waiting) throw busy();
   const signal = AbortSignal.timeout(30_000);
   const release = await queue.acquire(signal);
   try {
-    const choices = candidates.map(({ sourceCode, title, action }, index) => ({ index, sourceCode, title, action }));
+    const choices = candidates.map(({ card, activity }, index) => ({
+      index, sourceCode: card.code, title: activity.title, action: activity.action,
+    }));
     const output = await provider.generate({
       system: '어린이집 교사의 하루를 돕는 코칭 도우미입니다. 공유된 가정 코칭을 읽고 제시된 활동 중 하나를 고르세요. 여러 카드에 공통인 방법과 다음 자유놀이나 일과에 바로 시도할 수 있는 구체적인 행동을 우선하세요. 카드 내용만으로 아이가 울었거나 특정 행동을 했다고 단정하지 마세요. 선택한 활동의 index를 JSON으로 답하세요.',
       user: JSON.stringify({ cards, choices }),
@@ -59,7 +64,10 @@ async function chooseActivity(cards: Card[], provider: VisionProvider, queue: Wo
     });
     const result = JSON.parse(toVisionOutput(output, provider.modelVersion).text);
     if (!result || !Number.isInteger(result.index) || !candidates[result.index]) throw unavailable();
-    return candidates[result.index]!;
+    const { card, activity } = candidates[result.index]!;
+    const evidence = classroomEvidence(activity);
+    if (!evidence) throw unavailable();
+    return { sourceCode: card.code, sourceTitle: card.title, title: activity.title, action: activity.action, evidence };
   } catch {
     throw unavailable();
   } finally {

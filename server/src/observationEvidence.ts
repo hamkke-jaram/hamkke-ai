@@ -21,6 +21,16 @@ interface Candidate { observation: string; passage: Passage }
 const db = new DatabaseSync(new URL('../evidence/care-2026-11-20-v2.sqlite', import.meta.url), { readOnly: true });
 db.exec('PRAGMA temp_store=MEMORY; PRAGMA query_only=ON;');
 export const CORPUS_VERSION = db.prepare('SELECT version FROM metadata').get()!.version as string;
+const documentByExcerpt = db.prepare(`
+  SELECT title, publisher, url FROM source_document
+  WHERE source_key = ? AND instr(body, ?) > 0`);
+
+/** Resolve a classroom activity's reviewed excerpt against the same downloaded corpus. */
+export function sourceForExcerpt(sourceKey: string, excerpt: string) {
+  const row = documentByExcerpt.get(sourceKey, excerpt);
+  return row ? { title: String(row.title), publisher: String(row.publisher), url: String(row.url) } : null;
+}
+
 const vocabulary = new Set<string>();
 for (const row of db.prepare('SELECT keywords FROM passage').all()) {
   for (const word of String(row.keywords).split(/\s+/)) vocabulary.add(word);
