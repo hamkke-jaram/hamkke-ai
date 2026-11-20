@@ -1,0 +1,5 @@
+# Attribution
+
+This Korean observation-entailment adapter modifies the language component of Qwen3.5-4B, model revision `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a`. The Qwen checkpoint is distributed under the Apache License, Version 2.0. The adapter contains newly fitted low-rank matrices for the final language MLP. [Qwen model card](https://huggingface.co/Qwen/Qwen3.5-4B) · [Original license](./BASE_MODEL_LICENSE.txt)
+
+The source captions used for 101 training scenes are attributed to the **COCO Consortium** and made available under **Creative Commons Attribution 4.0 International**. The annotations were selected, translated into Korean, and converted into claims about visible actions. The project separately authored additional scenes, negative claims and validation examples. COCO photos were not downloaded or used to fit this adapter. [Source data](https://cocodataset.org/#download) · [COCO terms](https://cocodataset.org/dataset/termsofuse.htm) · [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)

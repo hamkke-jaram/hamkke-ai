@@ -1,0 +1,298 @@
+{"group": "authored-01", "evidence": "아이가 혼자 종이띠 한쪽을 접는다.", "claim": "아이의 손이 종이 끝을 반으로 접어요.", "keep": true, "kind": "visible"}
+{"group": "authored-01", "evidence": "아이가 혼자 종이띠 한쪽을 접는다.", "claim": "혼자 종이를 접어요.", "keep": true, "kind": "visible"}
+{"group": "authored-01", "evidence": "아이가 혼자 종이띠 한쪽을 접는다.", "claim": "아이와 어른이 종이를 나누어 접어요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-01", "evidence": "아이가 혼자 종이띠 한쪽을 접는다.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-02", "evidence": "어른이 작은 천을 펴서 의자 위에 놓는다.", "claim": "어른이 접혀 있던 천을 펼쳐요.", "keep": true, "kind": "visible"}
+{"group": "authored-02", "evidence": "어른이 작은 천을 펴서 의자 위에 놓는다.", "claim": "천이 의자 위에 놓여요.", "keep": true, "kind": "visible"}
+{"group": "authored-02", "evidence": "어른이 작은 천을 펴서 의자 위에 놓는다.", "claim": "어른이 천을 의자 아래로 던져요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-02", "evidence": "어른이 작은 천을 펴서 의자 위에 놓는다.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-03", "evidence": "한 사람이 손목을 돌려 작은 뚜껑을 연다.", "claim": "손목을 비틀어 뚜껑을 열어요.", "keep": true, "kind": "visible"}
+{"group": "authored-03", "evidence": "한 사람이 손목을 돌려 작은 뚜껑을 연다.", "claim": "혼자 뚜껑을 여는 모습이에요.", "keep": true, "kind": "visible"}
+{"group": "authored-03", "evidence": "한 사람이 손목을 돌려 작은 뚜껑을 연다.", "claim": "두 사람이 뚜껑을 번갈아 열어요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-03", "evidence": "한 사람이 손목을 돌려 작은 뚜껑을 연다.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-04", "evidence": "아이가 줄자를 옆으로 밀고 옆 어른은 가만히 서 있다.", "claim": "아이가 한쪽으로 줄자를 밀어요.", "keep": true, "kind": "visible"}
+{"group": "authored-04", "evidence": "아이가 줄자를 옆으로 밀고 옆 어른은 가만히 서 있다.", "claim": "어른은 옆에 서 있어요.", "keep": true, "kind": "visible"}
+{"group": "authored-04", "evidence": "아이가 줄자를 옆으로 밀고 옆 어른은 가만히 서 있다.", "claim": "두 사람이 같이 줄자로 놀아요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-04", "evidence": "아이가 줄자를 옆으로 밀고 옆 어른은 가만히 서 있다.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-05", "evidence": "두 아이가 마주 서서 원반을 번갈아 던지고 받아요.", "claim": "아이 둘이 원반을 주고받아요.", "keep": true, "kind": "visible"}
+{"group": "authored-05", "evidence": "두 아이가 마주 서서 원반을 번갈아 던지고 받아요.", "claim": "두 사람이 함께 원반 던지기 놀이를 해요.", "keep": true, "kind": "visible"}
+{"group": "authored-05", "evidence": "두 아이가 마주 서서 원반을 번갈아 던지고 받아요.", "claim": "아이 혼자 원반을 계속 던져요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-05", "evidence": "두 아이가 마주 서서 원반을 번갈아 던지고 받아요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-06", "evidence": "아이가 바닥에 분필로 물결선을 긋고 어른은 창가에 선다.", "claim": "아이가 구불구불한 선을 그려요.", "keep": true, "kind": "visible"}
+{"group": "authored-06", "evidence": "아이가 바닥에 분필로 물결선을 긋고 어른은 창가에 선다.", "claim": "어른이 창문 가까이에 서 있어요.", "keep": true, "kind": "visible"}
+{"group": "authored-06", "evidence": "아이가 바닥에 분필로 물결선을 긋고 어른은 창가에 선다.", "claim": "어른과 아이가 번갈아 물결선을 그려요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-06", "evidence": "아이가 바닥에 분필로 물결선을 긋고 어른은 창가에 선다.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-07", "evidence": "두 사람이 바닥의 매트를 양끝에서 잡아 접는다.", "claim": "두 사람이 매트의 끝을 잡아요.", "keep": true, "kind": "visible"}
+{"group": "authored-07", "evidence": "두 사람이 바닥의 매트를 양끝에서 잡아 접는다.", "claim": "두 사람이 함께 매트를 접어요.", "keep": true, "kind": "visible"}
+{"group": "authored-07", "evidence": "두 사람이 바닥의 매트를 양끝에서 잡아 접는다.", "claim": "두 사람이 매트로 시합을 해요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-07", "evidence": "두 사람이 바닥의 매트를 양끝에서 잡아 접는다.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-08", "evidence": "한 사람이 테이블 위의 솔로 먼지를 쓸어요.", "claim": "솔이 테이블 표면을 쓸고 지나가요.", "keep": true, "kind": "visible"}
+{"group": "authored-08", "evidence": "한 사람이 테이블 위의 솔로 먼지를 쓸어요.", "claim": "사람이 혼자 솔을 움직여요.", "keep": true, "kind": "visible"}
+{"group": "authored-08", "evidence": "한 사람이 테이블 위의 솔로 먼지를 쓸어요.", "claim": "두 사람이 솔을 서로 건네며 놀아요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-08", "evidence": "한 사람이 테이블 위의 솔로 먼지를 쓸어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-09", "evidence": "아이가 입술을 벌리고 팔을 어깨 높이로 든다.", "claim": "팔이 어깨 근처까지 올라가요.", "keep": true, "kind": "visible"}
+{"group": "authored-09", "evidence": "아이가 입술을 벌리고 팔을 어깨 높이로 든다.", "claim": "아이가 입을 벌려요.", "keep": true, "kind": "visible"}
+{"group": "authored-09", "evidence": "아이가 입술을 벌리고 팔을 어깨 높이로 든다.", "claim": "아이가 입을 다물고 양팔을 내려요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-09", "evidence": "아이가 입술을 벌리고 팔을 어깨 높이로 든다.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-10", "evidence": "어른이 작은 깃발을 흔들며 한 걸음 뒤로 물러난다.", "claim": "어른이 깃발을 흔들어요.", "keep": true, "kind": "visible"}
+{"group": "authored-10", "evidence": "어른이 작은 깃발을 흔들며 한 걸음 뒤로 물러난다.", "claim": "깃발을 든 사람이 뒤쪽으로 발을 옮겨요.", "keep": true, "kind": "visible"}
+{"group": "authored-10", "evidence": "어른이 작은 깃발을 흔들며 한 걸음 뒤로 물러난다.", "claim": "사람이 깃발을 내려놓아요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-10", "evidence": "어른이 작은 깃발을 흔들며 한 걸음 뒤로 물러난다.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-11", "evidence": "아이가 주머니에서 작은 열쇠를 꺼내 선반에 놓는다.", "claim": "아이가 열쇠를 꺼내요.", "keep": true, "kind": "visible"}
+{"group": "authored-11", "evidence": "아이가 주머니에서 작은 열쇠를 꺼내 선반에 놓는다.", "claim": "열쇠가 선반 위로 옮겨져요.", "keep": true, "kind": "visible"}
+{"group": "authored-11", "evidence": "아이가 주머니에서 작은 열쇠를 꺼내 선반에 놓는다.", "claim": "어른이 아이에게 열쇠를 건네요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-11", "evidence": "아이가 주머니에서 작은 열쇠를 꺼내 선반에 놓는다.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-12", "evidence": "어른과 아이가 같은 방향을 보고 각자 모자를 고쳐 쓴다.", "claim": "둘이 각자의 모자를 손으로 만져요.", "keep": true, "kind": "visible"}
+{"group": "authored-12", "evidence": "어른과 아이가 같은 방향을 보고 각자 모자를 고쳐 쓴다.", "claim": "어른과 아이가 같은 쪽을 봐요.", "keep": true, "kind": "visible"}
+{"group": "authored-12", "evidence": "어른과 아이가 같은 방향을 보고 각자 모자를 고쳐 쓴다.", "claim": "둘이 모자를 바꾸는 놀이를 해요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-12", "evidence": "어른과 아이가 같은 방향을 보고 각자 모자를 고쳐 쓴다.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-13", "evidence": "두 사람이 줄넘기 줄 양끝을 돌리고 한 아이가 가운데에서 뛴다.", "claim": "가운데 아이가 줄을 넘으며 뛰어요.", "keep": true, "kind": "visible"}
+{"group": "authored-13", "evidence": "두 사람이 줄넘기 줄 양끝을 돌리고 한 아이가 가운데에서 뛴다.", "claim": "여럿이 함께 줄넘기를 해요.", "keep": true, "kind": "visible"}
+{"group": "authored-13", "evidence": "두 사람이 줄넘기 줄 양끝을 돌리고 한 아이가 가운데에서 뛴다.", "claim": "아이가 혼자 줄 양끝을 돌려요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-13", "evidence": "두 사람이 줄넘기 줄 양끝을 돌리고 한 아이가 가운데에서 뛴다.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-14", "evidence": "한 아이가 양손으로 상자의 양옆을 눌러요.", "claim": "아이가 상자 양쪽을 손으로 눌러요.", "keep": true, "kind": "visible"}
+{"group": "authored-14", "evidence": "한 아이가 양손으로 상자의 양옆을 눌러요.", "claim": "혼자 상자를 누르는 모습이에요.", "keep": true, "kind": "visible"}
+{"group": "authored-14", "evidence": "한 아이가 양손으로 상자의 양옆을 눌러요.", "claim": "다른 사람과 상자를 주고받아요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-14", "evidence": "한 아이가 양손으로 상자의 양옆을 눌러요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-15", "evidence": "어른은 옆에 앉아 책을 들고 있고 아이는 게시판을 가리킨다.", "claim": "아이가 게시판 쪽으로 손가락을 뻗어요.", "keep": true, "kind": "visible"}
+{"group": "authored-15", "evidence": "어른은 옆에 앉아 책을 들고 있고 아이는 게시판을 가리킨다.", "claim": "어른은 책을 들고 앉아 있어요.", "keep": true, "kind": "visible"}
+{"group": "authored-15", "evidence": "어른은 옆에 앉아 책을 들고 있고 아이는 게시판을 가리킨다.", "claim": "어른과 아이가 게시판 맞히기 게임을 해요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-15", "evidence": "어른은 옆에 앉아 책을 들고 있고 아이는 게시판을 가리킨다.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-16", "evidence": "아이가 벽에 비친 자기 그림자를 따라 손바닥을 움직인다.", "claim": "아이가 벽 앞에서 손바닥을 움직여요.", "keep": true, "kind": "visible"}
+{"group": "authored-16", "evidence": "아이가 벽에 비친 자기 그림자를 따라 손바닥을 움직인다.", "claim": "그림자가 아이 손을 따라 움직여요.", "keep": true, "kind": "visible"}
+{"group": "authored-16", "evidence": "아이가 벽에 비친 자기 그림자를 따라 손바닥을 움직인다.", "claim": "아이와 어른이 함께 그림자놀이를 해요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-16", "evidence": "아이가 벽에 비친 자기 그림자를 따라 손바닥을 움직인다.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-17", "evidence": "두 사람이 같은 퍼즐판에 번갈아 조각을 끼운다.", "claim": "차례로 같은 판에 조각을 맞춰요.", "keep": true, "kind": "visible"}
+{"group": "authored-17", "evidence": "두 사람이 같은 퍼즐판에 번갈아 조각을 끼운다.", "claim": "두 사람이 함께 퍼즐을 해요.", "keep": true, "kind": "visible"}
+{"group": "authored-17", "evidence": "두 사람이 같은 퍼즐판에 번갈아 조각을 끼운다.", "claim": "한 아이만 퍼즐을 맞추고 있어요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-17", "evidence": "두 사람이 같은 퍼즐판에 번갈아 조각을 끼운다.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-18", "evidence": "어른이 손가락을 입술 앞에 세운 뒤 문 쪽을 향한다.", "claim": "어른이 입술 앞으로 손가락을 들어요.", "keep": true, "kind": "visible"}
+{"group": "authored-18", "evidence": "어른이 손가락을 입술 앞에 세운 뒤 문 쪽을 향한다.", "claim": "어른이 문을 향해 몸을 돌려요.", "keep": true, "kind": "visible"}
+{"group": "authored-18", "evidence": "어른이 손가락을 입술 앞에 세운 뒤 문 쪽을 향한다.", "claim": "어른이 손가락을 무릎에 내려놓아요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-18", "evidence": "어른이 손가락을 입술 앞에 세운 뒤 문 쪽을 향한다.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-19", "evidence": "한 사람이 지퍼 손잡이를 맨 위까지 당긴다.", "claim": "손이 지퍼를 위로 끌어올려요.", "keep": true, "kind": "visible"}
+{"group": "authored-19", "evidence": "한 사람이 지퍼 손잡이를 맨 위까지 당긴다.", "claim": "혼자 지퍼를 올려요.", "keep": true, "kind": "visible"}
+{"group": "authored-19", "evidence": "한 사람이 지퍼 손잡이를 맨 위까지 당긴다.", "claim": "어른과 아이가 지퍼를 번갈아 올려요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-19", "evidence": "한 사람이 지퍼 손잡이를 맨 위까지 당긴다.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-20", "evidence": "아이가 마이크 윗부분을 손으로 가리킨다.", "claim": "아이가 마이크를 가리켜요.", "keep": true, "kind": "visible"}
+{"group": "authored-20", "evidence": "아이가 마이크 윗부분을 손으로 가리킨다.", "claim": "손가락이 마이크 쪽으로 향해요.", "keep": true, "kind": "visible"}
+{"group": "authored-20", "evidence": "아이가 마이크 윗부분을 손으로 가리킨다.", "claim": "아이가 마이크를 바닥으로 내려놔요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-20", "evidence": "아이가 마이크 윗부분을 손으로 가리킨다.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-21", "evidence": "아이가 미끄럼틀 아래서 발을 구르고 어른은 떨어져 서 있다.", "claim": "아이가 발을 바닥에 구르네요.", "keep": true, "kind": "visible"}
+{"group": "authored-21", "evidence": "아이가 미끄럼틀 아래서 발을 구르고 어른은 떨어져 서 있다.", "claim": "어른은 아이와 떨어져 있어요.", "keep": true, "kind": "visible"}
+{"group": "authored-21", "evidence": "아이가 미끄럼틀 아래서 발을 구르고 어른은 떨어져 서 있다.", "claim": "어른과 아이가 발 구르기를 번갈아 해요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-21", "evidence": "아이가 미끄럼틀 아래서 발을 구르고 어른은 떨어져 서 있다.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-22", "evidence": "사람이 혼자 병풍처럼 접힌 지도를 펼친다.", "claim": "사람이 접힌 지도를 펴요.", "keep": true, "kind": "visible"}
+{"group": "authored-22", "evidence": "사람이 혼자 병풍처럼 접힌 지도를 펼친다.", "claim": "지도 모서리가 펴져요.", "keep": true, "kind": "visible"}
+{"group": "authored-22", "evidence": "사람이 혼자 병풍처럼 접힌 지도를 펼친다.", "claim": "두 사람이 지도를 같이 접어요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-22", "evidence": "사람이 혼자 병풍처럼 접힌 지도를 펼친다.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-23", "evidence": "아이가 물감 롤러를 종이 위에서 한쪽으로 굴린다.", "claim": "아이가 롤러를 종이 위로 밀어요.", "keep": true, "kind": "visible"}
+{"group": "authored-23", "evidence": "아이가 물감 롤러를 종이 위에서 한쪽으로 굴린다.", "claim": "혼자 롤러를 굴려요.", "keep": true, "kind": "visible"}
+{"group": "authored-23", "evidence": "아이가 물감 롤러를 종이 위에서 한쪽으로 굴린다.", "claim": "어른이 아이와 롤러를 번갈아 굴려요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-23", "evidence": "아이가 물감 롤러를 종이 위에서 한쪽으로 굴린다.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "authored-24", "evidence": "두 아이가 작은 수레 끈을 함께 잡고 한쪽으로 끈다.", "claim": "두 아이가 같은 끈을 잡아요.", "keep": true, "kind": "visible"}
+{"group": "authored-24", "evidence": "두 아이가 작은 수레 끈을 함께 잡고 한쪽으로 끈다.", "claim": "수레를 둘이 함께 당겨요.", "keep": true, "kind": "visible"}
+{"group": "authored-24", "evidence": "두 아이가 작은 수레 끈을 함께 잡고 한쪽으로 끈다.", "claim": "한 아이만 줄을 잡고 다른 아이는 보고 있어요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "authored-24", "evidence": "두 아이가 작은 수레 끈을 함께 잡고 한쪽으로 끈다.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-3840", "evidence": "두 사람이 부두에 앉아 바다를 바라봐요.", "claim": "두 사람이 부두에 앉아 바다를 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-3840", "evidence": "두 사람이 부두에 앉아 바다를 바라봐요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-6216", "evidence": "아이가 잔디에 앉아 빈 들판을 바라봐요.", "claim": "아이가 잔디에 앉아 빈 들판을 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-6216", "evidence": "아이가 잔디에 앉아 빈 들판을 바라봐요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-9434", "evidence": "사람들이 파라솔 아래에 앉아 주변 풍경을 바라봐요.", "claim": "사람들이 파라솔 아래에 앉아 주변 풍경을 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-9434", "evidence": "사람들이 파라솔 아래에 앉아 주변 풍경을 바라봐요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-15327", "evidence": "한 사람이 부엌에서 오븐을 바라봐요.", "claim": "한 사람이 부엌에서 오븐을 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-15327", "evidence": "한 사람이 부엌에서 오븐을 바라봐요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-15861", "evidence": "두 사람이 가게 안의 자전거를 바라봐요.", "claim": "두 사람이 가게 안의 자전거를 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-15861", "evidence": "두 사람이 가게 안의 자전거를 바라봐요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-21662", "evidence": "사람들이 긴 초가 꽂힌 케이크를 바라봐요.", "claim": "사람들이 긴 초가 꽂힌 케이크를 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-21662", "evidence": "사람들이 긴 초가 꽂힌 케이크를 바라봐요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-22412", "evidence": "한 사람이 개를 바라봐요.", "claim": "한 사람이 개를 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-22412", "evidence": "한 사람이 개를 바라봐요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-27878", "evidence": "여러 사람이 야외 탁자 근처에 서서 게시판을 바라봐요.", "claim": "여러 사람이 야외 탁자 근처에 서서 게시판을 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-27878", "evidence": "여러 사람이 야외 탁자 근처에 서서 게시판을 바라봐요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-33797", "evidence": "사람들이 길을 따라 서서 행렬을 바라봐요.", "claim": "사람들이 길을 따라 서서 행렬을 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-33797", "evidence": "사람들이 길을 따라 서서 행렬을 바라봐요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-43442", "evidence": "세 사람이 탁자에 앉아 휴대전화를 바라봐요.", "claim": "세 사람이 탁자에 앉아 휴대전화를 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-43442", "evidence": "세 사람이 탁자에 앉아 휴대전화를 바라봐요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-45007", "evidence": "사람들이 전시된 오토바이를 바라봐요.", "claim": "사람들이 전시된 오토바이를 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-45007", "evidence": "사람들이 전시된 오토바이를 바라봐요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-47777", "evidence": "한 사람이 컴퓨터 화면 앞에 앉아 휴대전화를 바라봐요.", "claim": "한 사람이 컴퓨터 화면 앞에 앉아 휴대전화를 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-47777", "evidence": "한 사람이 컴퓨터 화면 앞에 앉아 휴대전화를 바라봐요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-10682", "evidence": "세 사람이 부엌에서 피자를 가리켜요.", "claim": "세 사람이 부엌에서 피자를 가리켜요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-10682", "evidence": "세 사람이 부엌에서 피자를 가리켜요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-15384", "evidence": "한 사람이 부엌 벽을 가리켜요.", "claim": "한 사람이 부엌 벽을 가리켜요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-15384", "evidence": "한 사람이 부엌 벽을 가리켜요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-107745", "evidence": "앞치마를 입은 사람이 냄비 쪽으로 손을 뻗어요.", "claim": "앞치마를 입은 사람이 냄비 쪽으로 손을 뻗어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-107745", "evidence": "앞치마를 입은 사람이 냄비 쪽으로 손을 뻗어요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-115735", "evidence": "두 사람이 나란히 앉아 멀리 있는 것을 가리켜요.", "claim": "두 사람이 나란히 앉아 멀리 있는 것을 가리켜요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-115735", "evidence": "두 사람이 나란히 앉아 멀리 있는 것을 가리켜요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-131686", "evidence": "한 사람이 천장을 가리켜요.", "claim": "한 사람이 천장을 가리켜요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-131686", "evidence": "한 사람이 천장을 가리켜요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-165506", "evidence": "한 사람이 노란 자전거를 가리켜요.", "claim": "한 사람이 노란 자전거를 가리켜요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-165506", "evidence": "한 사람이 노란 자전거를 가리켜요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-497770", "evidence": "두 사람 중 한 사람이 소형 오토바이를 가리켜요.", "claim": "두 사람 중 한 사람이 소형 오토바이를 가리켜요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-497770", "evidence": "두 사람 중 한 사람이 소형 오토바이를 가리켜요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-619084", "evidence": "두 사람이 여행 가방을 들고 무언가를 가리켜요.", "claim": "두 사람이 여행 가방을 들고 무언가를 가리켜요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-619084", "evidence": "두 사람이 여행 가방을 들고 무언가를 가리켜요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-28387", "evidence": "아이가 풀을 뜯는 양 두 마리를 가리켜요.", "claim": "아이가 풀을 뜯는 양 두 마리를 가리켜요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-28387", "evidence": "아이가 풀을 뜯는 양 두 마리를 가리켜요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-249572", "evidence": "한 사람이 잔디에 발을 디디며 노란 소화전 쪽으로 손을 뻗어요.", "claim": "한 사람이 잔디에 발을 디디며 노란 소화전 쪽으로 손을 뻗어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-249572", "evidence": "한 사람이 잔디에 발을 디디며 노란 소화전 쪽으로 손을 뻗어요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-298186", "evidence": "여러 사람이 서 있고 그중 한 사람이 길에 있는 물체를 가리켜요.", "claim": "여러 사람이 서 있고 그중 한 사람이 길에 있는 물체를 가리켜요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-298186", "evidence": "여러 사람이 서 있고 그중 한 사람이 길에 있는 물체를 가리켜요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-2884", "evidence": "한 사람이 비를 맞으며 우산을 들고 걸어요.", "claim": "한 사람이 비를 맞으며 우산을 들고 걸어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-2884", "evidence": "한 사람이 비를 맞으며 우산을 들고 걸어요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-3192", "evidence": "한 사람이 부엌에서 커다란 팬을 들고 있어요.", "claim": "한 사람이 부엌에서 커다란 팬을 들고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-3192", "evidence": "한 사람이 부엌에서 커다란 팬을 들고 있어요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-9691", "evidence": "한 사람이 빨간 우산을 들어 올린 채 걸어요.", "claim": "한 사람이 빨간 우산을 들어 올린 채 걸어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-9691", "evidence": "한 사람이 빨간 우산을 들어 올린 채 걸어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-16539", "evidence": "한 사람이 부엌에서 수납장을 잡고 있어요.", "claim": "한 사람이 부엌에서 수납장을 잡고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-16539", "evidence": "한 사람이 부엌에서 수납장을 잡고 있어요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-17085", "evidence": "여러 사람이 카메라 앞에서 빵을 들고 있어요.", "claim": "여러 사람이 카메라 앞에서 빵을 들고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-17085", "evidence": "여러 사람이 카메라 앞에서 빵을 들고 있어요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-18639", "evidence": "한 사람이 양의 앞다리를 잡고 있어요.", "claim": "한 사람이 양의 앞다리를 잡고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-18639", "evidence": "한 사람이 양의 앞다리를 잡고 있어요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-25733", "evidence": "한 사람이 오토바이가 서 있도록 붙잡고 있어요.", "claim": "한 사람이 오토바이가 서 있도록 붙잡고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-25733", "evidence": "한 사람이 오토바이가 서 있도록 붙잡고 있어요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-29101", "evidence": "한 사람이 탁자에 앉아 가위를 들고 있어요.", "claim": "한 사람이 탁자에 앉아 가위를 들고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-29101", "evidence": "한 사람이 탁자에 앉아 가위를 들고 있어요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-31397", "evidence": "아이가 곰 인형을 붙잡고 있어요.", "claim": "아이가 곰 인형을 붙잡고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-31397", "evidence": "아이가 곰 인형을 붙잡고 있어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-32038", "evidence": "한 사람이 휴대전화를 들고 부엌 창턱에 걸터앉아 있어요.", "claim": "한 사람이 휴대전화를 들고 부엌 창턱에 걸터앉아 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-32038", "evidence": "한 사람이 휴대전화를 들고 부엌 창턱에 걸터앉아 있어요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-2961", "evidence": "한 사람이 나무 숟가락으로 냄비 안의 음식을 저어요.", "claim": "한 사람이 나무 숟가락으로 냄비 안의 음식을 저어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-2961", "evidence": "한 사람이 나무 숟가락으로 냄비 안의 음식을 저어요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-20304", "evidence": "여러 사람이 이를 닦으면서 자신의 사진을 찍어요.", "claim": "여러 사람이 이를 닦으면서 자신의 사진을 찍어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-20304", "evidence": "여러 사람이 이를 닦으면서 자신의 사진을 찍어요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-22578", "evidence": "한 사람은 길가 턱에 앉아 있고 다른 사람은 종이에 글을 써요.", "claim": "한 사람은 길가 턱에 앉아 있고 다른 사람은 종이에 글을 써요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-22578", "evidence": "한 사람은 길가 턱에 앉아 있고 다른 사람은 종이에 글을 써요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-24122", "evidence": "아이가 의자에 서서 그릇 안을 저어요.", "claim": "아이가 의자에 서서 그릇 안을 저어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-24122", "evidence": "아이가 의자에 서서 그릇 안을 저어요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-39685", "evidence": "한 사람이 벤치에 앉아 책을 읽어요.", "claim": "한 사람이 벤치에 앉아 책을 읽어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-39685", "evidence": "한 사람이 벤치에 앉아 책을 읽어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-39888", "evidence": "한 사람이 작은 개가 있는 차 안에서 책을 읽어요.", "claim": "한 사람이 작은 개가 있는 차 안에서 책을 읽어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-39888", "evidence": "한 사람이 작은 개가 있는 차 안에서 책을 읽어요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-43255", "evidence": "벤치에 앉은 사람들 중 한 사람은 휴대전화를 사용하고 다른 사람은 글을 읽어요.", "claim": "벤치에 앉은 사람들 중 한 사람은 휴대전화를 사용하고 다른 사람은 글을 읽어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-43255", "evidence": "벤치에 앉은 사람들 중 한 사람은 휴대전화를 사용하고 다른 사람은 글을 읽어요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-59963", "evidence": "한 사람이 그릇 위에 국자를 들고 책을 읽어요.", "claim": "한 사람이 그릇 위에 국자를 들고 책을 읽어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-59963", "evidence": "한 사람이 그릇 위에 국자를 들고 책을 읽어요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-79085", "evidence": "비행기 좌석에 앉은 사람들 중 한 사람이 책을 들어 읽어요.", "claim": "비행기 좌석에 앉은 사람들 중 한 사람이 책을 들어 읽어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-79085", "evidence": "비행기 좌석에 앉은 사람들 중 한 사람이 책을 들어 읽어요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-116603", "evidence": "손이 가위로 젖은 물체를 잘라요.", "claim": "손이 가위로 젖은 물체를 잘라요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-116603", "evidence": "손이 가위로 젖은 물체를 잘라요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-118466", "evidence": "한 사람이 부엌에서 냄비 안을 저어요.", "claim": "한 사람이 부엌에서 냄비 안을 저어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-118466", "evidence": "한 사람이 부엌에서 냄비 안을 저어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-120140", "evidence": "한 사람이 커다란 칫솔로 이를 닦아요.", "claim": "한 사람이 커다란 칫솔로 이를 닦아요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-120140", "evidence": "한 사람이 커다란 칫솔로 이를 닦아요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-1221", "evidence": "한 사람이 도시에서 개와 함께 걸어요.", "claim": "한 사람이 도시에서 개와 함께 걸어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-1221", "evidence": "한 사람이 도시에서 개와 함께 걸어요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-2152", "evidence": "한 사람이 자전거 옆 벤치에 앉아 있어요.", "claim": "한 사람이 자전거 옆 벤치에 앉아 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-2152", "evidence": "한 사람이 자전거 옆 벤치에 앉아 있어요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-3106", "evidence": "두 사람이 활주로에 있는 비행기 근처에 서 있어요.", "claim": "두 사람이 활주로에 있는 비행기 근처에 서 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-3106", "evidence": "두 사람이 활주로에 있는 비행기 근처에 서 있어요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-3710", "evidence": "아이가 오토바이에 혼자 앉아 있어요.", "claim": "아이가 오토바이에 혼자 앉아 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-3710", "evidence": "아이가 오토바이에 혼자 앉아 있어요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-3728", "evidence": "아이가 화장실에서 변기 옆에 서 있어요.", "claim": "아이가 화장실에서 변기 옆에 서 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-3728", "evidence": "아이가 화장실에서 변기 옆에 서 있어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-5862", "evidence": "사람들이 도심의 거리를 걸어요.", "claim": "사람들이 도심의 거리를 걸어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-5862", "evidence": "사람들이 도심의 거리를 걸어요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-8299", "evidence": "여러 사람이 가게 앞에 서 있어요.", "claim": "여러 사람이 가게 앞에 서 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-8299", "evidence": "여러 사람이 가게 앞에 서 있어요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-12261", "evidence": "한 사람이 경주용 자동차 옆에 서 있어요.", "claim": "한 사람이 경주용 자동차 옆에 서 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-12261", "evidence": "한 사람이 경주용 자동차 옆에 서 있어요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-12312", "evidence": "한 사람은 오토바이에 앉아 있고 다른 사람은 그 옆에 서 있어요.", "claim": "한 사람은 오토바이에 앉아 있고 다른 사람은 그 옆에 서 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-12312", "evidence": "한 사람은 오토바이에 앉아 있고 다른 사람은 그 옆에 서 있어요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-13138", "evidence": "한 사람이 돌덩이 위에 앉아 있어요.", "claim": "한 사람이 돌덩이 위에 앉아 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-13138", "evidence": "한 사람이 돌덩이 위에 앉아 있어요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-62405", "evidence": "배낭을 멘 사람이 벤치에 혼자 앉아 있어요.", "claim": "배낭을 멘 사람이 벤치에 혼자 앉아 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-62405", "evidence": "배낭을 멘 사람이 벤치에 혼자 앉아 있어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-99645", "evidence": "한 사람이 공원 벤치에 혼자 앉아 있어요.", "claim": "한 사람이 공원 벤치에 혼자 앉아 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-99645", "evidence": "한 사람이 공원 벤치에 혼자 앉아 있어요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-143299", "evidence": "한 사람이 길 옆의 눈 위에서 혼자 스키를 타요.", "claim": "한 사람이 길 옆의 눈 위에서 혼자 스키를 타요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-143299", "evidence": "한 사람이 길 옆의 눈 위에서 혼자 스키를 타요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-161375", "evidence": "한 사람이 호수 앞 벤치에 혼자 앉아 있어요.", "claim": "한 사람이 호수 앞 벤치에 혼자 앉아 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-161375", "evidence": "한 사람이 호수 앞 벤치에 혼자 앉아 있어요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-403555", "evidence": "모자를 쓴 사람이 야외 테라스에 혼자 앉아 있어요.", "claim": "모자를 쓴 사람이 야외 테라스에 혼자 앉아 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-403555", "evidence": "모자를 쓴 사람이 야외 테라스에 혼자 앉아 있어요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-462093", "evidence": "한 사람이 넓은 부엌에 혼자 서 있어요.", "claim": "한 사람이 넓은 부엌에 혼자 서 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-462093", "evidence": "한 사람이 넓은 부엌에 혼자 서 있어요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-578523", "evidence": "한 사람이 골목을 혼자 걸어요.", "claim": "한 사람이 골목을 혼자 걸어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-578523", "evidence": "한 사람이 골목을 혼자 걸어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-117221", "evidence": "한 사람이 기차 승강장에 혼자 서 있어요.", "claim": "한 사람이 기차 승강장에 혼자 서 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-117221", "evidence": "한 사람이 기차 승강장에 혼자 서 있어요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-127815", "evidence": "정장을 입은 사람이 버스에 혼자 앉아 있어요.", "claim": "정장을 입은 사람이 버스에 혼자 앉아 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-127815", "evidence": "정장을 입은 사람이 버스에 혼자 앉아 있어요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-39906", "evidence": "두 사람이 부엌에서 함께 요리해요.", "claim": "두 사람이 부엌에서 함께 요리해요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-39906", "evidence": "두 사람이 부엌에서 함께 요리해요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-81072", "evidence": "한 사람이 부엌에 서서 두 손을 맞잡고 있어요.", "claim": "한 사람이 부엌에 서서 두 손을 맞잡고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-81072", "evidence": "한 사람이 부엌에 서서 두 손을 맞잡고 있어요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-82754", "evidence": "아이 한 명과 다른 두 사람이 오토바이에 함께 타고 있어요.", "claim": "아이 한 명과 다른 두 사람이 오토바이에 함께 타고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-82754", "evidence": "아이 한 명과 다른 두 사람이 오토바이에 함께 타고 있어요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-87743", "evidence": "두 사람이 함께 앉아 있고 그중 한 사람이 곰 인형을 들고 있어요.", "claim": "두 사람이 함께 앉아 있고 그중 한 사람이 곰 인형을 들고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-87743", "evidence": "두 사람이 함께 앉아 있고 그중 한 사람이 곰 인형을 들고 있어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-101759", "evidence": "두 사람이 오토바이를 함께 타요.", "claim": "두 사람이 오토바이를 함께 타요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-101759", "evidence": "두 사람이 오토바이를 함께 타요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-122053", "evidence": "여러 사람이 길모퉁이에 함께 서 있어요.", "claim": "여러 사람이 길모퉁이에 함께 서 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-122053", "evidence": "여러 사람이 길모퉁이에 함께 서 있어요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-129689", "evidence": "두 사람이 개와 함께 걸어요.", "claim": "두 사람이 개와 함께 걸어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-129689", "evidence": "두 사람이 개와 함께 걸어요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-148527", "evidence": "두 사람이 자전거를 함께 타고 길을 따라가요.", "claim": "두 사람이 자전거를 함께 타고 길을 따라가요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-148527", "evidence": "두 사람이 자전거를 함께 타고 길을 따라가요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-150018", "evidence": "두 사람이 컴퓨터 화면을 함께 바라봐요.", "claim": "두 사람이 컴퓨터 화면을 함께 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-150018", "evidence": "두 사람이 컴퓨터 화면을 함께 바라봐요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-165763", "evidence": "여러 사람 중 한 사람이 웃어요.", "claim": "여러 사람 중 한 사람이 웃어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-165763", "evidence": "여러 사람 중 한 사람이 웃어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-165792", "evidence": "두 사람이 나무 벤치에 함께 앉아 있어요.", "claim": "두 사람이 나무 벤치에 함께 앉아 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-165792", "evidence": "두 사람이 나무 벤치에 함께 앉아 있어요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-171709", "evidence": "두 사람이 행사장에서 나란히 서 있어요.", "claim": "두 사람이 행사장에서 나란히 서 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-171709", "evidence": "두 사람이 행사장에서 나란히 서 있어요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-222070", "evidence": "여러 사람이 함께 비디오 게임을 해요.", "claim": "여러 사람이 함께 비디오 게임을 해요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-222070", "evidence": "여러 사람이 함께 비디오 게임을 해요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-240156", "evidence": "사람들이 야외에서 원반 놀이를 해요.", "claim": "사람들이 야외에서 원반 놀이를 해요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-240156", "evidence": "사람들이 야외에서 원반 놀이를 해요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-246972", "evidence": "아이들이 운동장에서 함께 축구를 해요.", "claim": "아이들이 운동장에서 함께 축구를 해요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-246972", "evidence": "아이들이 운동장에서 함께 축구를 해요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-296623", "evidence": "아이들이 들판에서 원반 놀이를 해요.", "claim": "아이들이 들판에서 원반 놀이를 해요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-296623", "evidence": "아이들이 들판에서 원반 놀이를 해요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-388330", "evidence": "여러 사람이 야외에서 테니스를 쳐요.", "claim": "여러 사람이 야외에서 테니스를 쳐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-388330", "evidence": "여러 사람이 야외에서 테니스를 쳐요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-396927", "evidence": "여러 사람이 해변에서 축구공을 가지고 놀아요.", "claim": "여러 사람이 해변에서 축구공을 가지고 놀아요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-396927", "evidence": "여러 사람이 해변에서 축구공을 가지고 놀아요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-419323", "evidence": "아이 둘이 플라스틱 의자를 가지고 놀아요.", "claim": "아이 둘이 플라스틱 의자를 가지고 놀아요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-419323", "evidence": "아이 둘이 플라스틱 의자를 가지고 놀아요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-459241", "evidence": "여러 사람이 악기를 연주해요.", "claim": "여러 사람이 악기를 연주해요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-459241", "evidence": "여러 사람이 악기를 연주해요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-691086", "evidence": "여러 사람이 운동장에서 축구를 해요.", "claim": "여러 사람이 운동장에서 축구를 해요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-691086", "evidence": "여러 사람이 운동장에서 축구를 해요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-17397", "evidence": "아이가 식기 서랍을 향해 손을 뻗어요.", "claim": "아이가 식기 서랍을 향해 손을 뻗어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-17397", "evidence": "아이가 식기 서랍을 향해 손을 뻗어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-395646", "evidence": "아이가 거울을 보며 이를 닦아요.", "claim": "아이가 거울을 보며 이를 닦아요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-395646", "evidence": "아이가 거울을 보며 이를 닦아요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-296433", "evidence": "아이가 칫솔로 이를 닦아요.", "claim": "아이가 칫솔로 이를 닦아요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-296433", "evidence": "아이가 칫솔로 이를 닦아요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-82352", "evidence": "아이가 자전거를 밀고 길을 건너요.", "claim": "아이가 자전거를 밀고 길을 건너요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-82352", "evidence": "아이가 자전거를 밀고 길을 건너요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-273853", "evidence": "아이가 짐이 실린 카트를 밀어요.", "claim": "아이가 짐이 실린 카트를 밀어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-273853", "evidence": "아이가 짐이 실린 카트를 밀어요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-63798", "evidence": "아이가 여행 가방을 끌며 창밖의 비행기를 바라봐요.", "claim": "아이가 여행 가방을 끌며 창밖의 비행기를 바라봐요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-63798", "evidence": "아이가 여행 가방을 끌며 창밖의 비행기를 바라봐요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-414870", "evidence": "아이가 거리에서 스케이트보드를 발로 뒤집어요.", "claim": "아이가 거리에서 스케이트보드를 발로 뒤집어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-414870", "evidence": "아이가 거리에서 스케이트보드를 발로 뒤집어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-129407", "evidence": "아이가 해변 의자에 앉아 다리를 바깥으로 뻗어요.", "claim": "아이가 해변 의자에 앉아 다리를 바깥으로 뻗어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-129407", "evidence": "아이가 해변 의자에 앉아 다리를 바깥으로 뻗어요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-35903", "evidence": "아이가 야구 배트를 휘둘러요.", "claim": "아이가 야구 배트를 휘둘러요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-35903", "evidence": "아이가 야구 배트를 휘둘러요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-150723", "evidence": "아이가 카메라 쪽을 향해 원반을 던져요.", "claim": "아이가 카메라 쪽을 향해 원반을 던져요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-150723", "evidence": "아이가 카메라 쪽을 향해 원반을 던져요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-47884", "evidence": "아이가 오토바이 옆에 서 있고 그 뒤로 어른들이 오토바이를 타고 지나가요.", "claim": "아이가 오토바이 옆에 서 있고 그 뒤로 어른들이 오토바이를 타고 지나가요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-47884", "evidence": "아이가 오토바이 옆에 서 있고 그 뒤로 어른들이 오토바이를 타고 지나가요.", "claim": "다시 해 보라고 말을 걸어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-439623", "evidence": "아이가 서핑보드를 타고 파도 위를 지나가요.", "claim": "아이가 서핑보드를 타고 파도 위를 지나가요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-439623", "evidence": "아이가 서핑보드를 타고 파도 위를 지나가요.", "claim": "상대에게 잘했다고 칭찬해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-53368", "evidence": "아이가 나무 벤치에 누워 봉지에서 간식을 꺼내 먹어요.", "claim": "아이가 나무 벤치에 누워 봉지에서 간식을 꺼내 먹어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-53368", "evidence": "아이가 나무 벤치에 누워 봉지에서 간식을 꺼내 먹어요.", "claim": "방법을 이야기해 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-147191", "evidence": "아이가 높은 의자에 앉아 케이크를 먹어요.", "claim": "아이가 높은 의자에 앉아 케이크를 먹어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-147191", "evidence": "아이가 높은 의자에 앉아 케이크를 먹어요.", "claim": "상대에게 이름을 물어봐요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-303332", "evidence": "아이가 스케이트보드를 타고 벤치 위로 뛰어넘어요.", "claim": "아이가 스케이트보드를 타고 벤치 위로 뛰어넘어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-303332", "evidence": "아이가 스케이트보드를 타고 벤치 위로 뛰어넘어요.", "claim": "무엇을 하는지 말로 설명해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "coco-coco-2017-train-caption-304106", "evidence": "아이가 바나나 두 개를 들고 있어요.", "claim": "아이가 바나나 두 개를 들고 있어요.", "keep": true, "kind": "coco_visible"}
+{"group": "coco-coco-2017-train-caption-304106", "evidence": "아이가 바나나 두 개를 들고 있어요.", "claim": "다른 사람의 말에 대답해요.", "keep": false, "kind": "unheard_speech"}

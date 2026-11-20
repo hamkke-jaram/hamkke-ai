@@ -1,0 +1,48 @@
+{"group": "reserved-01", "evidence": "아이가 혼자 우산의 손잡이를 잡아 비스듬히 기울인다.", "claim": "아이가 우산을 옆으로 기울여요.", "keep": true, "kind": "visible"}
+{"group": "reserved-01", "evidence": "아이가 혼자 우산의 손잡이를 잡아 비스듬히 기울인다.", "claim": "우산 손잡이를 쥔 손이 보여요.", "keep": true, "kind": "visible"}
+{"group": "reserved-01", "evidence": "아이가 혼자 우산의 손잡이를 잡아 비스듬히 기울인다.", "claim": "어른이 우산을 아이와 주고받아요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-01", "evidence": "아이가 혼자 우산의 손잡이를 잡아 비스듬히 기울인다.", "claim": "지금 하자는 제안을 말로 건네요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-02", "evidence": "한 사람이 문고리를 아래로 누른 뒤 문을 앞으로 민다.", "claim": "문고리가 아래로 내려가요.", "keep": true, "kind": "visible"}
+{"group": "reserved-02", "evidence": "한 사람이 문고리를 아래로 누른 뒤 문을 앞으로 민다.", "claim": "사람이 문을 밀어 열어요.", "keep": true, "kind": "visible"}
+{"group": "reserved-02", "evidence": "한 사람이 문고리를 아래로 누른 뒤 문을 앞으로 민다.", "claim": "두 사람이 함께 문을 잡아당겨요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-02", "evidence": "한 사람이 문고리를 아래로 누른 뒤 문을 앞으로 민다.", "claim": "왜 그러는지 묻고 있어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-03", "evidence": "어른은 벤치에 앉아 있고 아이만 연의 얼레를 감는다.", "claim": "아이 손에서 얼레가 돌아가요.", "keep": true, "kind": "visible"}
+{"group": "reserved-03", "evidence": "어른은 벤치에 앉아 있고 아이만 연의 얼레를 감는다.", "claim": "어른이 벤치에 앉아 있어요.", "keep": true, "kind": "visible"}
+{"group": "reserved-03", "evidence": "어른은 벤치에 앉아 있고 아이만 연의 얼레를 감는다.", "claim": "어른과 아이가 번갈아 얼레를 감아요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-03", "evidence": "어른은 벤치에 앉아 있고 아이만 연의 얼레를 감는다.", "claim": "괜찮다고 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-04", "evidence": "두 사람이 셔틀콕을 라켓으로 번갈아 친다.", "claim": "두 사람이 셔틀콕을 주고받아요.", "keep": true, "kind": "visible"}
+{"group": "reserved-04", "evidence": "두 사람이 셔틀콕을 라켓으로 번갈아 친다.", "claim": "둘이 함께 배드민턴을 치고 있어요.", "keep": true, "kind": "visible"}
+{"group": "reserved-04", "evidence": "두 사람이 셔틀콕을 라켓으로 번갈아 친다.", "claim": "한 명이 혼자 셔틀콕을 띄워요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-04", "evidence": "두 사람이 셔틀콕을 라켓으로 번갈아 친다.", "claim": "방법을 소리 내어 알려 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-05", "evidence": "아이 둘이 식탁 양끝에서 한 장의 식탁보를 펴서 덮는다.", "claim": "두 아이가 식탁보를 함께 펼쳐요.", "keep": true, "kind": "visible"}
+{"group": "reserved-05", "evidence": "아이 둘이 식탁 양끝에서 한 장의 식탁보를 펴서 덮는다.", "claim": "둘이 천의 끝을 잡아요.", "keep": true, "kind": "visible"}
+{"group": "reserved-05", "evidence": "아이 둘이 식탁 양끝에서 한 장의 식탁보를 펴서 덮는다.", "claim": "두 아이가 식탁보로 시합해요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-05", "evidence": "아이 둘이 식탁 양끝에서 한 장의 식탁보를 펴서 덮는다.", "claim": "지금 하자는 제안을 말로 건네요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-06", "evidence": "어른은 맞은편에서 손을 무릎에 올린 채 있고 아이는 혼자 도장을 뚜껑에 맞춘다.", "claim": "아이가 도장을 뚜껑에 맞춰요.", "keep": true, "kind": "visible"}
+{"group": "reserved-06", "evidence": "어른은 맞은편에서 손을 무릎에 올린 채 있고 아이는 혼자 도장을 뚜껑에 맞춘다.", "claim": "맞은편 어른은 손을 무릎에 두었어요.", "keep": true, "kind": "visible"}
+{"group": "reserved-06", "evidence": "어른은 맞은편에서 손을 무릎에 올린 채 있고 아이는 혼자 도장을 뚜껑에 맞춘다.", "claim": "둘이 도장을 번갈아 쥐고 놀아요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-06", "evidence": "어른은 맞은편에서 손을 무릎에 올린 채 있고 아이는 혼자 도장을 뚜껑에 맞춘다.", "claim": "왜 그러는지 묻고 있어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-07", "evidence": "아이는 손바닥으로 귀를 가린 뒤 몸을 옆으로 돌린다.", "claim": "아이가 양손으로 귀를 덮어요.", "keep": true, "kind": "visible"}
+{"group": "reserved-07", "evidence": "아이는 손바닥으로 귀를 가린 뒤 몸을 옆으로 돌린다.", "claim": "아이가 몸의 방향을 바꿔요.", "keep": true, "kind": "visible"}
+{"group": "reserved-07", "evidence": "아이는 손바닥으로 귀를 가린 뒤 몸을 옆으로 돌린다.", "claim": "아이가 양손을 등 뒤로 돌려요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-07", "evidence": "아이는 손바닥으로 귀를 가린 뒤 몸을 옆으로 돌린다.", "claim": "괜찮다고 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-08", "evidence": "두 사람이 체스판 양쪽에 앉아 차례로 말을 옮긴다.", "claim": "둘이 번갈아 체스 말을 움직여요.", "keep": true, "kind": "visible"}
+{"group": "reserved-08", "evidence": "두 사람이 체스판 양쪽에 앉아 차례로 말을 옮긴다.", "claim": "두 사람이 같이 체스를 해요.", "keep": true, "kind": "visible"}
+{"group": "reserved-08", "evidence": "두 사람이 체스판 양쪽에 앉아 차례로 말을 옮긴다.", "claim": "혼자 체스판을 접어요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-08", "evidence": "두 사람이 체스판 양쪽에 앉아 차례로 말을 옮긴다.", "claim": "방법을 소리 내어 알려 줘요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-09", "evidence": "한 아이가 전등 스위치를 누르며 입술을 움직인다.", "claim": "아이가 전등 스위치에 손을 대요.", "keep": true, "kind": "visible"}
+{"group": "reserved-09", "evidence": "한 아이가 전등 스위치를 누르며 입술을 움직인다.", "claim": "아이의 입술이 움직여요.", "keep": true, "kind": "visible"}
+{"group": "reserved-09", "evidence": "한 아이가 전등 스위치를 누르며 입술을 움직인다.", "claim": "불이 꺼지자 어른이 스위치를 눌러요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-09", "evidence": "한 아이가 전등 스위치를 누르며 입술을 움직인다.", "claim": "지금 하자는 제안을 말로 건네요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-10", "evidence": "한 사람이 빗자루 끝으로 바닥의 종이 조각을 모은다.", "claim": "사람이 종이를 한곳에 쓸어 모아요.", "keep": true, "kind": "visible"}
+{"group": "reserved-10", "evidence": "한 사람이 빗자루 끝으로 바닥의 종이 조각을 모은다.", "claim": "빗자루 끝이 바닥을 지나가요.", "keep": true, "kind": "visible"}
+{"group": "reserved-10", "evidence": "한 사람이 빗자루 끝으로 바닥의 종이 조각을 모은다.", "claim": "둘이 번갈아 빗자루로 놀아요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-10", "evidence": "한 사람이 빗자루 끝으로 바닥의 종이 조각을 모은다.", "claim": "왜 그러는지 묻고 있어요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-11", "evidence": "아이가 신발 끈 끝을 모아 쥐고 어른은 옆에서 외투를 벗는다.", "claim": "아이가 신발 끈을 손에 모아요.", "keep": true, "kind": "visible"}
+{"group": "reserved-11", "evidence": "아이가 신발 끈 끝을 모아 쥐고 어른은 옆에서 외투를 벗는다.", "claim": "어른이 옆에서 겉옷을 벗어요.", "keep": true, "kind": "visible"}
+{"group": "reserved-11", "evidence": "아이가 신발 끈 끝을 모아 쥐고 어른은 옆에서 외투를 벗는다.", "claim": "어른과 아이가 함께 끈 묶기 놀이를 해요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-11", "evidence": "아이가 신발 끈 끝을 모아 쥐고 어른은 옆에서 외투를 벗는다.", "claim": "괜찮다고 대답해요.", "keep": false, "kind": "unheard_speech"}
+{"group": "reserved-12", "evidence": "두 사람이 볼링 핀을 세운 뒤 공을 교대로 굴린다.", "claim": "둘이 차례를 바꿔 가며 공을 굴려요.", "keep": true, "kind": "visible"}
+{"group": "reserved-12", "evidence": "두 사람이 볼링 핀을 세운 뒤 공을 교대로 굴린다.", "claim": "두 사람이 같이 볼링을 해요.", "keep": true, "kind": "visible"}
+{"group": "reserved-12", "evidence": "두 사람이 볼링 핀을 세운 뒤 공을 교대로 굴린다.", "claim": "각자 따로 앉아서 공을 바라봐요.", "keep": false, "kind": "unseen_or_wrong_participants"}
+{"group": "reserved-12", "evidence": "두 사람이 볼링 핀을 세운 뒤 공을 교대로 굴린다.", "claim": "방법을 소리 내어 알려 줘요.", "keep": false, "kind": "unheard_speech"}

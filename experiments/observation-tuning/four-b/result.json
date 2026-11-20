@@ -1,0 +1,204 @@
+{
+  "model": "Qwen/Qwen3.5-4B",
+  "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "languageLayer": "model.language_model.layers.31.mlp.down_proj",
+  "rank": 4,
+  "alpha": 8,
+  "adapterSha256": "8126a86c0b595b0c72b2bad65ac1b12bec16f1fe43c515c8c665eedbdf7dbe09",
+  "trainableParameters": 47104,
+  "inputDevice": "cpu",
+  "dtype": "bfloat16",
+  "torch": "2.12.0.dev20260408+cu128",
+  "transformers": "5.9.0",
+  "peft": "0.19.1",
+  "labelTokenIds": [
+    32,
+    33
+  ],
+  "trainingObjective": "Conditional next-token cross-entropy over A/B for a Korean observation claim",
+  "trainDataSha256": "8cdac0bf79a690a94df73bd61368d13c95e12a897c11850f1dfa5bc7af39d7a8",
+  "independentDataSha256": "eb673cb7a77a8dfe47f2d61c099f898608eb6368fd9c44f835d84ed46a30b890",
+  "outputWeightsReloaded": true,
+  "updateSteps": 208,
+  "seed": 7441,
+  "lossByEpoch": [
+    0.1189880520105362,
+    0.04643741995096207,
+    0.02487754076719284,
+    0.02114221639931202,
+    0.024973204359412193,
+    0.015743708238005638,
+    0.02027040533721447,
+    0.014668522402644157,
+    0.036296017467975616,
+    0.016318701207637787,
+    0.02738781087100506,
+    0.005902526900172234,
+    0.012529270723462105,
+    0.0246680099517107,
+    0.0064005604945123196,
+    0.0050533064641058445
+  ],
+  "baselineTrain": {
+    "correct": 288,
+    "n": 298,
+    "supportedKept": 149,
+    "supportedTotal": 149,
+    "unsupportedRejected": 139,
+    "unsupportedTotal": 149,
+    "byKind": {
+      "coco_visible": {
+        "correct": 101,
+        "n": 101
+      },
+      "unheard_speech": {
+        "correct": 116,
+        "n": 125
+      },
+      "unseen_or_wrong_participants": {
+        "correct": 23,
+        "n": 24
+      },
+      "visible": {
+        "correct": 48,
+        "n": 48
+      }
+    }
+  },
+  "adapterTrain": {
+    "correct": 297,
+    "n": 298,
+    "supportedKept": 149,
+    "supportedTotal": 149,
+    "unsupportedRejected": 148,
+    "unsupportedTotal": 149,
+    "byKind": {
+      "coco_visible": {
+        "correct": 101,
+        "n": 101
+      },
+      "unheard_speech": {
+        "correct": 125,
+        "n": 125
+      },
+      "unseen_or_wrong_participants": {
+        "correct": 23,
+        "n": 24
+      },
+      "visible": {
+        "correct": 48,
+        "n": 48
+      }
+    }
+  },
+  "heldout": {
+    "base": {
+      "correct": 45,
+      "n": 48,
+      "supportedKept": 23,
+      "supportedTotal": 24,
+      "unsupportedRejected": 22,
+      "unsupportedTotal": 24,
+      "byKind": {
+        "unheard_speech": {
+          "correct": 11,
+          "n": 12
+        },
+        "unseen_or_wrong_participants": {
+          "correct": 11,
+          "n": 12
+        },
+        "visible": {
+          "correct": 23,
+          "n": 24
+        }
+      }
+    },
+    "adapter": {
+      "correct": 46,
+      "n": 48,
+      "supportedKept": 22,
+      "supportedTotal": 24,
+      "unsupportedRejected": 24,
+      "unsupportedTotal": 24,
+      "byKind": {
+        "unheard_speech": {
+          "correct": 12,
+          "n": 12
+        },
+        "unseen_or_wrong_participants": {
+          "correct": 12,
+          "n": 12
+        },
+        "visible": {
+          "correct": 22,
+          "n": 24
+        }
+      }
+    }
+  },
+  "independent": {
+    "base": {
+      "correct": 21,
+      "n": 22,
+      "supportedKept": 12,
+      "supportedTotal": 12,
+      "unsupportedRejected": 9,
+      "unsupportedTotal": 10,
+      "byKind": {
+        "held_action": {
+          "correct": 9,
+          "n": 9
+        },
+        "parallel_action": {
+          "correct": 1,
+          "n": 1
+        },
+        "real_joint": {
+          "correct": 2,
+          "n": 2
+        },
+        "unsupported_joint": {
+          "correct": 5,
+          "n": 5
+        },
+        "unsupported_speech": {
+          "correct": 4,
+          "n": 5
+        }
+      }
+    },
+    "adapter": {
+      "correct": 22,
+      "n": 22,
+      "supportedKept": 12,
+      "supportedTotal": 12,
+      "unsupportedRejected": 10,
+      "unsupportedTotal": 10,
+      "byKind": {
+        "held_action": {
+          "correct": 9,
+          "n": 9
+        },
+        "parallel_action": {
+          "correct": 1,
+          "n": 1
+        },
+        "real_joint": {
+          "correct": 2,
+          "n": 2
+        },
+        "unsupported_joint": {
+          "correct": 5,
+          "n": 5
+        },
+        "unsupported_speech": {
+          "correct": 5,
+          "n": 5
+        }
+      }
+    }
+  },
+  "elapsedSecs": 452.1,
+  "license": "Apache-2.0"
+}

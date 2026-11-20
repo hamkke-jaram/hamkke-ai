@@ -1,0 +1,138 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "baseSafetensorsSha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+  "adapterSha256": "5b87c8eec65b5df5809f018e5e04ac3040ed3929bbd2444c079934b5db588d47",
+  "device": "cpu",
+  "dtype": "torch.bfloat16",
+  "labelTokenIds": [
+    32,
+    33
+  ],
+  "method": "PEFT LoRA on lm_head; next-token cross entropy conditional on two legal completions A/B",
+  "rank": 4,
+  "alpha": 8,
+  "steps": 250,
+  "learningRate": 0.002,
+  "train": 298,
+  "heldout": 48,
+  "dataLock": {
+    "train": 298,
+    "heldout": 48,
+    "publicSourceCount": 101,
+    "authoredTrainScenes": 24,
+    "authoredHeldoutScenes": 12,
+    "sourceSha256": "8ea580597dff1a91c566e2612180176fbc22a0dc89243594e0856f4e0722b00d",
+    "trainSha256": "8cdac0bf79a690a94df73bd61368d13c95e12a897c11850f1dfa5bc7af39d7a8",
+    "heldoutSha256": "8bec56f8e8b43690ff7a499f26bc4929d63e8287251e848f3bb70a651dc6ecad"
+  },
+  "trainLossFirstEpoch": 0.3121994733810425,
+  "trainLossLastEpoch": 0.06070566549897194,
+  "baselineTrain": {
+    "n": 298,
+    "correct": 193,
+    "accuracy": 0.6476510067114094,
+    "kinds": {
+      "coco_visible": {
+        "correct": 65,
+        "n": 101
+      },
+      "unheard_speech": {
+        "correct": 92,
+        "n": 125
+      },
+      "unseen_or_wrong_participants": {
+        "correct": 17,
+        "n": 24
+      },
+      "visible": {
+        "correct": 19,
+        "n": 48
+      }
+    },
+    "supportedKept": 84,
+    "supportedTotal": 149,
+    "unsupportedRejected": 109,
+    "unsupportedTotal": 149
+  },
+  "adapterTrain": {
+    "n": 298,
+    "correct": 290,
+    "accuracy": 0.9731543624161074,
+    "kinds": {
+      "coco_visible": {
+        "correct": 101,
+        "n": 101
+      },
+      "unheard_speech": {
+        "correct": 125,
+        "n": 125
+      },
+      "unseen_or_wrong_participants": {
+        "correct": 21,
+        "n": 24
+      },
+      "visible": {
+        "correct": 43,
+        "n": 48
+      }
+    },
+    "supportedKept": 144,
+    "supportedTotal": 149,
+    "unsupportedRejected": 146,
+    "unsupportedTotal": 149
+  },
+  "baselineHeldout": {
+    "n": 48,
+    "correct": 31,
+    "accuracy": 0.6458333333333334,
+    "kinds": {
+      "unheard_speech": {
+        "correct": 12,
+        "n": 12
+      },
+      "unseen_or_wrong_participants": {
+        "correct": 10,
+        "n": 12
+      },
+      "visible": {
+        "correct": 9,
+        "n": 24
+      }
+    },
+    "supportedKept": 9,
+    "supportedTotal": 24,
+    "unsupportedRejected": 22,
+    "unsupportedTotal": 24
+  },
+  "adapterHeldout": {
+    "n": 48,
+    "correct": 35,
+    "accuracy": 0.7291666666666666,
+    "kinds": {
+      "unheard_speech": {
+        "correct": 12,
+        "n": 12
+      },
+      "unseen_or_wrong_participants": {
+        "correct": 8,
+        "n": 12
+      },
+      "visible": {
+        "correct": 15,
+        "n": 24
+      }
+    },
+    "supportedKept": 15,
+    "supportedTotal": 24,
+    "unsupportedRejected": 20,
+    "unsupportedTotal": 24
+  },
+  "actualReloadVerifiedRows": 8,
+  "torch": "2.5.1+cu121",
+  "peft": "0.19.1",
+  "transformers": "5.9.0",
+  "python": "3.11.9",
+  "elapsedSec": 21.44,
+  "evaluationPath": "Fresh process, native BF16 base and PEFT output heads, identical hidden states, argmax over A/B"
+}

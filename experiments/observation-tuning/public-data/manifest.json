@@ -1,0 +1,14 @@
+{
+  "dataset": "COCO Captions 2017 train",
+  "url": "https://s3.amazonaws.com/images.cocodataset.org/annotations/annotations_trainval2017.zip",
+  "archiveEtag": "\"f4bbac642086de4f52a3fdda2de5fa2c\"",
+  "member": "annotations/captions_train2017.json",
+  "memberSha256": "4b62086319480e0739ef390d04084515defb9c213ff13605a036061e33314317",
+  "sourceCaptionCount": 591753,
+  "sampleSize": 101,
+  "outputSha256": "8ea580597dff1a91c566e2612180176fbc22a0dc89243594e0856f4e0722b00d",
+  "terms": "https://cocodataset.org/dataset/termsofuse.htm",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "COCO Consortium",
+  "changes": "Selected annotations, translated to Korean, retained visible actions and generalized unneeded person attributes. No images were downloaded."
+}

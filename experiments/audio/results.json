@@ -1,0 +1,98 @@
+{
+  "fit_samples": 238,
+  "threshold_samples": 80,
+  "test_samples": 80,
+  "threshold": 0.5000000000000001,
+  "fold5_sources": 57,
+  "development": {
+    "existing": {
+      "n": 80,
+      "tp": 1,
+      "tn": 59,
+      "fp": 13,
+      "fn": 7,
+      "precision": 0.07142857142857142,
+      "recall": 0.125,
+      "f1": 0.09090909090909091
+    },
+    "candidate": {
+      "n": 80,
+      "tp": 7,
+      "tn": 72,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1.0,
+      "recall": 0.875,
+      "f1": 0.9333333333333333
+    }
+  },
+  "heldout": {
+    "existing": {
+      "n": 80,
+      "tp": 0,
+      "tn": 55,
+      "fp": 17,
+      "fn": 8,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "candidate": {
+      "n": 80,
+      "tp": 4,
+      "tn": 69,
+      "fp": 3,
+      "fn": 4,
+      "precision": 0.5714285714285714,
+      "recall": 0.5,
+      "f1": 0.5333333333333333
+    }
+  },
+  "negative_classes_heldout": {
+    "chainsaw": {
+      "n": 8,
+      "existing_fp": 0,
+      "candidate_fp": 0
+    },
+    "clock_tick": {
+      "n": 8,
+      "existing_fp": 1,
+      "candidate_fp": 0
+    },
+    "crackling_fire": {
+      "n": 8,
+      "existing_fp": 0,
+      "candidate_fp": 0
+    },
+    "dog": {
+      "n": 8,
+      "existing_fp": 5,
+      "candidate_fp": 2
+    },
+    "helicopter": {
+      "n": 8,
+      "existing_fp": 0,
+      "candidate_fp": 0
+    },
+    "rain": {
+      "n": 8,
+      "existing_fp": 0,
+      "candidate_fp": 0
+    },
+    "rooster": {
+      "n": 8,
+      "existing_fp": 8,
+      "candidate_fp": 1
+    },
+    "sea_waves": {
+      "n": 8,
+      "existing_fp": 0,
+      "candidate_fp": 0
+    },
+    "sneezing": {
+      "n": 8,
+      "existing_fp": 3,
+      "candidate_fp": 0
+    }
+  }
+}

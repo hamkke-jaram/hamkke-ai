@@ -1,0 +1,1192 @@
+[
+  {
+    "group": "reserved-01",
+    "evidence": "아이가 혼자 우산의 손잡이를 잡아 비스듬히 기울인다.",
+    "claim": "아이가 우산을 옆으로 기울여요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.875,
+      21.5
+    ],
+    "adapterAB": [
+      30.125,
+      15.9375
+    ]
+  },
+  {
+    "group": "reserved-01",
+    "evidence": "아이가 혼자 우산의 손잡이를 잡아 비스듬히 기울인다.",
+    "claim": "우산 손잡이를 쥔 손이 보여요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.625,
+      20.75
+    ],
+    "adapterAB": [
+      30.25,
+      15.0
+    ]
+  },
+  {
+    "group": "reserved-01",
+    "evidence": "아이가 혼자 우산의 손잡이를 잡아 비스듬히 기울인다.",
+    "claim": "어른이 우산을 아이와 주고받아요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.875,
+      23.75
+    ],
+    "adapterAB": [
+      15.9375,
+      29.0
+    ]
+  },
+  {
+    "group": "reserved-01",
+    "evidence": "아이가 혼자 우산의 손잡이를 잡아 비스듬히 기울인다.",
+    "claim": "지금 하자는 제안을 말로 건네요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.625,
+      23.75
+    ],
+    "adapterAB": [
+      14.0,
+      30.25
+    ]
+  },
+  {
+    "group": "reserved-02",
+    "evidence": "한 사람이 문고리를 아래로 누른 뒤 문을 앞으로 민다.",
+    "claim": "문고리가 아래로 내려가요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.125,
+      19.75
+    ],
+    "adapterAB": [
+      31.875,
+      12.6875
+    ]
+  },
+  {
+    "group": "reserved-02",
+    "evidence": "한 사람이 문고리를 아래로 누른 뒤 문을 앞으로 민다.",
+    "claim": "사람이 문을 밀어 열어요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.5,
+      20.375
+    ],
+    "adapterAB": [
+      30.375,
+      14.3125
+    ]
+  },
+  {
+    "group": "reserved-02",
+    "evidence": "한 사람이 문고리를 아래로 누른 뒤 문을 앞으로 민다.",
+    "claim": "두 사람이 함께 문을 잡아당겨요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.75,
+      24.125
+    ],
+    "adapterAB": [
+      16.25,
+      28.875
+    ]
+  },
+  {
+    "group": "reserved-02",
+    "evidence": "한 사람이 문고리를 아래로 누른 뒤 문을 앞으로 민다.",
+    "claim": "왜 그러는지 묻고 있어요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.5,
+      23.0
+    ],
+    "adapterAB": [
+      18.0,
+      27.0
+    ]
+  },
+  {
+    "group": "reserved-03",
+    "evidence": "어른은 벤치에 앉아 있고 아이만 연의 얼레를 감는다.",
+    "claim": "아이 손에서 얼레가 돌아가요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": false,
+    "baseAB": [
+      23.5,
+      23.375
+    ],
+    "adapterAB": [
+      22.625,
+      24.125
+    ]
+  },
+  {
+    "group": "reserved-03",
+    "evidence": "어른은 벤치에 앉아 있고 아이만 연의 얼레를 감는다.",
+    "claim": "어른이 벤치에 앉아 있어요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.25,
+      18.625
+    ],
+    "adapterAB": [
+      33.25,
+      10.0625
+    ]
+  },
+  {
+    "group": "reserved-03",
+    "evidence": "어른은 벤치에 앉아 있고 아이만 연의 얼레를 감는다.",
+    "claim": "어른과 아이가 번갈아 얼레를 감아요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.625,
+      24.0
+    ],
+    "adapterAB": [
+      15.6875,
+      29.25
+    ]
+  },
+  {
+    "group": "reserved-03",
+    "evidence": "어른은 벤치에 앉아 있고 아이만 연의 얼레를 감는다.",
+    "claim": "괜찮다고 대답해요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.0,
+      23.0
+    ],
+    "adapterAB": [
+      15.6875,
+      28.5
+    ]
+  },
+  {
+    "group": "reserved-04",
+    "evidence": "두 사람이 셔틀콕을 라켓으로 번갈아 친다.",
+    "claim": "두 사람이 셔틀콕을 주고받아요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      23.5,
+      22.25
+    ],
+    "adapterAB": [
+      25.25,
+      20.625
+    ]
+  },
+  {
+    "group": "reserved-04",
+    "evidence": "두 사람이 셔틀콕을 라켓으로 번갈아 친다.",
+    "claim": "둘이 함께 배드민턴을 치고 있어요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.25,
+      20.875
+    ],
+    "adapterAB": [
+      28.5,
+      16.625
+    ]
+  },
+  {
+    "group": "reserved-04",
+    "evidence": "두 사람이 셔틀콕을 라켓으로 번갈아 친다.",
+    "claim": "한 명이 혼자 셔틀콕을 띄워요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.375,
+      23.875
+    ],
+    "adapterAB": [
+      15.9375,
+      28.625
+    ]
+  },
+  {
+    "group": "reserved-04",
+    "evidence": "두 사람이 셔틀콕을 라켓으로 번갈아 친다.",
+    "claim": "방법을 소리 내어 알려 줘요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.25,
+      23.0
+    ],
+    "adapterAB": [
+      15.9375,
+      28.625
+    ]
+  },
+  {
+    "group": "reserved-05",
+    "evidence": "아이 둘이 식탁 양끝에서 한 장의 식탁보를 펴서 덮는다.",
+    "claim": "두 아이가 식탁보를 함께 펼쳐요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.25,
+      20.875
+    ],
+    "adapterAB": [
+      31.875,
+      13.8125
+    ]
+  },
+  {
+    "group": "reserved-05",
+    "evidence": "아이 둘이 식탁 양끝에서 한 장의 식탁보를 펴서 덮는다.",
+    "claim": "둘이 천의 끝을 잡아요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.0,
+      22.75
+    ],
+    "adapterAB": [
+      26.125,
+      20.625
+    ]
+  },
+  {
+    "group": "reserved-05",
+    "evidence": "아이 둘이 식탁 양끝에서 한 장의 식탁보를 펴서 덮는다.",
+    "claim": "두 아이가 식탁보로 시합해요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": true,
+    "adapterKeep": false,
+    "baseAB": [
+      23.125,
+      23.125
+    ],
+    "adapterAB": [
+      21.625,
+      24.625
+    ]
+  },
+  {
+    "group": "reserved-05",
+    "evidence": "아이 둘이 식탁 양끝에서 한 장의 식탁보를 펴서 덮는다.",
+    "claim": "지금 하자는 제안을 말로 건네요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.125,
+      23.625
+    ],
+    "adapterAB": [
+      15.4375,
+      29.375
+    ]
+  },
+  {
+    "group": "reserved-06",
+    "evidence": "어른은 맞은편에서 손을 무릎에 올린 채 있고 아이는 혼자 도장을 뚜껑에 맞춘다.",
+    "claim": "아이가 도장을 뚜껑에 맞춰요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.25,
+      20.0
+    ],
+    "adapterAB": [
+      33.0,
+      11.625
+    ]
+  },
+  {
+    "group": "reserved-06",
+    "evidence": "어른은 맞은편에서 손을 무릎에 올린 채 있고 아이는 혼자 도장을 뚜껑에 맞춘다.",
+    "claim": "맞은편 어른은 손을 무릎에 두었어요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.375,
+      20.75
+    ],
+    "adapterAB": [
+      32.75,
+      12.9375
+    ]
+  },
+  {
+    "group": "reserved-06",
+    "evidence": "어른은 맞은편에서 손을 무릎에 올린 채 있고 아이는 혼자 도장을 뚜껑에 맞춘다.",
+    "claim": "둘이 도장을 번갈아 쥐고 놀아요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.625,
+      24.0
+    ],
+    "adapterAB": [
+      15.3125,
+      29.5
+    ]
+  },
+  {
+    "group": "reserved-06",
+    "evidence": "어른은 맞은편에서 손을 무릎에 올린 채 있고 아이는 혼자 도장을 뚜껑에 맞춘다.",
+    "claim": "왜 그러는지 묻고 있어요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.25,
+      23.375
+    ],
+    "adapterAB": [
+      16.375,
+      28.5
+    ]
+  },
+  {
+    "group": "reserved-07",
+    "evidence": "아이는 손바닥으로 귀를 가린 뒤 몸을 옆으로 돌린다.",
+    "claim": "아이가 양손으로 귀를 덮어요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.625,
+      23.875
+    ],
+    "adapterAB": [
+      19.0,
+      27.125
+    ]
+  },
+  {
+    "group": "reserved-07",
+    "evidence": "아이는 손바닥으로 귀를 가린 뒤 몸을 옆으로 돌린다.",
+    "claim": "아이가 몸의 방향을 바꿔요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.25,
+      20.25
+    ],
+    "adapterAB": [
+      32.5,
+      12.4375
+    ]
+  },
+  {
+    "group": "reserved-07",
+    "evidence": "아이는 손바닥으로 귀를 가린 뒤 몸을 옆으로 돌린다.",
+    "claim": "아이가 양손을 등 뒤로 돌려요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.625,
+      23.875
+    ],
+    "adapterAB": [
+      18.125,
+      27.875
+    ]
+  },
+  {
+    "group": "reserved-07",
+    "evidence": "아이는 손바닥으로 귀를 가린 뒤 몸을 옆으로 돌린다.",
+    "claim": "괜찮다고 대답해요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.25,
+      23.375
+    ],
+    "adapterAB": [
+      15.9375,
+      29.0
+    ]
+  },
+  {
+    "group": "reserved-08",
+    "evidence": "두 사람이 체스판 양쪽에 앉아 차례로 말을 옮긴다.",
+    "claim": "둘이 번갈아 체스 말을 움직여요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.625,
+      20.5
+    ],
+    "adapterAB": [
+      31.125,
+      13.5625
+    ]
+  },
+  {
+    "group": "reserved-08",
+    "evidence": "두 사람이 체스판 양쪽에 앉아 차례로 말을 옮긴다.",
+    "claim": "두 사람이 같이 체스를 해요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      23.5,
+      21.75
+    ],
+    "adapterAB": [
+      25.25,
+      20.0
+    ]
+  },
+  {
+    "group": "reserved-08",
+    "evidence": "두 사람이 체스판 양쪽에 앉아 차례로 말을 옮긴다.",
+    "claim": "혼자 체스판을 접어요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.625,
+      23.875
+    ],
+    "adapterAB": [
+      15.5625,
+      29.125
+    ]
+  },
+  {
+    "group": "reserved-08",
+    "evidence": "두 사람이 체스판 양쪽에 앉아 차례로 말을 옮긴다.",
+    "claim": "방법을 소리 내어 알려 줘요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.25,
+      23.0
+    ],
+    "adapterAB": [
+      16.625,
+      28.0
+    ]
+  },
+  {
+    "group": "reserved-09",
+    "evidence": "한 아이가 전등 스위치를 누르며 입술을 움직인다.",
+    "claim": "아이가 전등 스위치에 손을 대요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      23.875,
+      23.0
+    ],
+    "adapterAB": [
+      25.125,
+      21.625
+    ]
+  },
+  {
+    "group": "reserved-09",
+    "evidence": "한 아이가 전등 스위치를 누르며 입술을 움직인다.",
+    "claim": "아이의 입술이 움직여요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.25,
+      19.5
+    ],
+    "adapterAB": [
+      32.75,
+      11.375
+    ]
+  },
+  {
+    "group": "reserved-09",
+    "evidence": "한 아이가 전등 스위치를 누르며 입술을 움직인다.",
+    "claim": "불이 꺼지자 어른이 스위치를 눌러요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.875,
+      23.75
+    ],
+    "adapterAB": [
+      18.625,
+      27.625
+    ]
+  },
+  {
+    "group": "reserved-09",
+    "evidence": "한 아이가 전등 스위치를 누르며 입술을 움직인다.",
+    "claim": "지금 하자는 제안을 말로 건네요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.625,
+      23.625
+    ],
+    "adapterAB": [
+      18.0,
+      27.75
+    ]
+  },
+  {
+    "group": "reserved-10",
+    "evidence": "한 사람이 빗자루 끝으로 바닥의 종이 조각을 모은다.",
+    "claim": "사람이 종이를 한곳에 쓸어 모아요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      23.75,
+      22.25
+    ],
+    "adapterAB": [
+      26.25,
+      19.75
+    ]
+  },
+  {
+    "group": "reserved-10",
+    "evidence": "한 사람이 빗자루 끝으로 바닥의 종이 조각을 모은다.",
+    "claim": "빗자루 끝이 바닥을 지나가요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.875,
+      20.875
+    ],
+    "adapterAB": [
+      30.125,
+      15.5
+    ]
+  },
+  {
+    "group": "reserved-10",
+    "evidence": "한 사람이 빗자루 끝으로 바닥의 종이 조각을 모은다.",
+    "claim": "둘이 번갈아 빗자루로 놀아요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.25,
+      23.875
+    ],
+    "adapterAB": [
+      16.875,
+      28.625
+    ]
+  },
+  {
+    "group": "reserved-10",
+    "evidence": "한 사람이 빗자루 끝으로 바닥의 종이 조각을 모은다.",
+    "claim": "왜 그러는지 묻고 있어요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": true,
+    "adapterKeep": false,
+    "baseAB": [
+      22.5,
+      22.5
+    ],
+    "adapterAB": [
+      18.25,
+      26.375
+    ]
+  },
+  {
+    "group": "reserved-11",
+    "evidence": "아이가 신발 끈 끝을 모아 쥐고 어른은 옆에서 외투를 벗는다.",
+    "claim": "아이가 신발 끈을 손에 모아요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.375,
+      19.125
+    ],
+    "adapterAB": [
+      33.0,
+      10.75
+    ]
+  },
+  {
+    "group": "reserved-11",
+    "evidence": "아이가 신발 끈 끝을 모아 쥐고 어른은 옆에서 외투를 벗는다.",
+    "claim": "어른이 옆에서 겉옷을 벗어요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.375,
+      19.875
+    ],
+    "adapterAB": [
+      33.0,
+      11.6875
+    ]
+  },
+  {
+    "group": "reserved-11",
+    "evidence": "아이가 신발 끈 끝을 모아 쥐고 어른은 옆에서 외투를 벗는다.",
+    "claim": "어른과 아이가 함께 끈 묶기 놀이를 해요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.0,
+      24.25
+    ],
+    "adapterAB": [
+      16.625,
+      28.875
+    ]
+  },
+  {
+    "group": "reserved-11",
+    "evidence": "아이가 신발 끈 끝을 모아 쥐고 어른은 옆에서 외투를 벗는다.",
+    "claim": "괜찮다고 대답해요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.875,
+      23.25
+    ],
+    "adapterAB": [
+      15.0,
+      29.25
+    ]
+  },
+  {
+    "group": "reserved-12",
+    "evidence": "두 사람이 볼링 핀을 세운 뒤 공을 교대로 굴린다.",
+    "claim": "둘이 차례를 바꿔 가며 공을 굴려요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.625,
+      20.125
+    ],
+    "adapterAB": [
+      31.25,
+      13.25
+    ]
+  },
+  {
+    "group": "reserved-12",
+    "evidence": "두 사람이 볼링 핀을 세운 뒤 공을 교대로 굴린다.",
+    "claim": "두 사람이 같이 볼링을 해요.",
+    "keep": true,
+    "kind": "visible",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      23.875,
+      22.25
+    ],
+    "adapterAB": [
+      26.25,
+      19.875
+    ]
+  },
+  {
+    "group": "reserved-12",
+    "evidence": "두 사람이 볼링 핀을 세운 뒤 공을 교대로 굴린다.",
+    "claim": "각자 따로 앉아서 공을 바라봐요.",
+    "keep": false,
+    "kind": "unseen_or_wrong_participants",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.75,
+      23.375
+    ],
+    "adapterAB": [
+      18.875,
+      27.0
+    ]
+  },
+  {
+    "group": "reserved-12",
+    "evidence": "두 사람이 볼링 핀을 세운 뒤 공을 교대로 굴린다.",
+    "claim": "방법을 소리 내어 알려 줘요.",
+    "keep": false,
+    "kind": "unheard_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.375,
+      23.375
+    ],
+    "adapterAB": [
+      16.5,
+      28.5
+    ]
+  },
+  {
+    "group": "e01",
+    "evidence": "아이가 창틀 가까이에서 종이 깃발을 접는다. 옆 사람은 멀리 떨어진 창문을 닦는다.",
+    "claim": "아이가 종이 깃발을 접어요.",
+    "keep": true,
+    "kind": "held_action",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.875,
+      18.875
+    ],
+    "adapterAB": [
+      31.75,
+      11.5625
+    ]
+  },
+  {
+    "group": "e01",
+    "evidence": "아이가 창틀 가까이에서 종이 깃발을 접는다. 옆 사람은 멀리 떨어진 창문을 닦는다.",
+    "claim": "두 사람이 깃발 접기 놀이를 함께 해요.",
+    "keep": false,
+    "kind": "unsupported_joint",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.75,
+      24.0
+    ],
+    "adapterAB": [
+      15.875,
+      29.0
+    ]
+  },
+  {
+    "group": "e01",
+    "evidence": "아이가 창틀 가까이에서 종이 깃발을 접는다. 옆 사람은 멀리 떨어진 창문을 닦는다.",
+    "claim": "옆 사람이 창문을 닦아요.",
+    "keep": true,
+    "kind": "held_action",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.875,
+      20.75
+    ],
+    "adapterAB": [
+      31.0,
+      14.25
+    ]
+  },
+  {
+    "group": "e02",
+    "evidence": "어른이 봉투 두 장을 보여 준다. 아이가 고개를 왼쪽 봉투 쪽으로 돌린다. 소리나 자막은 제공되지 않았다.",
+    "claim": "아이가 왼쪽 봉투 쪽으로 고개를 돌려요.",
+    "keep": true,
+    "kind": "held_action",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.25,
+      20.25
+    ],
+    "adapterAB": [
+      32.5,
+      12.5
+    ]
+  },
+  {
+    "group": "e02",
+    "evidence": "어른이 봉투 두 장을 보여 준다. 아이가 고개를 왼쪽 봉투 쪽으로 돌린다. 소리나 자막은 제공되지 않았다.",
+    "claim": "아이가 어른의 질문에 대답해요.",
+    "keep": false,
+    "kind": "unsupported_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.625,
+      23.875
+    ],
+    "adapterAB": [
+      17.625,
+      28.25
+    ]
+  },
+  {
+    "group": "e03",
+    "evidence": "탁자 양끝에 있는 두 사람이 번갈아 구슬을 레일에 올린다. 한쪽에서 굴려 보낸 구슬을 다른 쪽 사람이 잡아 다시 보낸다.",
+    "claim": "두 사람이 구슬을 굴려 주고받아요.",
+    "keep": true,
+    "kind": "real_joint",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.625,
+      20.375
+    ],
+    "adapterAB": [
+      31.125,
+      13.4375
+    ]
+  },
+  {
+    "group": "e03",
+    "evidence": "탁자 양끝에 있는 두 사람이 번갈아 구슬을 레일에 올린다. 한쪽에서 굴려 보낸 구슬을 다른 쪽 사람이 잡아 다시 보낸다.",
+    "claim": "두 사람이 차례를 상의해요.",
+    "keep": false,
+    "kind": "unsupported_speech",
+    "baseKeep": true,
+    "adapterKeep": false,
+    "baseAB": [
+      22.625,
+      22.5
+    ],
+    "adapterAB": [
+      21.25,
+      23.875
+    ]
+  },
+  {
+    "group": "e04",
+    "evidence": "의자에 앉은 아이가 혼자 지퍼를 아래로 내린다. 아이는 복도 쪽을 본다.",
+    "claim": "아이가 지퍼를 내려요.",
+    "keep": true,
+    "kind": "held_action",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.25,
+      19.125
+    ],
+    "adapterAB": [
+      32.75,
+      11.0625
+    ]
+  },
+  {
+    "group": "e04",
+    "evidence": "의자에 앉은 아이가 혼자 지퍼를 아래로 내린다. 아이는 복도 쪽을 본다.",
+    "claim": "아이가 복도 쪽을 바라봐요.",
+    "keep": true,
+    "kind": "held_action",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.25,
+      19.125
+    ],
+    "adapterAB": [
+      33.0,
+      10.6875
+    ]
+  },
+  {
+    "group": "e04",
+    "evidence": "의자에 앉은 아이가 혼자 지퍼를 아래로 내린다. 아이는 복도 쪽을 본다.",
+    "claim": "어른이 아이의 지퍼를 내려 주며 함께 놀아요.",
+    "keep": false,
+    "kind": "unsupported_joint",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.5,
+      24.375
+    ],
+    "adapterAB": [
+      15.4375,
+      29.625
+    ]
+  },
+  {
+    "group": "e05",
+    "evidence": "한 사람은 식탁 양쪽 끝에 유리잔을 둔다. 다른 사람은 같은 식탁에 천을 편다.",
+    "claim": "두 사람이 같은 식탁에서 물건을 놓고 천을 펴요.",
+    "keep": true,
+    "kind": "parallel_action",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.625,
+      21.125
+    ],
+    "adapterAB": [
+      30.375,
+      15.125
+    ]
+  },
+  {
+    "group": "e05",
+    "evidence": "한 사람은 식탁 양쪽 끝에 유리잔을 둔다. 다른 사람은 같은 식탁에 천을 편다.",
+    "claim": "두 사람이 차례를 맞춰 식탁놀이를 해요.",
+    "keep": false,
+    "kind": "unsupported_joint",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      23.125,
+      23.25
+    ],
+    "adapterAB": [
+      20.875,
+      25.25
+    ]
+  },
+  {
+    "group": "e06",
+    "evidence": "아이가 종이 바람개비를 들어 올린다. 뒤쪽에 있는 사람이 아이 쪽으로 몸을 돌린다. 영상에 소리는 없다.",
+    "claim": "뒤에 있는 사람이 아이 쪽으로 몸을 돌려요.",
+    "keep": true,
+    "kind": "held_action",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.0,
+      20.875
+    ],
+    "adapterAB": [
+      31.25,
+      14.25
+    ]
+  },
+  {
+    "group": "e06",
+    "evidence": "아이가 종이 바람개비를 들어 올린다. 뒤쪽에 있는 사람이 아이 쪽으로 몸을 돌린다. 영상에 소리는 없다.",
+    "claim": "뒤에 있는 사람이 아이에게 바람개비를 돌려 보라고 말해요.",
+    "keep": false,
+    "kind": "unsupported_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.25,
+      23.75
+    ],
+    "adapterAB": [
+      16.5,
+      28.75
+    ]
+  },
+  {
+    "group": "e07",
+    "evidence": "두 아이가 마주 서서 같은 줄의 양끝을 잡는다. 첫 아이가 당기면 반대쪽 아이도 뒤로 물러나며 당긴다.",
+    "claim": "아이 둘이 줄의 양끝을 잡고 서로 당겨요.",
+    "keep": true,
+    "kind": "real_joint",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.875,
+      20.5
+    ],
+    "adapterAB": [
+      31.375,
+      13.625
+    ]
+  },
+  {
+    "group": "e07",
+    "evidence": "두 아이가 마주 서서 같은 줄의 양끝을 잡는다. 첫 아이가 당기면 반대쪽 아이도 뒤로 물러나며 당긴다.",
+    "claim": "한 아이가 다른 아이에게 규칙을 설명해요.",
+    "keep": false,
+    "kind": "unsupported_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      21.625,
+      23.625
+    ],
+    "adapterAB": [
+      15.0625,
+      29.25
+    ]
+  },
+  {
+    "group": "e08",
+    "evidence": "화면에는 손과 주머니만 보인다. 손이 단추를 주머니 안에 넣는다.",
+    "claim": "손이 주머니 안에 단추를 넣어요.",
+    "keep": true,
+    "kind": "held_action",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.0,
+      21.375
+    ],
+    "adapterAB": [
+      31.0,
+      15.0
+    ]
+  },
+  {
+    "group": "e08",
+    "evidence": "화면에는 손과 주머니만 보인다. 손이 단추를 주머니 안에 넣는다.",
+    "claim": "어른이 아이와 단추 숨기기 놀이를 해요.",
+    "keep": false,
+    "kind": "unsupported_joint",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.75,
+      24.0
+    ],
+    "adapterAB": [
+      19.0,
+      27.375
+    ]
+  },
+  {
+    "group": "e09",
+    "evidence": "아이가 놀잇감 옆에 앉아 자기 무릎을 두드린다. 성인은 책상에 앉아 장부에 글을 쓴다.",
+    "claim": "아이가 손으로 무릎을 두드려요.",
+    "keep": true,
+    "kind": "held_action",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      24.875,
+      20.25
+    ],
+    "adapterAB": [
+      31.375,
+      13.375
+    ]
+  },
+  {
+    "group": "e09",
+    "evidence": "아이가 놀잇감 옆에 앉아 자기 무릎을 두드린다. 성인은 책상에 앉아 장부에 글을 쓴다.",
+    "claim": "성인이 아이와 손뼉 놀이를 해요.",
+    "keep": false,
+    "kind": "unsupported_joint",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.0,
+      24.25
+    ],
+    "adapterAB": [
+      16.25,
+      29.25
+    ]
+  },
+  {
+    "group": "e10",
+    "evidence": "어른이 상자 뚜껑을 든다. 아이의 눈과 얼굴이 뚜껑 쪽을 향한다. 발화 내용은 주어지지 않았다.",
+    "claim": "아이가 상자 뚜껑을 바라봐요.",
+    "keep": true,
+    "kind": "held_action",
+    "baseKeep": true,
+    "adapterKeep": true,
+    "baseAB": [
+      25.25,
+      22.0
+    ],
+    "adapterAB": [
+      30.125,
+      16.875
+    ]
+  },
+  {
+    "group": "e10",
+    "evidence": "어른이 상자 뚜껑을 든다. 아이의 눈과 얼굴이 뚜껑 쪽을 향한다. 발화 내용은 주어지지 않았다.",
+    "claim": "어른이 상자 안에 무엇이 있는지 물어요.",
+    "keep": false,
+    "kind": "unsupported_speech",
+    "baseKeep": false,
+    "adapterKeep": false,
+    "baseAB": [
+      22.875,
+      23.625
+    ],
+    "adapterAB": [
+      18.875,
+      27.25
+    ]
+  }
+]

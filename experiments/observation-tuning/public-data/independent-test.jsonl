@@ -1,0 +1,22 @@
+{"group":"e01","evidence":"아이가 창틀 가까이에서 종이 깃발을 접는다. 옆 사람은 멀리 떨어진 창문을 닦는다.","claim":"아이가 종이 깃발을 접어요.","keep":true,"kind":"held_action"}
+{"group":"e01","evidence":"아이가 창틀 가까이에서 종이 깃발을 접는다. 옆 사람은 멀리 떨어진 창문을 닦는다.","claim":"두 사람이 깃발 접기 놀이를 함께 해요.","keep":false,"kind":"unsupported_joint"}
+{"group":"e01","evidence":"아이가 창틀 가까이에서 종이 깃발을 접는다. 옆 사람은 멀리 떨어진 창문을 닦는다.","claim":"옆 사람이 창문을 닦아요.","keep":true,"kind":"held_action"}
+{"group":"e02","evidence":"어른이 봉투 두 장을 보여 준다. 아이가 고개를 왼쪽 봉투 쪽으로 돌린다. 소리나 자막은 제공되지 않았다.","claim":"아이가 왼쪽 봉투 쪽으로 고개를 돌려요.","keep":true,"kind":"held_action"}
+{"group":"e02","evidence":"어른이 봉투 두 장을 보여 준다. 아이가 고개를 왼쪽 봉투 쪽으로 돌린다. 소리나 자막은 제공되지 않았다.","claim":"아이가 어른의 질문에 대답해요.","keep":false,"kind":"unsupported_speech"}
+{"group":"e03","evidence":"탁자 양끝에 있는 두 사람이 번갈아 구슬을 레일에 올린다. 한쪽에서 굴려 보낸 구슬을 다른 쪽 사람이 잡아 다시 보낸다.","claim":"두 사람이 구슬을 굴려 주고받아요.","keep":true,"kind":"real_joint"}
+{"group":"e03","evidence":"탁자 양끝에 있는 두 사람이 번갈아 구슬을 레일에 올린다. 한쪽에서 굴려 보낸 구슬을 다른 쪽 사람이 잡아 다시 보낸다.","claim":"두 사람이 차례를 상의해요.","keep":false,"kind":"unsupported_speech"}
+{"group":"e04","evidence":"의자에 앉은 아이가 혼자 지퍼를 아래로 내린다. 아이는 복도 쪽을 본다.","claim":"아이가 지퍼를 내려요.","keep":true,"kind":"held_action"}
+{"group":"e04","evidence":"의자에 앉은 아이가 혼자 지퍼를 아래로 내린다. 아이는 복도 쪽을 본다.","claim":"아이가 복도 쪽을 바라봐요.","keep":true,"kind":"held_action"}
+{"group":"e04","evidence":"의자에 앉은 아이가 혼자 지퍼를 아래로 내린다. 아이는 복도 쪽을 본다.","claim":"어른이 아이의 지퍼를 내려 주며 함께 놀아요.","keep":false,"kind":"unsupported_joint"}
+{"group":"e05","evidence":"한 사람은 식탁 양쪽 끝에 유리잔을 둔다. 다른 사람은 같은 식탁에 천을 편다.","claim":"두 사람이 같은 식탁에서 물건을 놓고 천을 펴요.","keep":true,"kind":"parallel_action"}
+{"group":"e05","evidence":"한 사람은 식탁 양쪽 끝에 유리잔을 둔다. 다른 사람은 같은 식탁에 천을 편다.","claim":"두 사람이 차례를 맞춰 식탁놀이를 해요.","keep":false,"kind":"unsupported_joint"}
+{"group":"e06","evidence":"아이가 종이 바람개비를 들어 올린다. 뒤쪽에 있는 사람이 아이 쪽으로 몸을 돌린다. 영상에 소리는 없다.","claim":"뒤에 있는 사람이 아이 쪽으로 몸을 돌려요.","keep":true,"kind":"held_action"}
+{"group":"e06","evidence":"아이가 종이 바람개비를 들어 올린다. 뒤쪽에 있는 사람이 아이 쪽으로 몸을 돌린다. 영상에 소리는 없다.","claim":"뒤에 있는 사람이 아이에게 바람개비를 돌려 보라고 말해요.","keep":false,"kind":"unsupported_speech"}
+{"group":"e07","evidence":"두 아이가 마주 서서 같은 줄의 양끝을 잡는다. 첫 아이가 당기면 반대쪽 아이도 뒤로 물러나며 당긴다.","claim":"아이 둘이 줄의 양끝을 잡고 서로 당겨요.","keep":true,"kind":"real_joint"}
+{"group":"e07","evidence":"두 아이가 마주 서서 같은 줄의 양끝을 잡는다. 첫 아이가 당기면 반대쪽 아이도 뒤로 물러나며 당긴다.","claim":"한 아이가 다른 아이에게 규칙을 설명해요.","keep":false,"kind":"unsupported_speech"}
+{"group":"e08","evidence":"화면에는 손과 주머니만 보인다. 손이 단추를 주머니 안에 넣는다.","claim":"손이 주머니 안에 단추를 넣어요.","keep":true,"kind":"held_action"}
+{"group":"e08","evidence":"화면에는 손과 주머니만 보인다. 손이 단추를 주머니 안에 넣는다.","claim":"어른이 아이와 단추 숨기기 놀이를 해요.","keep":false,"kind":"unsupported_joint"}
+{"group":"e09","evidence":"아이가 놀잇감 옆에 앉아 자기 무릎을 두드린다. 성인은 책상에 앉아 장부에 글을 쓴다.","claim":"아이가 손으로 무릎을 두드려요.","keep":true,"kind":"held_action"}
+{"group":"e09","evidence":"아이가 놀잇감 옆에 앉아 자기 무릎을 두드린다. 성인은 책상에 앉아 장부에 글을 쓴다.","claim":"성인이 아이와 손뼉 놀이를 해요.","keep":false,"kind":"unsupported_joint"}
+{"group":"e10","evidence":"어른이 상자 뚜껑을 든다. 아이의 눈과 얼굴이 뚜껑 쪽을 향한다. 발화 내용은 주어지지 않았다.","claim":"아이가 상자 뚜껑을 바라봐요.","keep":true,"kind":"held_action"}
+{"group":"e10","evidence":"어른이 상자 뚜껑을 든다. 아이의 눈과 얼굴이 뚜껑 쪽을 향한다. 발화 내용은 주어지지 않았다.","claim":"어른이 상자 안에 무엇이 있는지 물어요.","keep":false,"kind":"unsupported_speech"}

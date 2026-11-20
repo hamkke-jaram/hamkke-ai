@@ -1,0 +1,10 @@
+{
+  "train": 298,
+  "heldout": 48,
+  "publicSourceCount": 101,
+  "authoredTrainScenes": 24,
+  "authoredHeldoutScenes": 12,
+  "sourceSha256": "8ea580597dff1a91c566e2612180176fbc22a0dc89243594e0856f4e0722b00d",
+  "trainSha256": "8cdac0bf79a690a94df73bd61368d13c95e12a897c11850f1dfa5bc7af39d7a8",
+  "heldoutSha256": "8bec56f8e8b43690ff7a499f26bc4929d63e8287251e848f3bb70a651dc6ecad"
+}

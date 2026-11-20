@@ -1,0 +1,65 @@
+{
+  "sourceSha256": "eb673cb7a77a8dfe47f2d61c099f898608eb6368fd9c44f835d84ed46a30b890",
+  "baseline": {
+    "n": 22,
+    "correct": 18,
+    "accuracy": 0.8181818181818182,
+    "kinds": {
+      "held_action": {
+        "correct": 7,
+        "n": 9
+      },
+      "parallel_action": {
+        "correct": 0,
+        "n": 1
+      },
+      "real_joint": {
+        "correct": 1,
+        "n": 2
+      },
+      "unsupported_joint": {
+        "correct": 5,
+        "n": 5
+      },
+      "unsupported_speech": {
+        "correct": 5,
+        "n": 5
+      }
+    },
+    "supportedKept": 8,
+    "supportedTotal": 12,
+    "unsupportedRejected": 10,
+    "unsupportedTotal": 10
+  },
+  "adapter": {
+    "n": 22,
+    "correct": 20,
+    "accuracy": 0.9090909090909091,
+    "kinds": {
+      "held_action": {
+        "correct": 7,
+        "n": 9
+      },
+      "parallel_action": {
+        "correct": 1,
+        "n": 1
+      },
+      "real_joint": {
+        "correct": 2,
+        "n": 2
+      },
+      "unsupported_joint": {
+        "correct": 5,
+        "n": 5
+      },
+      "unsupported_speech": {
+        "correct": 5,
+        "n": 5
+      }
+    },
+    "supportedKept": 10,
+    "supportedTotal": 12,
+    "unsupportedRejected": 10,
+    "unsupportedTotal": 10
+  }
+}

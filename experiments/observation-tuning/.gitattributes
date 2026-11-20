@@ -1,0 +1,4 @@
+# Hashes in data-lock.json cover the original bytes on all operating systems.
+*.jsonl -text
+*.safetensors binary
+BASE_MODEL_LICENSE.txt -text
