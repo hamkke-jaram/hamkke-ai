@@ -32,3 +32,15 @@ it('울음 문장이 없는 태그와 반복 장면을 요약에서 제거한다
   expect(result.summary).toBe(note);
   expect(result.childStates).toEqual([]);
 });
+
+it('후반의 귀 가림을 요약에서 보존하고 행동이 나온 시각을 유지한다', () => {
+  const earlier: Observation = {summary:null,peopleCount:2,childStates:[],adultResponses:[],
+    moments:[{t:1,note:'아이가 블록을 쌓아요.'},{t:6,note:'아이가 블록을 옮겨요.'}]};
+  const later: Observation = { ...earlier, moments:[
+    {t:11,note:'아이가 장난감을 만져요.'},{t:14,note:'아이가 손을 들어요.'},
+    {t:16,note:'아이가 양손으로 귀를 가려요.'},
+  ]};
+  const result = mergeWindowObservations([earlier,later]);
+  expect(result.summary?.startsWith('아이가 양손으로 귀를 가려요.')).toBe(true);
+  expect(result.moments).toContainEqual({t:16,note:'아이가 양손으로 귀를 가려요.'});
+});

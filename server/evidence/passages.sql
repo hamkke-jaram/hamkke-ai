@@ -67,4 +67,4 @@ CREATE TABLE passage_provenance (
 );
 CREATE VIRTUAL TABLE evidence_search USING fts5(keywords, passage, anchor, tokenize='unicode61');
 CREATE TABLE metadata(version TEXT NOT NULL);
-INSERT INTO metadata VALUES ('care-2026-11-20.2');
+INSERT INTO metadata VALUES ('care-2026-11-21');

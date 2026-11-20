@@ -19,6 +19,13 @@ export type FrameWitness = {
   hasHandMotion?:boolean;
   describesObjectPlacement?:boolean;
   describesObjectHolding?:boolean;
+  concretePlayPair?:boolean;
+  adultComfortContact?:boolean;
+  childGraspsAdultHand?:boolean;
+  adultGraspsChildHand?:boolean;
+  visibleChildTears?:boolean;
+  childCoversOwnEars?:boolean;
+  childReachesAdult?:boolean;
 };
 const unknown: FrameWitness = {visible:'UNCLEAR', secondAction:'UNCLEAR', focusAction:'UNCLEAR', singleRole:'UNCLEAR'};
 const category = (values:readonly string[]) => ({type:'string', enum:[...values]});
@@ -27,6 +34,14 @@ const holding = /\b(?:holds|holding|grasps|grasping|grips|gripping|carries|carry
 const uncertainPlacement = /\b(?:no|not|never|cannot|\w+n['’]t|unable|without|could|may|might|would|whether|unclear|unknown|maybe|perhaps|possibly|seem\w*|appear\w*|tr(?:y|ies|ying)|pretend\w*|plan\w*|intend\w*|rather than|about to|as (?:if|though)|looks? (?:as if|like|to be))\b/i;
 const personOrBodyPart = /\b(?:bodies|body|hands?|fingers?|arms?|heads?|torso|legs?|feet|foot|faces?|persons?|people|child(?:ren)?|adults?|boys?|girls?|m[ae]n|wom[ae]n|shoulders?)\b/i;
 const groundSurface = /\b(?:floors?|grounds?|grass|pavement|road|sidewalk|carpet|tiles?)\b/i;
+const playMovement = /\b(?:(?:pass(?:es|ing)|throw(?:s|ing)|toss(?:es|ing)|catch(?:es|ing)|kick(?:s|ing)|roll(?:s|ing)|dribbl(?:es|ing)|swing(?:s|ing)|stack(?:s|ing)|plac(?:es|ing)|puts|putting)\b[^.]{0,35}\b(?:ball|bat|blocks?|pieces?|toy)|(?:high[- ]?fiv\w*|clapp?\w* hands together)|(?:lifts?|lifting)\b[^.]{0,40}\b(?:basket|hoop))\b/i;
+const childRole = /\b(?:child|kid|boy|girl|toddler|baby|infant)\b/i;
+const adultRole = /\b(?:adult|woman|man)\b/i;
+const comfortContact = /\b(?:hugs?|hugging|embraces?|embracing|cradles?|cradling|cuddles?|cuddling|holds?|holding|pats?|patting|rubs?|rubbing|strokes?|stroking)\s+(?:the |a |an |their |his |her )?(?:(?:small |young |little )?(?:child|kid|boy|girl|toddler|baby|infant)(?:['’]s\s+(?:back|shoulder|head))?)(?!['’]|\s+(?:hands?|arms?|blocks?|toys?|objects?))\b/i;
+const handGrasp = /\b(?:holds?|holding|grasps?|grasping|grips?|gripping|clasps?|clasping)\s+(?:the |a |an |their |his |her )?(?:[a-z]+\s+){0,3}(?:child|kid|boy|girl|toddler|baby|adult|woman|man)['’]s\s+(?:(?:left|right)\s+)?(?:hand|wrist|fingers?)\b/i;
+const tears = /\b(?:visible tears?|tears? (?:on|under|running|rolling|streaming|streaking)|tear[- ]streaked)\b/i;
+const ownEars = /\b(?:(?:covers?|covering|cups?|cupping|blocks?|blocking)\s+(?:(?:both|their|his|her|own|left|right)\s+){0,4}ears?|(?:hands?|palms?)\s+(?:over|covering|cupping|pressed against)\s+(?:(?:both|their|his|her|own|left|right)\s+){0,4}ears?)\b/i;
+const reachesAdult = /\b(?:reaches|reaching|walks|walking|moves|moving|steps|stepping)\b[^.]{0,28}\b(?:to|towards?)\s+(?:the |an? )?(?:adult|woman|man)\b/i;
 
 function describesObjectPlacement(description:string):boolean {
   const match = placement.exec(description);
@@ -44,7 +59,7 @@ const prompt = {
   system: 'Inspect ONLY the single photograph. A person outside the picture cannot contribute. Report visible facts only.',
   user: `FIRST, describe what you can locate in this single picture in English. actor1 and actor2 must each give an actual distinct person's screen position, visible body part and physical action in 4-14 words. Write NONE if no such person is visible. Do not count the same person twice. Do not count a drawing, a reflection, or a handheld object as a second person.
 visible: Count distinct human bodies actually visible at the same instant. Two hands or two limbs are not two people. If only cropped limbs are visible and you cannot count bodies, choose BODY_PARTS_ONLY.
-secondAction: Look for the second person's contribution. Choose PLAYING_THE_SAME_GAME only if both actively participate in the same game/sport. Helping a player reach a goal or facing a partner in a hand game can count. Ordinary work, marking paper, or standing alongside someone is not play. Use NO_SECOND_VISIBLE_PERSON for a single visible person.
+secondAction: Look for the second person's contribution. Choose PLAYING_THE_SAME_GAME only if both actively participate in the same game/sport. Helping a player reach a goal or facing a partner in a hand game can count. Ordinary work, marking paper, standing alongside someone, crouching, or reaching toward the same toy is not evidence of shared play by itself. Use NO_SECOND_VISIBLE_PERSON for a single visible person. In the actor descriptions, name physical contact only when it is visible. Covering the ears does not itself show crying; describe visible tears if present.
 focusAction: Describe the main person's physical action. PLACING_OBJECT_ON_ANOTHER requires an object in the person's hand being placed onto a second object; seeing a pile nearby is insufficient. Use UNCLEAR when the action is obscured.
 singleRole: Only when there is one clearly visible person, report a visually unambiguous child/adult. If cropped, ambiguous, absent, or multiple, choose UNCLEAR.`,
   schema: {type:'object',properties:{actor1:{type:'string',maxLength:140},actor2:{type:'string',maxLength:140},visible:category(visible), secondAction:category(secondAction),
@@ -71,6 +86,14 @@ export function decodeFrameWitness(text:string): FrameWitness {
     const substantiveFirst = !absent(v.actor1) && !/^(?:unclear|unknown|cannot|unable|not sure)/i.test(v.actor1.trim()) &&
       v.actor1.trim().split(/\s+/).length >= 3;
     const describedAlone = substantiveFirst && absent(v.actor2) && v.secondAction === 'NO_SECOND_VISIBLE_PERSON';
+    const separate = located(v.actor1) && located(v.actor2) && v.actor1.trim() !== v.actor2.trim();
+    const affirmative: string[] = [v.actor1, v.actor2].filter(actor => !absent(actor) && !uncertainPlacement.test(actor));
+    const descriptions = affirmative.filter(located);
+    const owner = (text: string) => text.split(/\b(?:holds?|holding|grasps?|grasping|grips?|gripping|clasps?|clasping|hugs?|hugging|embraces?|embracing|cradles?|cradling|cuddles?|cuddling|pats?|patting|rubs?|rubbing|strokes?|stroking)\b/i, 1)[0]!;
+    const grasping = (subject: RegExp, target: RegExp) => separate && descriptions.some(actor => {
+      const match = handGrasp.exec(actor);
+      return match && subject.test(owner(actor)) && target.test(match[0]);
+    });
     const details = {
       describedAlone,
       noDescribedPartner:substantiveFirst && absent(v.actor2) && v.secondAction !== 'PLAYING_THE_SAME_GAME',
@@ -85,9 +108,19 @@ export function decodeFrameWitness(text:string): FrameWitness {
       hasHandMotion:substantiveFirst && /\b(?:hands?|arms?|fingers?)\b/i.test(v.actor1) && /\b(?:lift\w*|rais\w*|reach\w*|wav\w*|mov\w*|point\w*)\b/i.test(v.actor1),
       describesObjectPlacement:describedAlone && v.focusAction === 'PLACING_OBJECT_ON_ANOTHER' && describesObjectPlacement(v.actor1),
       describesObjectHolding:describedAlone && describesObjectHolding(v.actor1),
+      concretePlayPair:separate && descriptions.length === 2 && descriptions.every(actor => playMovement.test(actor)),
+      adultComfortContact:separate && descriptions.some(actor => adultRole.test(owner(actor)) && comfortContact.test(actor)),
+      childGraspsAdultHand:grasping(childRole, adultRole),
+      adultGraspsChildHand:grasping(adultRole, childRole),
+      visibleChildTears:affirmative.some(actor => childRole.test(actor) && !adultRole.test(actor) && tears.test(actor)),
+      childCoversOwnEars:affirmative.some(actor => childRole.test(actor) && !adultRole.test(actor) && ownEars.test(actor)),
+      childReachesAdult:separate && descriptions.some(actor => {
+        const reach = reachesAdult.exec(actor);
+        return reach && childRole.test(actor.slice(0,reach.index)) && !adultRole.test(actor.slice(0,reach.index));
+      }),
     };
     const unclearCount:FrameWitness = { ...unknown, ...details, focusAction:substantiveFirst ? v.focusAction : 'UNCLEAR' };
-    if (located(v.actor1) && located(v.actor2) && v.actor1.trim() !== v.actor2.trim()) v.visible = 'TWO_OR_MORE_PEOPLE';
+    if (separate) v.visible = 'TWO_OR_MORE_PEOPLE';
     if (v.visible === 'ONE_PERSON' && (!located(v.actor1) || !absent(v.actor2))) return unclearCount;
     if (v.visible === 'TWO_OR_MORE_PEOPLE' && (!located(v.actor1) || !located(v.actor2) || v.actor1 === v.actor2)) return unclearCount;
     if (v.visible === 'NO_PERSON' && (!absent(v.actor1) || !absent(v.actor2) || !['UNCLEAR','OTHER'].includes(v.focusAction))) return unclearCount;

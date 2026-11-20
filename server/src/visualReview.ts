@@ -23,7 +23,7 @@ const reviewPrompt = {
   system: 'Look at the silent images independently. Return only the requested categories. Do not estimate anyone\'s numerical age.',
   user: `Inspect the full image series. If a head, torso, or a standing, seated or walking figure is shown anywhere, this is not a hands-only shot. appearance: choose UNRESOLVED unless a role is visually clear. CLEAR_CHILDREN_ONLY and CLEAR_ADULTS_ONLY require positive visual evidence for all visible people. A turned or blurred face alone establishes neither. Choose PARTS_ONLY only for a close-up of isolated body parts throughout. Do not infer age from the activity.
 participants: count distinct visible people separately from recognizing their ages. A cropped pair of hands may belong to one person. A camera operator outside the image is not another participant.
-activity: Decide from the actual actions, independently of age. SHARED_PLAY includes two people visibly engaged in the same game/sport, taking turns or cooperating with play equipment. They need not touch one another. SOLO_PLAY needs an identifiable independent game or toy action. Two people cooperating on an ordinary task are OTHER_JOINT_ACTION. Mere proximity, observing someone, ordinary walking or touching an object alone are not evidence of play. Use UNRESOLVED for insufficient visual evidence.`,
+activity: Decide from the actual actions, independently of age. SHARED_PLAY includes two people visibly engaged in the same game/sport, taking turns or cooperating with play equipment. They need not touch one another. SOLO_PLAY needs an identifiable independent game or toy action. Two people cooperating on an ordinary task are OTHER_JOINT_ACTION. Mere proximity, observing someone, ordinary walking, crouching, or simply reaching toward the same object are not evidence of shared play. Use UNRESOLVED for insufficient visual evidence.`,
   schema: {type:'object', properties:{appearance:enumeration(appearances), participants:enumeration(participants), activity:enumeration(activities)},
     required:['appearance','participants','activity'], additionalProperties:false},
 };
@@ -58,6 +58,38 @@ const namedGroup = /(?:두|세|여러|다른)\s*(?:명|사람|아이|어른)|(?:
 const pairedActors = /(?:아이|어른|사람)(?:와|과|랑|이랑)\s*(?:아이|어른|사람)/;
 const isolated = /혼자|홀로|단독|(?:아이|어른|한\s*사람)만\s*(?:있|보)/;
 const genericPosture = /^(?:(?:아이(?:가|는)|어른(?:이|은)|(?:한\s*)?사람(?:이|은))\s+)?(?:서|앉아)\s+있(?:어요|네요)[.!?…]?$/;
+const comforting = /달래|진정시켜|진정시키|위로(?:해|하)/;
+const coversEars = /귀(?:를)?\s*(?:손으로\s*)?(?:가리|가려|막|덮)/;
+const earPosition = String.raw`귀(?:에|\s*(?:옆|쪽|뒤|근처)에)`;
+const handAtEar = new RegExp(String.raw`(?:손(?:을)?\s*${earPosition}|${earPosition}\s*(?:(?:두|양)\s*)?손(?:을)?)\s*(?:올|대|가져)`);
+const handAtHead = /손(?:을)?\s*(?:자기\s*)?머리(?:에|로|\s*(?:옆|쪽)(?:에|으로))\s*(?:올|얹|대|가져)|머리(?:에|\s*(?:옆|쪽)(?:에|으로))\s*(?:(?:두|양)\s*)?손(?:을)?\s*(?:올|얹|대|가져)/;
+const raisedHands = /손(?:을)?\s*(?:위로\s*)?(?:들(?:어|고|며)|올[리려])/;
+const towardsAdult = /어른(?:에게|한테|\s*쪽으로|\s*곁으로)[^.!?…]{0,25}(?:다가가|걸어가|뻗)/;
+const childCrying = /(?:울(?:어요|고|며|면서|었|기\s*시작)|흐느[끼껴]|울먹)/;
+const otherPersonHand = /(아이|어른)(?:의)?\s*(?:(?:왼|오른|양(?:쪽)?|한쪽)\s*)?손(?:목|가락)?(?:을|를)\s*(?:붙?잡|움켜쥐|쥐|당[기겨겼])/;
+const namedHandoff = /(?:아이|어른)(?:에게|한테)[^.!?…]{0,23}(?:건네(?:주|줘|요|고|며|는|자)|건넨)/;
+const toyHandling = /(?:장난감|블록|인형|공을)[^.!?…]{0,16}(?:만지|만져|쌓|올리|올려|옮기|옮겨|굴리|굴려|밀어|내려놓)/;
+const toyCompanion = /^((?:아이(?:가|는)|어른(?:이|은))\s+)(?:아이|어른)(?:와|과|이랑|랑)\s*(?:함께|같이)\s+/;
+const pairedToyActors = /^(?:아이|어른)(?:와|과|이랑|랑)\s*(?:아이|어른)(?:가|이|는|은)\s+/;
+const earCoverNote = '아이가 손으로 귀를 가려요.';
+const EAR_GESTURE_RADIUS_SECONDS = 2.1;
+
+function unconfirmedHandContact(text: string, witnesses: readonly FrameWitness[]): boolean {
+  const hand = otherPersonHand.exec(text);
+  if (!hand) return false;
+  const actor = /(?:^|\s)(아이(?:가|는)|어른(?:이|은))\s/.exec(text)?.[1];
+  if (actor?.startsWith('아이') && hand[1] === '어른') return !witnesses.some(w => w.childGraspsAdultHand);
+  if (actor?.startsWith('어른') && hand[1] === '아이') return !witnesses.some(w => w.adultGraspsChildHand);
+  return true;
+}
+
+function earGesture(text: string): boolean {
+  return coversEars.test(text) || handAtEar.test(text);
+}
+
+function ambiguousHeadGesture(text: string): boolean {
+  return handAtHead.test(text) || handAtEar.test(text);
+}
 
 function describesObjectHandling(text:string, placementOnly = false):boolean {
   return text.split(/[,.!?…]/).some(clause => {
@@ -70,7 +102,8 @@ function describesObjectHandling(text:string, placementOnly = false):boolean {
 
 function hasJointClaim(obs: Observation): boolean {
   return obs.childStates.includes('PLAYING_TOGETHER') || obs.adultResponses.includes('JOINING_PLAY') ||
-    [obs.summary, ...obs.moments.map(m => m.note)].some(s => s && together.test(s));
+    [obs.summary, ...obs.moments.map(m => m.note)].some(s => s && (together.test(s) ||
+      s.split(/(?<=[.!?…])\s+/).some(part=>toyHandling.test(part) && (toyCompanion.test(part) || pairedToyActors.test(part)))));
 }
 
 function checkablePartnerClaim(obs: Observation, child:boolean, adult:boolean): boolean {
@@ -177,7 +210,8 @@ async function reconcileHairContact(observation:Observation, provider:VisionProv
     summary:summary || (moments.length ? null : '확인한 장면에서 구체적인 동작을 구별하기 어려워요.') };
 }
 
-export function applyReview(obs: Observation, review: Review, witnesses:readonly FrameWitness[]=[], independent:readonly number[]|null=null, releasedAt:number|null=null): Observation | null {
+export function applyReview(obs: Observation, review: Review, witnesses:readonly FrameWitness[]=[], independent:readonly number[]|null=null, releasedAt:number|null=null,
+  witnessTimes:readonly number[]=[]): Observation | null {
   const sceneText = [obs.summary, ...obs.moments.map(m => m.note)].filter(Boolean).join(' ');
   // A full-body activity in the draft contradicts a claimed hands-only crop. In that
   // situation a second look is not enough to erase the original actor.
@@ -249,20 +283,26 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
   const visualPair = review.participation === 'TWO_PEOPLE_PLAY_THE_SAME_GAME' ||
     (review.activity === 'SHARED_PLAY' && review.participants === 'MULTIPLE_VISIBLE_PARTICIPANTS' &&
      (!review.participation || review.participation === 'CANNOT_TELL'));
-  const spectator = review.participation === 'ANOTHER_PERSON_ONLY_WATCHES' &&
-    /지켜보|지켜봐|구경|바라보기만|보기만/.test(visibleActors) && !/주고\s*받|번갈아|교대/.test(visibleActors);
+  const soloSeries = review.activity === 'SOLO_PLAY' || review.participation === 'ONE_PERSON_DOES_THE_ACTION' ||
+    review.participation === 'ANOTHER_PERSON_ONLY_WATCHES';
+  // A single coarse play label cannot override a check of the entire series.
+  // Keep real exchanges and repeated photographs with two concrete contributions.
+  const corroboratedPlay = reciprocal || groupPhotos.filter(f => f.concretePlayPair && f.secondAction === 'PLAYING_THE_SAME_GAME').length >= 2;
   const jointGame = obs.peopleCount > 0 && !partial && !hideSecondActor && !noPeople && !nonplay &&
-    (playPhoto || ((!single || groupDetected) && !spectator && (draftSupportsPair || visualPair)));
+    (soloSeries ? corroboratedPlay : playPhoto || ((!single || groupDetected) && (draftSupportsPair || visualPair)));
   const soloEvidence = hideSecondActor;
   const soloGame = !partial && (!multipleInDraft || isolated.test(physicalText) || review.activity !== 'SHARED_PLAY');
   const incompatibleAges = (childOnly || adultOnly) && !supportPair && !((multipleInDraft || groupDetected) && childInDraft && adultInDraft);
+  const witnessedComfort = witnesses.some(f=>f.adultComfortContact);
+  const earTimes = witnessTimes.filter((_time,i)=>witnesses[i]?.childCoversOwnEars);
+  const earContextTimes = [...earTimes, ...obs.moments.filter(m=>earGesture(m.note)).map(m=>m.t)];
 
   function unsupported(text: string): boolean {
     // Even a corroborated release says nothing about a target, intention or sound.
     // Only the time-bounded observation below may describe it as a throw.
     const unconfirmedCatch = releasedAt !== null && !jointGame
       && /받아\s*(?:주|줘|줬|준|내|낸|냈)|공을\s*(?:주고\s*받|받아요)/.test(text);
-    return speech.test(text) || throwClaim.test(text) || unconfirmedCatch || (!jointGame && together.test(text))
+    return speech.test(text) || throwClaim.test(text) || unconfirmedCatch || comforting.test(text) || (!jointGame && together.test(text))
       || (!soloGame && !jointGame && play.test(text));
   }
 
@@ -297,11 +337,24 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
     return sentence;
   }
 
-  function cleanSentence(original:string):string|null {
-    const retained = keepVisibleClauses(original, text => unsupported(text) ||
+  function cleanSentence(original:string, at:readonly FrameWitness[], earCrying:boolean, nearbyReachUnverified:boolean):string|null {
+    const unconfirmedHandoff = soloSeries && !corroboratedPlay && namedHandoff.test(original);
+    const sentence = !jointGame && toyHandling.test(original) ? original.replace(toyCompanion,'$1') : original;
+    const retained = keepVisibleClauses(sentence, text => unsupported(text) ||
+      unconfirmedHandContact(text, at) || (earCrying && childCrying.test(text)) ||
+      (nearbyReachUnverified && towardsAdult.test(text)) ||
+      (unconfirmedHandoff && (namedHandoff.test(text) || /도와|돕/.test(text))) ||
+      (!jointGame && pairedToyActors.test(text) && toyHandling.test(text)) ||
       (throwClaim.test(original) && /조준|겨냥|일부러|맞히려고|맞추려고|해치려고|겁(?:을)?\s*주려고/.test(text)) ||
       (hideSecondActor && /함께|서로|같이|옆에서\s*지켜|주고\s*받|건네(?:주|줘|요|고|며|는|자|받)|건넨|보여\s*(?:주|줘)|(?:아이|어른|사람)(?:와|과|이랑|랑)\s*(?:아이|어른|사람)|(?:아이|어른)(?:를|을|에게|한테)\s*(?:향|바라|쳐다|도와|건네|보)/.test(text)));
     const parts = retained ? retained.split(/(?<=[.!?…])\s+/).map(describeActor).filter((s):s is string=>!!s) : [];
+    // In "cries, covers their ears, and takes an adult's hand", the visible
+    // action can be between two rejected clauses and have no repeated subject.
+    if (!parts.some(earGesture) && /^아이(?:가|는)\s/.test(original) &&
+      earGesture(original) && !/않|못|듯|처럼|려고|어른(?:이|은)\s/.test(original)) {
+      const earAction = describeActor(coversEars.test(original) ? earCoverNote : '아이가 귀 쪽에 손을 올려요.');
+      if (earAction) parts.push(earAction);
+    }
     if (hideSecondActor) {
       // An attributive phrase ("smiling, the child ...") may lack a connective
       // which can be closed by the clause editor. Recover only the explicitly
@@ -324,18 +377,38 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
     return parts.length ? parts.join(' ') : null;
   }
 
-  function cleanText(text: string | null, maxSentences: number, maxLength: number): string | null {
+  function cleanText(text:string|null, maxSentences:number, maxLength:number, at:readonly FrameWitness[],
+    nearEarGesture=false, nearbyReachUnverified=false):string|null {
     if (!text) return null;
     const sentences = text.split(/(?<=[.!?…])\s+|(?<=요[.!?])(?=[가-힣])/);
-    const cleaned = sentences.map(cleanSentence).filter((s): s is string => s !== null);
+    const earCrying = (earGesture(text) || nearEarGesture) && !at.some(f=>f.visibleChildTears);
+    const cleaned = sentences.map(sentence=>cleanSentence(sentence,at,earCrying,nearbyReachUnverified)).filter((s): s is string => s !== null);
     if (cleaned.length === sentences.length && cleaned.every((s,i) => s === sentences[i])) return text;
     return cleaned.length ? limitText(cleaned.join(' '), maxSentences, maxLength) : null;
   }
-  let summary = cleanText(obs.summary, MAX_SUMMARY_SENTENCES, MAX_SUMMARY_LENGTH);
   const moments = obs.moments.flatMap(m => {
-    const note = cleanText(m.note, Number.POSITIVE_INFINITY, MAX_NOTE_LENGTH);
+    const at = witnesses.filter((_f,i)=>witnessTimes[i] === m.t);
+    const nearEarGesture = (raisedHands.test(m.note) || handAtHead.test(m.note)) &&
+      earContextTimes.some(t=>Math.abs(t-m.t) <= EAR_GESTURE_RADIUS_SECONDS);
+    const nearbyReachUnverified = earTimes.some(t=>Math.abs(t-m.t) <= EAR_GESTURE_RADIUS_SECONDS) && !at.some(f=>f.childReachesAdult);
+    let note = cleanText(m.note, Number.POSITIVE_INFINITY, MAX_NOTE_LENGTH, at,nearEarGesture,nearbyReachUnverified);
+    if (note && earTimes.includes(m.t) && /^아이(?:가|는)\s/.test(note) && ambiguousHeadGesture(note) && !coversEars.test(note)) {
+      const remainder = note.split(/(?<=[.!?…])\s+/).map(sentence=>keepVisibleClauses(sentence,ambiguousHeadGesture))
+        .filter(Boolean).join(' ');
+      note = limitText([earCoverNote,remainder].filter(Boolean).join(' '),Number.POSITIVE_INFINITY,MAX_NOTE_LENGTH);
+    }
     return note ? [{ t:m.t, note }] : [];
   });
+  if (!moments.some(m=>coversEars.test(m.note)) && ambiguousHeadGesture(sceneText)) {
+    const t = earTimes.find(time=>!moments.some(m=>m.t === time));
+    if (t !== undefined && moments.length < MAX_MOMENTS) {
+      moments.push({t,note:earCoverNote});
+      moments.sort((a,b)=>a.t-b.t);
+    }
+  }
+  const nearEarSummary = !!obs.summary && earContextTimes.length > 0 && (raisedHands.test(obs.summary) || handAtHead.test(obs.summary));
+  const unverifiedReachInSummary = earTimes.length > 0 && !witnesses.some(f=>f.childReachesAdult) && !moments.some(m=>towardsAdult.test(m.note));
+  let summary = cleanText(obs.summary,MAX_SUMMARY_SENTENCES,MAX_SUMMARY_LENGTH,witnesses,nearEarSummary,unverifiedReachInSummary);
   const childStates = obs.childStates.filter(tag => {
     if (tag === 'THROWING_OR_HITTING') {
       const childStrike = [summary, ...moments.map(m => m.note)].some(text => text?.split(/[.!?…]/).some(s =>
@@ -344,13 +417,18 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
     }
     if (tag === 'UPSET_CRYING' && speech.test(sceneText) &&
       !/눈물(?:이|을|자국)|흐느[끼껴]|울먹/.test([summary, ...moments.map(m => m.note)].join(' '))) return false;
+    if (tag === 'UPSET_CRYING' && (earContextTimes.length || earGesture(sceneText)) &&
+      ![summary, ...moments.map(m=>m.note)].some(note=>note && childCrying.test(note))) return false;
     if (tag === 'PLAYING_TOGETHER') return jointGame;
+    if (tag === 'SEEKING_ADULT' && earTimes.length && !moments.some(m=>towardsAdult.test(m.note) &&
+      witnesses.some((f,i)=>witnessTimes[i] === m.t && f.childReachesAdult))) return false;
     if (hideSecondActor && (tag === 'SEEKING_ADULT' || soloRole !== 'CLEAR_CHILD')) return false;
     if (tag === 'PLAYING_ALONE') return soloGame;
     return !partial && !(adultOnly && !childInDraft);
   });
   const adultResponses = obs.adultResponses.filter(tag => {
     if (tag === 'JOINING_PLAY') return jointGame;
+    if (tag === 'COMFORTING') return !partial && !hideSecondActor && witnessedComfort;
     return tag !== 'TALKING' && !partial && !single && !soloEvidence && !incompatibleAges;
   });
   if (noPeople) return {
@@ -384,7 +462,8 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
   if (!summary && !moments.length && hasJointClaim(obs) && !jointGame) {
     summary = '화면에서 구체적인 동작을 확인하기 어려워요.';
   }
-  if (!summary && !moments.length && (speech.test(sceneText) || throwClaim.test(sceneText) || obs.childStates.includes('THROWING_OR_HITTING'))) {
+  if (!summary && !moments.length && (speech.test(sceneText) || throwClaim.test(sceneText) || otherPersonHand.test(sceneText) ||
+      comforting.test(sceneText) || obs.childStates.includes('THROWING_OR_HITTING'))) {
     summary = '확인한 장면에서 구체적인 동작을 구별하기 어려워요.';
   }
   if (!summary && !moments.length && !childStates.length && !adultResponses.length) return null;
@@ -400,9 +479,9 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
 export function screenLines(obs: Observation | null): Observation | null {
   if (!obs || (obs.childLine === undefined && obs.parentLine === undefined)) return obs;
   const reviewed = [obs.summary ?? '', ...obs.moments.map(m => m.note)].join(' ');
-  const claims = [speech, throwClaim, impactClaim, together, play];
+  const claims = [speech, throwClaim, impactClaim, together, play, childCrying];
   // A one-line claim has no timestamp to tie it to a checked point of contact.
-  const supported = (line: string | undefined) => line !== undefined && !hairClaim.test(line)
+  const supported = (line: string | undefined) => line !== undefined && !hairClaim.test(line) && !otherPersonHand.test(line) && !comforting.test(line)
     && claims.every(p => !p.test(line) || p.test(reviewed));
   const { childLine, parentLine, ...rest } = obs;
   return {
@@ -452,7 +531,8 @@ export async function reviewedObservation(provider: VisionProvider, request: Vis
   // Optional local evaluation observer. The HTTP service supplies no observer.
   // Only validated categories and box counts are exposed, never image data or prose.
   onEvidence?.({frames:witnesses, detectedPeople:boxes});
-  const checked = applyReview(draft, review, witnesses, boxes, releasedAt);
+  const checked = applyReview(draft, review, witnesses, boxes, releasedAt,
+    images.map(image=>frameTimes[request.images.indexOf(image)]!));
   const present = reconcilePresence(checked,draft);
   const observation = present && await reconcileHairContact(present,provider,request.images,frameTimes,request.signal);
   // 선생님용 두 줄: 재확인 결과가 초안과 다르면 빼고(keepLinesIfUnchanged), 재확인을 지나지 않은 주장이 있으면 그 줄만 뺀다

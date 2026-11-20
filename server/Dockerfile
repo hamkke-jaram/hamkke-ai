@@ -11,7 +11,7 @@ WORKDIR /app
 RUN apk add --no-cache py3-opencv py3-numpy
 COPY package.json ./
 COPY server/src ./server/src
-COPY server/evidence/care-2026-11-20-v2.sqlite ./server/evidence/care-2026-11-20-v2.sqlite
+COPY server/evidence/care-2026-11-21.sqlite ./server/evidence/care-2026-11-21.sqlite
 COPY server/vision ./server/vision
 
 # 사진을 디스크에 쓰지 않는 서버다. 쓰기 권한이 없는 사용자로 돌린다.

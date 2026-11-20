@@ -38,7 +38,7 @@ function makeApp(fetchApi = vi.fn<typeof fetch>().mockResolvedValue(ok()), selec
 }
 describe('공개 자료 검색과 교사 검토용 추천', () => {
   it('내려받은 원문에서 재구성한 근거·출처·검색 색인이 배포된 DB와 일치한다', () => {
-    const disk = new DatabaseSync(new URL('../evidence/care-2026-11-20-v2.sqlite',import.meta.url),{readOnly:true});
+    const disk = new DatabaseSync(new URL('../evidence/care-2026-11-21.sqlite',import.meta.url),{readOnly:true});
     const built = new DatabaseSync(':memory:');
     try {
       populateEvidence(built);
@@ -92,6 +92,58 @@ describe('공개 자료 검색과 교사 검토용 추천', () => {
   ])('관찰 대상의 직접적인 울음이 없으면 울음 자료를 고르지 않는다 (%s)', text => {
     expect(findEvidence([text], 36).some(c => c.passage.id === 'CDC-TIME-IN')).toBe(false);
   });
+  it.each([
+    '아이가 손을 귀에 올렸어요.',
+    '아이가 손으로 귀를 가리고 있어요.',
+    '아이가 손으로 귀를 가려요.',
+    '아이가 두 손을 귀에 올리고 있어요.',
+    '아이가 양손으로 자기 귀를 막아요.',
+    '아이가 한쪽 귀에 손바닥을 대고 있어요.',
+    '아이가 손바닥으로 양쪽 귀를 덮어요.',
+  ])('아이가 자기 귀를 손으로 가리거나 직접 대면 귀를 가리는 행동에 대한 자료를 찾는다 (%s)', text => {
+    const topics = findEvidence([text], 36).map(c => c.passage.topic);
+    expect(topics).toContain('ear-cover');
+    expect(topics).not.toContain('cry');
+  });
+  it.each([
+    '아이가 귀 옆에서 손을 흔들어요.',
+    '아이가 귀 근처에 손을 올려요.',
+    '아이가 귀 주변에 손을 가져가지만 닿지 않아요.',
+    '어른이 귀를 가리고 아이는 블록을 쌓아요.',
+    '아이는 블록을 쌓고 어른은 귀를 가려요.',
+    '아이가 어른의 귀를 막아요.',
+    '아이가 인형 귀를 두 손으로 가려요.',
+    '아이가 손을 친구의 양쪽 귀에 대고 있어요.',
+    '아이가 귀를 가리고 있는 친구를 바라봐요.',
+    '아이가 휴대폰 화면 속 친구가 귀를 막는 모습을 봐요.',
+    '아이가 귀를 막았다고 말해요.',
+    '아이가 귀를 막는 흉내를 내요.',
+    '아이가 귀를 가리면서 눈을 감은 것 같아요.',
+    '아이가 귀를 가리지 않아요.',
+    '아이가 귀를 막지 않고 블록을 쌓아요.',
+    '아이가 귀를 가리키고 있어요.',
+    '아이가 이어폰을 귀에 넣어요.',
+    '아이가 귀를 헤드폰으로 덮어요.',
+  ])('가림이 불확실하거나 다른 대상의 귀를 가리면 관련 자료를 제외한다 (%s)', text => {
+    expect(findEvidence([text], 36).map(c => c.passage.topic)).not.toContain('ear-cover');
+  });
+  it('ear-cover는 자료의 연령 범위에 맞을 때 일상 놀이와 함께 있어도 우선한다', () => {
+    const earCover = '아이가 손으로 귀를 가리고 있어요.';
+    const topics = (age: number | null) => findEvidence([scene, earCover], age).map(c => c.passage.topic);
+    expect(topics(59)[0]).toBe('ear-cover');
+    expect(topics(59)).toContain('build');
+    expect(topics(60)).not.toContain('ear-cover');
+    expect(topics(null)).not.toContain('ear-cover');
+  });
+  it('모델이 놀이 근거부터 선택해도 귀 가림에 직접 대응하는 근거를 먼저 돌려준다', async () => {
+    const candidates = findEvidence([scene,'아이가 양손으로 귀를 가려요.'], 36);
+    const cover = candidates.findIndex(c => c.passage.id === 'DEVON-EAR-COVER');
+    const play = candidates.findIndex(c => c.passage.topic === 'build');
+    const model = { ...fakeProvider(), generate:async () => JSON.stringify({indexes:[play,cover]}) };
+    const selected = await groundRecommendations(model,candidates,new AbortController().signal);
+    expect(selected[0]?.sourceId).toBe('DEVON-EAR-COVER');
+    expect(selected).toHaveLength(2);
+  });
   const scenarios = [
     ['아이가 빨간 크레용으로 종이에 동그라미를 그려요.', 42, 'draw'],
     ['아이가 인형에게 작은 숟가락으로 밥을 먹이는 시늉을 내요.', 40, 'pretend'],
@@ -122,6 +174,7 @@ describe('공개 자료 검색과 교사 검토용 추천', () => {
     ['아기가 두 개의 장난감 중에서 인형을 골라요.', 20, 'choose'],
     ['아기가 두 모자 중 작은 모자를 골라요.', 18, 'choose'],
     ['아이가 바닥에 앉아 울고 있어요.', 39, 'cry'],
+    ['아이가 두 손으로 귀를 가려요.', 36, 'ear-cover'],
     ['아이가 크레용으로 종이에 선을 그어요.', 28, 'draw'],
     ['아이가 선생님에게 인형을 건네요.', 45, 'exchange'],
     ['아이가 혼자 장난감 자동차를 굴려요.', 45, 'explore'],
@@ -144,7 +197,7 @@ describe('공개 자료 검색과 교사 검토용 추천', () => {
         if (passage.topic === topic) covered.add(passage.id);
       }
     }
-    const db = new DatabaseSync(new URL('../evidence/care-2026-11-20-v2.sqlite', import.meta.url), {readOnly:true});
+    const db = new DatabaseSync(new URL('../evidence/care-2026-11-21.sqlite', import.meta.url), {readOnly:true});
     try {
       const missing = db.prepare('SELECT id FROM passage ORDER BY id').all()
         .map(row => String(row.id)).filter(id => !covered.has(id));

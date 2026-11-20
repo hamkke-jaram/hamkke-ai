@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 
-const target = new URL('./care-2026-11-20-v2.sqlite', import.meta.url);
+const target = new URL('./care-2026-11-21.sqlite', import.meta.url);
 const columns = ['id','topic','minAge','maxAge','title','publisher','url','section','keywords','passage','action','reason'];
 
 function plainText(value, max, field) {

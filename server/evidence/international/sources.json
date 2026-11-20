@@ -197,5 +197,17 @@
     "sha256": "8237f5892d48e44236cbbff638257f23f11c7a2f2a3d444b9d68cf46a515336c",
     "retrievedAt": "2026-11-20",
     "retrieval": "Selected verbatim English excerpts mechanically extracted from the published CDC page, Tips and activities. No media, checklists or third-party content."
+  },
+  {
+    "sourceKey": "devon-early-years-sensory",
+    "title": "Sensory processing and integration in the early years",
+    "publisher": "영국 데번 카운티 의회",
+    "url": "https://www.devon.gov.uk/support-schools-settings/ordinarily-available-inclusive-provision/targeted-support-framework-eyfs/communication-and-interaction-needs-ey/sensory-processing-and-integration/",
+    "license": "Contains public sector information from Devon County Council licensed under the Open Government Licence v3.0. Excerpts only.",
+    "licenseUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "asset": "devon-early-years-sensory.txt",
+    "sha256": "d65ae5f6c4d59984c82b9202e3036a2ab4c3e69fd468d0d9ae8ca7fbab576091",
+    "retrievedAt": "2026-11-21",
+    "retrieval": "Verified short first-party text excerpts from Identification and Planned provision in the setting. No links, media or third-party content retained. Devon reuse policy: https://www.devon.gov.uk/copyright/"
   }
 ]

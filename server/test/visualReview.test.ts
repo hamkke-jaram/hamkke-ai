@@ -161,6 +161,114 @@ describe('같은 화면에서 호칭·대화·놀이만 다시 확인', () => {
       draft(before.summary!, {peopleCount:2}));
   });
 
+  const soloPlay = { ...joint, activity:'SOLO_PLAY', participation:'ONE_PERSON_DOES_THE_ACTION' } as const;
+  const pairWitness = (actor1:string,actor2:string,secondAction='PLAYING_THE_SAME_GAME') => decodeFrameWitness(JSON.stringify({
+    ...photoPair, actor1, actor2, secondAction,
+  }));
+
+  it('같은 블록에 손을 뻗은 한 장을 공동놀이 또는 달래기로 올리지 않고 두 사람의 실제 동작을 남긴다', () => {
+    const photo = pairWitness('Child at center stacks the blocks with hands', 'Adult at right crouches and reaches toward a block');
+    expect(photo.secondAction).toBe('PLAYING_THE_SAME_GAME');
+    expect(photo.concretePlayPair).toBe(false);
+    const before = draft('아이가 블록을 옮겨요. 어른이 블록 쪽으로 손을 뻗고 웅크려요. 두 사람이 함께 놀아요.', {
+      peopleCount:2, childStates:['PLAYING_TOGETHER','FOCUSED'], adultResponses:['JOINING_PLAY','COMFORTING'],
+    });
+    expect(applyReview(before, soloPlay, [photo], [2])).toEqual(draft(
+      '아이가 블록을 옮겨요. 어른이 블록 쪽으로 손을 뻗고 웅크려요.', { peopleCount:2, childStates:['FOCUSED'] }));
+  });
+
+  it('단독놀이 판정이 있어도 두 사람이 공에 하는 구체적인 동작을 두 장에서 확인하면 공동놀이를 남긴다', () => {
+    const before = playing('아이와 어른이 같이 놀아요.');
+    const photos = [
+      pairWitness('Child at left passes a ball with both hands', 'Adult on right catches the ball with both hands'),
+      pairWitness('Child at left catches the ball with both hands', 'Adult on right passes the ball with both hands'),
+    ];
+    expect(photos.every(p=>p.concretePlayPair)).toBe(true);
+    expect(applyReview(before, soloPlay, photos, [2,2])).toEqual({ ...before, adultResponses:['JOINING_PLAY'] });
+  });
+
+  it('귀를 가리는 자세에서 울음이나 손을 잡는 일을 추측하지 않고 같은 문장의 귀 동작을 남긴다', () => {
+    const before = draft('아이가 갑자기 울면서 손으로 귀를 가리고 어른의 손을 잡아요.', {
+      peopleCount:2, childStates:['UPSET_CRYING'], adultResponses:['COMFORTING'],
+      moments:[{t:12.5,note:'어른이 아이의 손을 잡고 블록을 건드리고 있어요.'}, {t:13.1,note:'아이가 귀를 가리고 울어요.'}],
+    });
+    const photos = [
+      pairWitness('Child at left raises empty hands', 'Adult at right pulls a hand back from a block','ONLY_WATCHING_OR_NEARBY'),
+      pairWitness('Child at left covers ears with both hands', 'Adult at right stays crouched','ONLY_WATCHING_OR_NEARBY'),
+    ];
+    expect(applyReview(before, soloPlay, photos, [2,2], null,[12.5,13.1])).toEqual(draft('아이가 손으로 귀를 가려요.', {
+      peopleCount:2,moments:[{t:12.5,note:'어른이 블록을 건드리고 있어요.'},{t:13.1,note:'아이가 귀를 가리고 있어요.'}],
+    }));
+  });
+
+  it('아이를 안는 접촉과 귀를 가릴 때 눈에 보이는 눈물이 확인되면 둘 다 살린다', () => {
+    const before = draft('아이가 귀를 가리고 울어요. 어른이 아이를 안아요.', {
+      peopleCount:2, moments:[{t:4,note:'아이가 귀를 가리고 울어요.'}], childStates:['UPSET_CRYING'], adultResponses:['COMFORTING'],
+    });
+    const photo = pairWitness('Child at left covers ears with visible tears on cheeks', 'Adult on right cradles the child in both arms', 'HELPING_WITH_AN_ORDINARY_TASK');
+    expect(photo.visibleChildTears).toBe(true);
+    expect(photo.adultComfortContact).toBe(true);
+    expect(applyReview(before,{...joint,activity:'NO_CLEAR_PLAY'},[photo],[2],null,[4])).toEqual(before);
+  });
+
+  it('손을 잡는 행동은 같은 시각에 역할까지 확인한 경우만 시점 기록에 남긴다', () => {
+    const note = '어른이 아이의 손을 잡아요.';
+    const before = draft(note, {peopleCount:2, moments:[{t:1,note},{t:3,note}]});
+    const photo = pairWitness('Child at left stretches a hand forward', 'Adult on right holds the child’s hand', 'HELPING_WITH_AN_ORDINARY_TASK');
+    expect(photo.adultGraspsChildHand).toBe(true);
+    const result = applyReview(before,joint,[photo],[2],null,[3]);
+    expect(result?.summary).toBe(note);
+    expect(result?.moments).toEqual([{t:3,note}]);
+  });
+
+  it('귀를 가린 시각의 일반 자세를 구체화하고 주변의 근거 없는 울음·손 뻗기·건네기를 뺀다', () => {
+    const before = draft('아이가 어른에게 손을 뻗어요. 어른이 옆에서 웅크려요.', {
+      peopleCount:2, childStates:['UPSET_CRYING','SEEKING_ADULT','FOCUSED'], moments:[
+        {t:10.5,note:'어른이 아이에게 블록을 건네주며 쌓는 모습을 도와줘요.'},
+        {t:12.5,note:'아이가 갑자기 손을 들어 올리고 얼굴을 붉히며 울어요.'},
+        {t:14.1,note:'아이가 어른에게 손을 뻗고 어른이 옆에서 웅크려요.'},
+        {t:15.8,note:'아이가 두 손을 머리에 올리고 있어요. 어른이 앉아 있어요.'},
+      ],
+    });
+    const ear = pairWitness('A child in a yellow shirt sits on the floor with hands over ears.',
+      'Adult on the right crouches with hands on the floor','ONLY_WATCHING_OR_NEARBY');
+    expect(ear.childCoversOwnEars).toBe(true);
+    const result = applyReview(before,soloPlay,[ear,ear],[2,2],null,[13.8,15.8]);
+    expect(result).toEqual(draft('어른이 옆에서 웅크려요.', {peopleCount:2,childStates:['FOCUSED'],moments:[
+      {t:12.5,note:'아이가 갑자기 손을 들어 올리고 있어요.'},
+      {t:14.1,note:'어른이 옆에서 웅크려요.'},
+      {t:15.8,note:'아이가 손으로 귀를 가려요. 어른이 앉아 있어요.'},
+    ]}));
+  });
+
+  it('귀 주변에 손을 드는 것만으로 귀를 가렸다고 확정하지 않고 다른 시각에 확인한 행동을 남긴다', () => {
+    const note = '아이가 어른에게 손을 뻗어요.';
+    const before = draft('아이가 두 손을 머리에 올려요.', {
+      peopleCount:2, childStates:['SEEKING_ADULT'], moments:[{t:8,note:'아이가 울어요.'},{t:14.1,note}],
+    });
+    const almost = pairWitness('Child in center holds both hands near ears', 'Adult on the right stands nearby','ONLY_WATCHING_OR_NEARBY');
+    const reaches = pairWitness('Child on the left reaches a hand toward the adult', 'Adult at right stands beside the child','ONLY_WATCHING_OR_NEARBY');
+    const ear = pairWitness('Child at left covers their ears with hands', 'Adult at right stands beside the child','ONLY_WATCHING_OR_NEARBY');
+    expect(almost.childCoversOwnEars).toBe(false);
+    expect(reaches.childReachesAdult).toBe(true);
+    const result = applyReview(before,soloPlay,[almost,reaches,ear],[2,2,2],null,[10,14.1,15.8]);
+    expect(result?.moments).toEqual([{t:8,note:'아이가 울어요.'},{t:14.1,note},{t:15.8,note:'아이가 손으로 귀를 가려요.'}]);
+    expect(result?.childStates).toEqual(['SEEKING_ADULT']);
+  });
+
+  it('귀 뒤에 손을 올리는 말의 순서도 구별하고 공동 행동을 뺀 뒤 아이의 장난감 동작은 남긴다', () => {
+    const before = draft('어른과 아이가 장난감 블록을 쌓아요. 아이가 어른과 함께 장난감을 만져요.', {
+      peopleCount:2, childStates:['UPSET_CRYING'], moments:[
+        {t:10.9,note:'아이가 어른과 함께 장난감을 만져요.'},
+        {t:17.4,note:'아이가 두 손을 귀 뒤에 올리고 어른을 바라보며 울어요.'},
+      ],
+    });
+    expect(applyReview(before,soloPlay)).toEqual(draft('아이가 장난감을 만져요.', {peopleCount:2,moments:[
+      {t:10.9,note:'아이가 장난감을 만져요.'},
+      {t:17.4,note:'아이가 두 손을 귀 뒤에 올리고 어른을 바라봐요.'},
+    ]}));
+  });
+
   it('단독 물체 동작이 여러 사진에서 일치하면 초안의 다른 어른과 역할 태그를 지운다', () => {
     const before = draft('어른과 아이가 함께 물건을 놓아요.', {peopleCount:2, moments:[{t:0,note:'어른이 상자를 올려요.'}],
       adultResponses:['JOINING_PLAY','WAITING'],childStates:['FOCUSED','SEEKING_ADULT']});

@@ -2,13 +2,14 @@ import {
   limitText, MAX_MOMENTS, MAX_SUMMARY_LENGTH, MAX_SUMMARY_SENTENCES, MAX_TAGS, type Moment, type Observation,
 } from './observation.ts';
 
-export const WINDOWED_PROMPT_VERSION = 'obs-v6.6-windowed';
+export const WINDOWED_PROMPT_VERSION = 'obs-v6.7-windowed';
 
 const childSubject = /(?:아이|유아|영아|어린이|아기)(?:가|는)(?=\s)/;
 const crying = /(?:아이|유아|영아|어린이|아기)(?:가|는)\s[^.!?…]{0,48}(?:울고|울어요|울었|흐느[끼껴])/;
+const coveringEars = /^(?:아이가|아이는)\s[^.!?…]{0,32}귀를\s*(?:가리|가려|막|덮)/;
 
 function importance(note: string): number {
-  if (crying.test(note) || note.includes('손에 들고 있던 물체를 던져요.')) return 2;
+  if (crying.test(note) || coveringEars.test(note) || note.includes('손에 들고 있던 물체를 던져요.')) return 2;
   return childSubject.test(note) ? 1 : 0;
 }
 
