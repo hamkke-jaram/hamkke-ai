@@ -9,6 +9,7 @@ import type { FrameWitness } from './frameWitness.ts';
 import { independentPeople } from './personBoxes.ts';
 import { reconcilePresence } from './presence.ts';
 import { throwClaim, impactClaim, checkObjectMotion, objectMotionPrompt, releaseTime } from './releasedObject.ts';
+import { confirmedHairNote, hairClaim, verifyHairPhoto } from './hairContact.ts';
 
 const appearances = ['UNRESOLVED', 'CLEAR_CHILDREN_ONLY', 'CLEAR_ADULTS_ONLY', 'MIXED_AGES', 'PARTS_ONLY'] as const;
 const participants = ['ONE_VISIBLE_PARTICIPANT', 'MULTIPLE_VISIBLE_PARTICIPANTS', 'UNRESOLVED'] as const;
@@ -138,6 +139,42 @@ function keepVisibleClauses(sentence: string, reject: (text:string) => boolean):
 function neutralAge(text: string): string {
   return text.replace(ageWords, (_whole, _label, plural?: string, particle?: string) =>
     '사람' + (plural ?? '') + (afterPerson[particle ?? ''] ?? particle ?? ''));
+}
+
+/** Keep separate visible movement while checking a particular hand-to-hair claim. */
+async function reconcileHairContact(observation:Observation, provider:VisionProvider,
+  images:readonly string[], times:readonly number[], signal:AbortSignal):Promise<Observation> {
+  const related = observation.moments.filter(({note}) => hairClaim.test(note));
+  if (!hairClaim.test(observation.summary ?? '') && !related.length) return observation;
+
+  const verified = new Map<number,string>();
+  // Review only claimed event frames. Other moments never inherit a contact or role.
+  for (const {t,note} of related.slice(0,2)) {
+    const image = images[times.indexOf(t)];
+    if (!image) continue;
+    const witness = await verifyHairPhoto(provider,image,signal);
+    const contact = confirmedHairNote(note,witness);
+    if (contact) verified.set(t,contact);
+  }
+
+  const stripsContact = (text:string):string => text.split(/(?<=[.!?…])\s+|(?<=요[.!?])(?=[가-힣])/)
+    .map(sentence => keepVisibleClauses(sentence,clause=>hairClaim.test(clause)))
+    .filter(Boolean).join(' ');
+  const moments = observation.moments.flatMap(({t,note}) => {
+    const remaining = stripsContact(note);
+    const checked = [verified.get(t),remaining].filter(Boolean).join(' ');
+    return checked ? [{t,note:limitText(checked,Number.POSITIVE_INFINITY,MAX_NOTE_LENGTH)}] : [];
+  });
+  const previousSummary = observation.summary ?? '';
+  let summary = stripsContact(previousSummary);
+  if (hairClaim.test(previousSummary)) {
+    // Role assignments belong to their checked instant, not the whole video.
+    const combined = [...new Set(verified.values())];
+    const contact = combined.length === 1 ? combined[0] : combined.length > 1 ? '머리 쪽에 손이 닿아 있어요.' : '';
+    summary = limitText([summary,contact].filter(Boolean).join(' '),MAX_SUMMARY_SENTENCES,MAX_SUMMARY_LENGTH);
+  }
+  return { ...observation, moments,
+    summary:summary || (moments.length ? null : '확인한 장면에서 구체적인 동작을 구별하기 어려워요.') };
 }
 
 export function applyReview(obs: Observation, review: Review, witnesses:readonly FrameWitness[]=[], independent:readonly number[]|null=null, releasedAt:number|null=null): Observation | null {
@@ -396,5 +433,7 @@ export async function reviewedObservation(provider: VisionProvider, request: Vis
   // Only validated categories and box counts are exposed, never image data or prose.
   onEvidence?.({frames:witnesses, detectedPeople:boxes});
   const checked = applyReview(draft, review, witnesses, boxes, releasedAt);
-  return { ...generated, raw, observation:reconcilePresence(checked,draft) };
+  const present = reconcilePresence(checked,draft);
+  const observation = present && await reconcileHairContact(present,provider,request.images,frameTimes,request.signal);
+  return { ...generated, raw, observation };
 }

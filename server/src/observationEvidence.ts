@@ -45,6 +45,13 @@ const search = db.prepare(`
       OR (:age >= p.minAge AND :age <= coalesce(p.maxAge,71)))
   ORDER BY bm25(evidence_search, 4.0, 1.0, 1.0), p.id`);
 
+const cryingVerb = /(?<![가-힣])(?:울고(?!\s+있(?:는|던|다[는고]|을))|울(?:어요|면서|며|지만|었(?:어요|고|으며|지만|는데)|기\s*시작(?:해요|했어요|하고|하며))|울음을\s*터뜨(?:려요|렸어요|리고|리며)|흐느(?:껴요|꼈어요|끼고|끼며|끼면서))(?![가-힣])/u;
+const visibleCrying = /(?<![가-힣])(?:울고\s+있는\s+모습이\s+보(?:여요|입니다)|눈물을\s*흘(?:려요|렸어요|리고|리며|리면서)|눈물이\s*(?:흘러요|흐르고))(?![가-힣])/u;
+const depictedCry = /(?:울[가-힣]*|우는|흐느[가-힣]*)(?:\s+있는)?\s*(?:척|시늉|흉내)|(?:다[는고]|라[는고])\s*(?:화면\s*)?(?:자막|문구|글씨|설명)/u;
+const endedCry = /(?:울음|울기|눈물).{0,12}(?:그[치쳐쳤친]|멈[추춰췄춘]|잦아[들든]|가라앉)|울다가.{0,12}(?:진정|웃)/u;
+const observedCrying = (clause: string) =>
+  (cryingVerb.test(clause) || visibleCrying.test(clause)) && !depictedCry.test(clause) && !endedCry.test(clause);
+
 // Korean inflection makes a common noun match (e.g. a ball in the background)
 // insufficient evidence. Keep only positive visible cues before semantic selection.
 const triggers: Record<string, (text: string) => boolean> = {
@@ -53,8 +60,6 @@ const triggers: Record<string, (text: string) => boolean> = {
   gesture: s => /가리[키켜켰킨]|손짓|(?:손|팔)을?\s*(?:내밀|내민|뻗)/.test(s),
   exchange: s => /건[네넸]|주고\s*받|번갈아.{0,14}(?:굴리|던지|던져|주고|건네)|차례로\s*(?:공|블록).{0,10}(?:굴리|굴려|건네)/.test(s),
   switch: s => /(?:내려놓|놓고|멈추|멈춘|마치|마친|끝내|두고).{0,60}(?:다른|새로운|새\s*(?:놀잇감|장난감|놀이|활동|책|도구|악기)).{0,30}(?:옮[기겨겼]|집[어었]|향[하해했]|다가[가갔]|잡[고아았]|들[고어었]|고[르른]|골[라랐]|시작|펼[치쳐쳤]|만[지져졌]|바라[보봐봤]|살[피펴폈]|돌[리려렸]|바[꾸꿔꿨]|손을?\s*뻗|손[을이]?\s*대|가[요고는]|갔)/.test(s),
-  cry: s => /울(?:고|음|었|어요|기\s*시작)|흐느[끼껴]|눈물[이을]\s*(?:흘|흐르)/.test(s) &&
-    !/(?:울음|울기|눈물).{0,12}(?:그[치쳐쳤친]|멈[추춰췄춘]|잦아[들든]|가라앉)|울다가.{0,12}(?:진정|웃)/.test(s),
   book: s => /(?:책(?:장)?|페이지)(?:을|를)?\s*(?:한\s*장씩\s*|천천히\s*|다시\s*)?(?:펴[고요며]|펼[치쳐쳤]|넘[겨기겼]|읽|바라[보봐봤]|보[고며는았]|[봐봤])/.test(s)
     || /(?:책\s*(?:속|안|에|의)|그림책의?).{0,10}(?:그림|사진)[을이]?\s*(?:보[고는며]|봐|바라|가리[키켜])/.test(s),
   draw: s => /(?:종이|도화지|칠판|공책|바닥|크레[용파]|색연필|연필|분필|붓|펜|그림|동그라미|네모|세모|[선원][을이]|낙서)/.test(s)
@@ -109,7 +114,7 @@ const negated = /(?:지|지는|지는요|수)\s*(?:않|못|없)|아니[라었에
 const visibleChild = /(?:아이들|아이|유아|영아|어린이|아기)(?:가|이|는|은|도|만(?=\s))/;
 // Inflected object/recipient phrases ("교사에게 공을 건네요") remain eligible.
 // Two grammatical subjects make assigning a shared keyword to the child unreliable.
-const anotherSubject = /(?:어른|부모(?:님)?|선생님?|교사|보호자|아버지|어머니|엄마|아빠|성인|형|누나|언니|오빠|친구|할머니|할아버지|사람|여성|남성|남자|여자|강아지|고양이)(?:께서|이|은|가|는|도)/;
+const anotherSubject = /(?:어른|부모(?:님)?|선생님?|교사|보호자|아버지|어머니|엄마|아빠|성인|형|누나|언니|오빠|친구|할머니|할아버지|사람|여성|남성|남자|여자|강아지|고양이)(?:께서|이(?!랑)|은|가|는|도)/;
 
 // Keep the physical child's exact words on either side of an explicitly
 // depicted scene. A plain "영상에서 아이가…" can describe the uploaded clip;
@@ -139,19 +144,22 @@ function foregroundClauses(sentence: string): string[] {
 // A video can show a book, a pretend action, or another person's demonstration.
 // Only match the child's own clause. Keep a positive second action after an
 // explicit negation/ending, e.g. "그리지 않고 퍼즐을 맞춰요".
-function childAction(observation: string): string | null {
+function childAction(observation: string): { text: string; cries: boolean } | null {
   if (uncertain.test(observation)) return null;
   const unquoted = observation.replace(/“[^”]*”|‘[^’]*’|"[^"]*"|'[^']*'/g, ' ');
   if (/(?:사진|그림|화면|영상)\s*속(?:의)?\s*(?:아이|아기)|(?:[다라]고|다는)\s*.{0,10}(?:말했|말해|말하|들었|설명)/.test(unquoted)) return null;
   const subject = visibleChild.exec(unquoted);
   if (!subject) return null;
   const childClause = unquoted.slice(subject.index);
-  if (/(?:하는|는|는다는)\s*(?:그림|사진|영상|화면|모습|장면)[을이]?\s*(?:보|봐|봤|바라|지켜|구경)/.test(childClause)) return null;
+  if (/(?:하는|는|는다는)\s*(?:그림|사진|영상|화면|모습|장면)[을이]?\s*(?:보(?!여|이)|봐|봤|바라|지켜|구경)/.test(childClause)) return null;
   const nextActor = anotherSubject.exec(childClause);
-  const prefix = unquoted.slice(0,subject.index);
-  const ownClause = (anotherSubject.test(prefix) ? '' : prefix) + (nextActor ? childClause.slice(0, nextActor.index) : childClause);
-  const current = ownClause.split(/(?:지\s*(?:않고|못하고|않지만)|(?:멈추고|끝내고|마치고|그치고|그만두고))\s*/).at(-1)!;
-  return negated.test(current) || /멈[췄춘춰]|그만[뒀둔둬]|그쳤|끝[냈난났]/.test(current) ? null : current;
+  const prefix = unquoted.slice(0, subject.index);
+  const ownClause = nextActor ? childClause.slice(0, nextActor.index) : childClause;
+  const ending = /(?:지\s*(?:않고|못하고|않지만)|(?:멈추고|끝내고|마치고|그치고|그만두고))\s*/;
+  const current = ((anotherSubject.test(prefix) ? '' : prefix) + ownClause).split(ending).at(-1)!;
+  if (negated.test(current) || /멈[췄춘춰]|그만[뒀둔둬]|그쳤|끝[냈난났]/.test(current)) return null;
+  // A preceding phrase can name the play setting but can also describe another person crying.
+  return { text: current, cries: observedCrying(ownClause.split(ending).at(-1)!) };
 }
 
 export function findEvidence(sentences: string[], ageMonths: number | null): Candidate[] {
@@ -160,16 +168,19 @@ export function findEvidence(sentences: string[], ageMonths: number | null): Can
   const observations = sentences.flatMap(s => s.split(/(?<=[.!?…])\s+|\n/)).flatMap(foregroundClauses);
   for (const observation of new Set(observations)) {
     if (observation.length > 500) continue;
-    const action = childAction(observation);
-    if (!action) continue;
-    const words = [...vocabulary].filter(word => action.includes(word));
+    const child = childAction(observation);
+    if (!child) continue;
+    // Conjugations such as “울며” need the indexed equivalent. Only use it
+    // when the child's own clause already expresses the visible action.
+    const words = [...vocabulary].filter(word => child.text.includes(word) || (child.cries && word === '울고'));
     if (!words.length) continue;
     // Only curated vocabulary enters the MATCH expression. It is always a bound parameter.
     const query = words.map(word => '"' + word.replaceAll('"','""') + '"').join(' OR ');
     const hits: Candidate[] = [];
     for (const hit of search.all({ query, age: ageMonths })) {
       const passage = hit as unknown as Passage;
-      if (triggers[passage.topic]?.(action)) hits.push({ observation, passage });
+      const matches = passage.topic === 'cry' ? child.cries : triggers[passage.topic]?.(child.text);
+      if (matches) hits.push({ observation, passage });
     }
     // Prefer a directly named activity above generic play guidance. Within
     // each group retain SQLite's BM25 order.

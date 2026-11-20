@@ -88,7 +88,7 @@ describe('환경 변수', () => {
 
 describe('관찰 지시문', () => {
   it('버전 이름', () => {
-    expect(PROMPT_VERSION).toBe('obs-v6.4-release');
+    expect(PROMPT_VERSION).toBe('obs-v6.6-contact');
     // hamkke-api 는 영수증 pv 를 40자까지만 받는다(AiReceiptVerifier.MAX_PROMPT_VERSION_CHARS).
     expect(PROMPT_VERSION.length).toBeLessThanOrEqual(40);
   });
