@@ -6,6 +6,7 @@ import { ProviderTimeoutError, ProviderUnavailableError } from '../src/provider.
 import { QueueAbortedError } from '../src/queue.ts';
 import type { WorkQueue } from '../src/queue.ts';
 import { EVALUATIVE_TERMS } from '../src/wording.ts';
+import { WINDOWED_PROMPT_VERSION } from '../src/windowedObservation.ts';
 import {
   GOOD_OUTPUT,
   NOW_SEC,
@@ -218,6 +219,26 @@ describe('사진 검사', () => {
     expect(response.status).toBe(200);
     expect(parse(response).analyzedFrames).toBe(6);
     expect(provider.calls[0]!.images).toHaveLength(6);
+  });
+
+  it('상한이 서명된 가정 요청은 사진 24장을 6장씩 보고 하나의 영수증을 낸다', async () => {
+    const { app, provider, logs } = testApp();
+    const body = { frames: Array.from({ length:24 }, (_, index) => frame(index * 2)), durationSec:48 };
+    const response = await app.handle(analyzeRequest({ token:sessionToken({ mf:24 }), body }));
+    expect(response.status).toBe(200);
+    const result = parse(response);
+    expect(result).toMatchObject({ analyzedFrames:24, promptVersion:WINDOWED_PROMPT_VERSION, observation:{ peopleCount:2 } });
+    expect(verifyJwt(result.receipt as string, SECRET)).toMatchObject({ fc:24, pv:WINDOWED_PROMPT_VERSION });
+    expect(provider.calls.map(call => call.images.length)).toEqual([6,6,6,6]);
+    expect(provider.calls.map(call => call.user.match(/사진 1: t=(\d+)/)?.[1])).toEqual(['0','12','24','36']);
+    expect(logs[0]).toMatchObject({ frames:24, attempts:4 });
+  });
+
+  it('확장 세션에서도 세션 상한을 넘으면 모델을 호출하지 않는다', async () => {
+    const { app, provider } = testApp();
+    const response = await app.handle(analyzeRequest({ token:sessionToken({ mf:12 }), body:framesBody(13) }));
+    expect([response.status, parse(response).code]).toEqual([400, 'INVALID_FRAMES']);
+    expect(provider.calls).toHaveLength(0);
   });
 
   it('Content-Type 이 application/json 이 아니면 415', async () => {

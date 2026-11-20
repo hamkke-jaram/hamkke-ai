@@ -2,6 +2,7 @@
 // 사진은 메모리에서만 다룬다. 디코딩한 바이트는 검사가 끝나면 바로 0으로 덮는다.
 
 export const MAX_FRAMES = 6;
+export const MAX_UPLOAD_FRAMES = 24;
 export const MAX_FRAME_BYTES = 300 * 1024;
 export const MAX_BODY_BYTES = 2 * 1024 * 1024;
 /** 웹은 긴 변 512px 로 보낸다. 모델 서버가 아주 큰 그림을 펼치지 않도록 한 변의 상한을 둔다. */
@@ -191,7 +192,7 @@ function checkJpeg(base64: unknown): string {
  * 본문(JSON)을 해석하고 사진을 검사한다. 넘겨받은 raw 는 해석 뒤 0으로 덮는다.
  * 돌려주는 frames 는 시각 순서로 정렬되어 있다.
  */
-export function parseAnalyzeBody(raw: Buffer): AnalyzeInput {
+export function parseAnalyzeBody(raw: Buffer, maxFrames = MAX_FRAMES): AnalyzeInput {
   let text: string;
   try {
     text = new TextDecoder('utf-8', { fatal: true }).decode(raw);
@@ -212,7 +213,7 @@ export function parseAnalyzeBody(raw: Buffer): AnalyzeInput {
 
   const list = data.frames;
   if (!Array.isArray(list)) throw new FrameError('frames_type');
-  if (list.length < 1 || list.length > MAX_FRAMES) throw new FrameError('frame_count');
+  if (list.length < 1 || list.length > Math.min(maxFrames, MAX_UPLOAD_FRAMES)) throw new FrameError('frame_count');
 
   let durationSec: number | null = null;
   if (data.durationSec !== undefined && data.durationSec !== null) {

@@ -10,7 +10,7 @@ import { createDaycareCoaching, parseCoachingRequest } from './daycareCoaching.t
 import { createObservationGuidance, parseGuidanceInput } from './observationGuidance.ts';
 import { createTeacherStoryDraft, parseDraftInput } from './teacherStoryDraft.ts';
 import { HttpError } from './httpError.ts';
-import { BodyTooLargeError, FrameError, MAX_BODY_BYTES, parseAnalyzeBody, readBody } from './frames.ts';
+import { BodyTooLargeError, FrameError, MAX_BODY_BYTES, MAX_FRAMES, parseAnalyzeBody, readBody } from './frames.ts';
 import type { AnalyzeInput } from './frames.ts';
 import { createJtiStore } from './jtiStore.ts';
 import type { JtiStore } from './jtiStore.ts';
@@ -25,6 +25,7 @@ import { reviewedObservation } from './visualReview.ts';
 import type { VisionProvider } from './provider.ts';
 import { QueueFullError, createQueue } from './queue.ts';
 import type { WorkQueue } from './queue.ts';
+import { mergeWindowObservations, WINDOWED_PROMPT_VERSION } from './windowedObservation.ts';
 
 export const ANALYZE_PATH = '/ai/v1/analyze';
 export const OBSERVATION_GUIDANCE_PATH = '/ai/v1/observation-guidance';
@@ -310,7 +311,7 @@ export function createApp(deps: AppDeps): App {
     }
   }
 
-  async function readInput(request: AppRequest, entry: LogEntry): Promise<AnalyzeInput> {
+  async function readInput(request: AppRequest, entry: LogEntry, maxFrames: number): Promise<AnalyzeInput> {
     const declared = declaredLength(request);
     if (declared !== null && declared > MAX_BODY_BYTES) throw errors.tooLarge('content_length');
     let raw: Buffer;
@@ -322,7 +323,7 @@ export function createApp(deps: AppDeps): App {
     }
     entry.bytes = raw.length;
     try {
-      const input = parseAnalyzeBody(raw);
+      const input = parseAnalyzeBody(raw, maxFrames);
       entry.frames = input.frames.length;
       return input;
     } catch (err) {
@@ -354,7 +355,7 @@ export function createApp(deps: AppDeps): App {
       for (let attempt = 1; attempt <= MODEL_ATTEMPTS; attempt++) {
         if (attempt > 1 && endsAt - performance.now() < lastAttemptMs) break;
         const attemptStarted = performance.now();
-        entry.attempts = attempt;
+        entry.attempts = (entry.attempts ?? 0) + 1;
         let observation: Observation | null;
         let modelVersion: string;
         try {
@@ -404,7 +405,7 @@ export function createApp(deps: AppDeps): App {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let waitTimer: ReturnType<typeof setTimeout> | undefined;
     try {
-      input = await readInput(request, entry);
+      input = await readInput(request, entry, session.maxFrames);
       const frameCount = input.frames.length;
       if (request.signal?.aborted) throw new ClientClosedError();
       const signal = request.signal ? AbortSignal.any([deadline.signal, request.signal]) : deadline.signal;
@@ -428,8 +429,21 @@ export function createApp(deps: AppDeps): App {
       reachedModel = true;
       let observation: Observation;
       let modelVersion: string;
+      const promptVersion = frameCount > MAX_FRAMES ? WINDOWED_PROMPT_VERSION : PROMPT_VERSION;
       try {
-        ({ observation, modelVersion } = await describe(input, signal, deadline.signal, request.signal, entry, endsAt));
+        if (frameCount <= MAX_FRAMES) {
+          ({ observation, modelVersion } = await describe(input, signal, deadline.signal, request.signal, entry, endsAt));
+        } else {
+          const windows: Observation[] = [];
+          modelVersion = provider.modelVersion;
+          for (let offset = 0; offset < frameCount; offset += MAX_FRAMES) {
+            const frames = input.frames.slice(offset, offset + MAX_FRAMES);
+            const result = await describe({ frames, durationSec: input.durationSec }, signal, deadline.signal, request.signal, entry, endsAt);
+            windows.push(result.observation);
+            if (result.modelVersion !== provider.modelVersion) modelVersion = result.modelVersion;
+          }
+          observation = mergeWindowObservations(windows);
+        }
       } finally {
         release();
       }
@@ -443,7 +457,7 @@ export function createApp(deps: AppDeps): App {
           session,
           obs: observation,
           modelVersion,
-          promptVersion: PROMPT_VERSION,
+          promptVersion,
           frameCount,
         },
         config.secret,
@@ -453,7 +467,7 @@ export function createApp(deps: AppDeps): App {
         observation,
         receipt,
         modelVersion,
-        promptVersion: PROMPT_VERSION,
+        promptVersion,
         analyzedFrames: frameCount,
       });
     } finally {

@@ -75,7 +75,15 @@ describe('분석 토큰 검증', () => {
       jti: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
       iat: NOW_SEC - 5,
       exp: NOW_SEC + 600,
+      maxFrames: 6,
     });
+  });
+
+  it('가정 토큰의 명시된 사진 상한을 검증한다', () => {
+    expect(verifySessionToken(sessionToken({ mf: 24 }), SECRET, NOW_SEC).maxFrames).toBe(24);
+    expect(verify({ mf:25 })).toBe('mf');
+    expect(verify({ mf:'24' })).toBe('mf');
+    expect(verify({ src:'INSTITUTION', mf:24 })).toBe('mf');
   });
 
   it('aud 가 배열이어도 hamkke-ai 가 들어 있으면 받아들인다', () => {

@@ -1,6 +1,7 @@
 // HS256 JWT 서명·검증 (hamkke-api docs/ai-observation.md 4장).
 // 외부 라이브러리 없이 node:crypto 만 쓴다. 허용하는 알고리즘은 HS256 하나뿐이다.
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { MAX_FRAMES, MAX_UPLOAD_FRAMES } from './frames.ts';
 
 export const SESSION_ISSUER = 'hamkke-api';
 export const SESSION_AUDIENCE = 'hamkke-ai';
@@ -29,6 +30,7 @@ export interface SessionClaims {
   jti: string;
   iat: number;
   exp: number;
+  maxFrames: number;
 }
 
 /** 토큰을 받아들일 수 없는 까닭. 로그에만 남기고 응답에는 넣지 않는다. */
@@ -116,6 +118,11 @@ export function verifySessionToken(token: string, secret: Buffer, nowSec: number
   }
   if (payload.src !== 'HOME' && payload.src !== 'INSTITUTION') throw new TokenError('src');
   if (typeof payload.jti !== 'string' || !JTI_FORMAT.test(payload.jti)) throw new TokenError('jti');
+  const maxFrames = payload.mf === undefined ? MAX_FRAMES : payload.mf;
+  const ceiling = payload.src === 'HOME' ? MAX_UPLOAD_FRAMES : MAX_FRAMES;
+  if (typeof maxFrames !== 'number' || !Number.isInteger(maxFrames) || maxFrames < 1 || maxFrames > ceiling) {
+    throw new TokenError('mf');
+  }
   return {
     sub: payload.sub,
     cid: payload.cid,
@@ -123,6 +130,7 @@ export function verifySessionToken(token: string, secret: Buffer, nowSec: number
     jti: payload.jti,
     iat: payload.iat,
     exp: payload.exp,
+    maxFrames,
   };
 }
 
