@@ -269,6 +269,19 @@ describe('같은 화면에서 호칭·대화·놀이만 다시 확인', () => {
     ]}));
   });
 
+  it('손이 얼굴을 가린 사진에서 울음을 단정하지 않고 귀를 가리는 자세는 놀이와 구분한다', () => {
+    const before = draft('아이는 손으로 귀를 가리고 어른을 바라보며 놀아요.', {
+      peopleCount:2, childStates:['UPSET_CRYING'],
+      moments:[{t:13.1,note:'아이가 두 손을 얼굴에 덮고 울어요.'}],
+    });
+    const result = applyReview(before, soloPlay);
+    expect(result?.summary).toContain('귀를 가리고');
+    expect(result?.summary).not.toContain('놀아요');
+    expect(result?.moments[0]?.note).toContain('얼굴');
+    expect(result?.moments[0]?.note).not.toContain('울어요');
+    expect(result?.childStates).not.toContain('UPSET_CRYING');
+  });
+
   it('단독 물체 동작이 여러 사진에서 일치하면 초안의 다른 어른과 역할 태그를 지운다', () => {
     const before = draft('어른과 아이가 함께 물건을 놓아요.', {peopleCount:2, moments:[{t:0,note:'어른이 상자를 올려요.'}],
       adultResponses:['JOINING_PLAY','WAITING'],childStates:['FOCUSED','SEEKING_ADULT']});

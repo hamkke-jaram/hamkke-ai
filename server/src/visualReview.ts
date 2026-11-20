@@ -63,6 +63,7 @@ const coversEars = /귀(?:를)?\s*(?:손으로\s*)?(?:가리|가려|막|덮)/;
 const earPosition = String.raw`귀(?:에|\s*(?:옆|쪽|뒤|근처)에)`;
 const handAtEar = new RegExp(String.raw`(?:손(?:을)?\s*${earPosition}|${earPosition}\s*(?:(?:두|양)\s*)?손(?:을)?)\s*(?:올|대|가져)`);
 const handAtHead = /손(?:을)?\s*(?:자기\s*)?머리(?:에|로|\s*(?:옆|쪽)(?:에|으로))\s*(?:올|얹|대|가져)|머리(?:에|\s*(?:옆|쪽)(?:에|으로))\s*(?:(?:두|양)\s*)?손(?:을)?\s*(?:올|얹|대|가져)/;
+const handOverFace = /손(?:으로|을)\s*(?:자기\s*)?얼굴(?:을|에|\s*쪽에)\s*(?:덮|가리|가려|올|대)|얼굴(?:을|에|\s*쪽에)\s*(?:(?:두|양)\s*)?손(?:을|으로)\s*(?:덮|가리|가려|올|대)/;
 const raisedHands = /손(?:을)?\s*(?:위로\s*)?(?:들(?:어|고|며)|올[리려])/;
 const towardsAdult = /어른(?:에게|한테|\s*쪽으로|\s*곁으로)[^.!?…]{0,25}(?:다가가|걸어가|뻗)/;
 const childCrying = /(?:울(?:어요|고|며|면서|었|기\s*시작)|흐느[끼껴]|울먹)/;
@@ -88,7 +89,7 @@ function earGesture(text: string): boolean {
 }
 
 function ambiguousHeadGesture(text: string): boolean {
-  return handAtHead.test(text) || handAtEar.test(text);
+  return handAtHead.test(text) || handAtEar.test(text) || handOverFace.test(text);
 }
 
 function describesObjectHandling(text:string, placementOnly = false):boolean {
@@ -340,8 +341,10 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
   function cleanSentence(original:string, at:readonly FrameWitness[], earCrying:boolean, nearbyReachUnverified:boolean):string|null {
     const unconfirmedHandoff = soloSeries && !corroboratedPlay && namedHandoff.test(original);
     const sentence = !jointGame && toyHandling.test(original) ? original.replace(toyCompanion,'$1') : original;
+    const unconfirmedPlayAtEars = earGesture(original) && !toyHandling.test(original);
     const retained = keepVisibleClauses(sentence, text => unsupported(text) ||
       unconfirmedHandContact(text, at) || (earCrying && childCrying.test(text)) ||
+      (unconfirmedPlayAtEars && play.test(text)) ||
       (nearbyReachUnverified && towardsAdult.test(text)) ||
       (unconfirmedHandoff && (namedHandoff.test(text) || /도와|돕/.test(text))) ||
       (!jointGame && pairedToyActors.test(text) && toyHandling.test(text)) ||
@@ -354,6 +357,11 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
       earGesture(original) && !/않|못|듯|처럼|려고|어른(?:이|은)\s/.test(original)) {
       const earAction = describeActor(coversEars.test(original) ? earCoverNote : '아이가 귀 쪽에 손을 올려요.');
       if (earAction) parts.push(earAction);
+    }
+    if (earCrying && !parts.some(part=>handOverFace.test(part)) && /^아이(?:가|는)\s/.test(original) &&
+      handOverFace.test(original) && !/않|못|듯|처럼|려고|어른(?:이|은)\s/.test(original)) {
+      const faceAction = describeActor('아이가 손을 얼굴에 올려요.');
+      if (faceAction) parts.push(faceAction);
     }
     if (hideSecondActor) {
       // An attributive phrase ("smiling, the child ...") may lack a connective
@@ -381,7 +389,7 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
     nearEarGesture=false, nearbyReachUnverified=false):string|null {
     if (!text) return null;
     const sentences = text.split(/(?<=[.!?…])\s+|(?<=요[.!?])(?=[가-힣])/);
-    const earCrying = (earGesture(text) || nearEarGesture) && !at.some(f=>f.visibleChildTears);
+    const earCrying = (earGesture(text) || handOverFace.test(text) || nearEarGesture) && !at.some(f=>f.visibleChildTears);
     const cleaned = sentences.map(sentence=>cleanSentence(sentence,at,earCrying,nearbyReachUnverified)).filter((s): s is string => s !== null);
     if (cleaned.length === sentences.length && cleaned.every((s,i) => s === sentences[i])) return text;
     return cleaned.length ? limitText(cleaned.join(' '), maxSentences, maxLength) : null;
@@ -417,7 +425,7 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
     }
     if (tag === 'UPSET_CRYING' && speech.test(sceneText) &&
       !/눈물(?:이|을|자국)|흐느[끼껴]|울먹/.test([summary, ...moments.map(m => m.note)].join(' '))) return false;
-    if (tag === 'UPSET_CRYING' && (earContextTimes.length || earGesture(sceneText)) &&
+    if (tag === 'UPSET_CRYING' && (earContextTimes.length || earGesture(sceneText) || handOverFace.test(sceneText)) &&
       ![summary, ...moments.map(m=>m.note)].some(note=>note && childCrying.test(note))) return false;
     if (tag === 'PLAYING_TOGETHER') return jointGame;
     if (tag === 'SEEKING_ADULT' && earTimes.length && !moments.some(m=>towardsAdult.test(m.note) &&
