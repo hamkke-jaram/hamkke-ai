@@ -14,7 +14,17 @@ const context = {
   reviewerId:9, ageMonths:45, status:'PENDING',
   observation:{ id:3, source:'HOME', peopleCount:1, summary:scene, moments:[{ t:2, note:pointing }] },
 };
-const ok = (value = context) => new Response(JSON.stringify(value), {headers:{'content-type':'application/json'}});
+const display = {
+  observationId:3, recordedAt:'2026-11-19T03:00:00Z', source:'HOME', peopleCount:1, summary:scene,
+  scenes:context.observation.moments, child:{ notes:context.observation.moments, tags:['FOCUSED'] },
+  caregiver:{ notes:[], tags:[], role:'ADULT' },
+  relatedCoaching:{ deliveryId:8, title:'놀이 지켜보기', href:'/t/children/1/coaching/8' },
+  actions:[
+    { type:'WRITE_PARENT_FEEDBACK', label:'보호자에게 피드백 쓰기', href:'/t/children/1/story/new' },
+    { type:'REQUEST_CONSULTATION', label:'상담 요청하기', href:'/t/children/1/talk?draft=consultation' },
+  ],
+};
+const ok = (value: unknown = context) => new Response(JSON.stringify(value), {headers:{'content-type':'application/json'}});
 function makeApp(fetchApi = vi.fn<typeof fetch>().mockResolvedValue(ok()), selected = '{"indexes":[0]}') {
   const config = {secret:SECRET,daycareApiOrigin:'https://api.example.test',timeoutMs:60000,maxConcurrency:1,maxWaiting:1};
   const generate = vi.fn(async (_request: VisionRequest) => selected);
@@ -176,6 +186,30 @@ describe('공개 자료 검색과 교사 검토용 추천', () => {
     expect(verifyJwt(receipt,SECRET)).toMatchObject({aud:'hamkke-api-guidance',typ:'ai-guidance',sub:'9',cid:1,oid:3,summary,recommendations,corpusVersion:CORPUS_VERSION});
     expect(JSON.stringify(generate.mock.calls)).not.toContain('teacher-test');
     expect(JSON.stringify(log.mock.calls)).not.toContain(scene);
+  });
+  it('관찰·후속 동선과 서명된 자료의 출처를 화면용 묶음으로 함께 돌려준다', async () => {
+    const access = vi.fn<typeof fetch>().mockImplementation(async () => ok({ ...context, display }));
+    const res = await makeApp(access).request();
+    expect(res.status).toBe(200);
+    const body = JSON.parse(res.body);
+    const [recommendation] = body.recommendations;
+    expect(body.display).toEqual({
+      ...display,
+      responseOptions:{ status:'PREVIEW', corpusVersion:CORPUS_VERSION, items:[{
+        observation:recommendation.observation, action:recommendation.action, reason:recommendation.reason,
+        source:{ id:recommendation.sourceId, title:recommendation.sourceTitle, publisher:recommendation.sourcePublisher,
+          url:recommendation.sourceUrl, section:recommendation.sourceSection },
+      }] },
+    });
+    expect(verifyJwt(body.receipt,SECRET)).not.toHaveProperty('display');
+  });
+  it('근거를 찾는 동안 코칭 공유가 철회되면 처음 읽은 코칭을 반환하지 않는다', async () => {
+    const access = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(ok({ ...context, display }))
+      .mockResolvedValueOnce(ok({ ...context, display:{ ...display, relatedCoaching:null } }));
+    const res = await makeApp(access).request();
+    expect(res.status).toBe(409);
+    expect(res.body).not.toContain(display.relatedCoaching.title);
   });
   it('수정한 요약으로 재검색하며 지운 장면이 이전 시각 메모로 되살아나지 않는다', async () => {
     const {request,generate} = makeApp(vi.fn<typeof fetch>().mockImplementation(async()=>ok()));

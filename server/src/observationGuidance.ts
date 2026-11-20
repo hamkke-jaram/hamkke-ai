@@ -7,12 +7,60 @@ import type { WorkQueue } from './queue.ts';
 interface Input { childId: number; observationId: number; summary?: string }
 interface Context {
   reviewerId: number; ageMonths: number | null; summary: string; notes: string[]; peopleCount: number;
+  display: ReturnType<typeof reviewDisplay>;
 }
 const unavailable = () => new HttpError(503, 'GUIDANCE_UNAVAILABLE', '근거 자료를 대조하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
 const changed = () => new HttpError(409, 'REVIEW_CHANGED', '검토 상태가 바뀌었어요. 다시 불러와 주세요.');
 const busy = () => new HttpError(429, 'BUSY', 'AI가 다른 요청을 처리하고 있어요. 잠시 뒤 다시 시도해 주세요.', undefined, { 'Retry-After': '5' });
 const isId = (v: unknown): v is number => typeof v === 'number' && Number.isSafeInteger(v) && v > 0;
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+function displayScenes(value: unknown) {
+  if (!Array.isArray(value) || value.length > 12) return null;
+  const scenes: { t: number; note: string }[] = [];
+  for (const scene of value) {
+    if (!isRecord(scene) || typeof scene.t !== 'number' || !Number.isFinite(scene.t) || scene.t < 0 ||
+      typeof scene.note !== 'string' || scene.note.length > 500) return null;
+    scenes.push({ t:scene.t, note:scene.note });
+  }
+  return scenes;
+}
+
+function displayActor(value: unknown) {
+  if (!isRecord(value) || !Array.isArray(value.tags) || value.tags.length > 6 ||
+      !value.tags.every(tag => typeof tag === 'string' && /^[A-Z_]+$/.test(tag))) return null;
+  const notes = displayScenes(value.notes);
+  return notes && { notes, tags:value.tags as string[] };
+}
+
+/** The API supplies display context after checking sharing. Older API responses omit it. */
+function reviewDisplay(value: unknown, input: Input) {
+  if (!isRecord(value) || value.observationId !== input.observationId || value.source !== 'HOME' ||
+      typeof value.recordedAt !== 'string' || !Number.isFinite(Date.parse(value.recordedAt)) ||
+      typeof value.peopleCount !== 'number' || !Number.isInteger(value.peopleCount) || value.peopleCount < 0 ||
+      (value.summary !== null && (typeof value.summary !== 'string' || value.summary.length > 500))) return null;
+  const scenes = displayScenes(value.scenes);
+  const child = displayActor(value.child);
+  const adult = displayActor(value.caregiver);
+  const role = isRecord(value.caregiver) && value.caregiver.role;
+  if (!scenes || !child || !adult || (role !== 'ADULT' && role !== 'CAREGIVER') ||
+      !Array.isArray(value.actions) || value.actions.length > 2) return null;
+
+  const base = `/t/children/${input.childId}`;
+  const paths = { WRITE_PARENT_FEEDBACK: `${base}/story/new`, REQUEST_CONSULTATION: `${base}/talk?draft=consultation` };
+  const actions: { type: keyof typeof paths; label: string; href: string }[] = [];
+  for (const item of value.actions) {
+    if (!isRecord(item) || (item.type !== 'WRITE_PARENT_FEEDBACK' && item.type !== 'REQUEST_CONSULTATION') ||
+        item.href !== paths[item.type] || typeof item.label !== 'string') return null;
+    actions.push({ type:item.type, label:item.label, href:item.href });
+  }
+  const link = value.relatedCoaching;
+  const relatedCoaching = isRecord(link) && isId(link.deliveryId) && typeof link.title === 'string' &&
+    link.href === `${base}/coaching/${link.deliveryId}`
+    ? { deliveryId:link.deliveryId, title:link.title, href:link.href } : null;
+  return { observationId:input.observationId, recordedAt:value.recordedAt, source:value.source, peopleCount:value.peopleCount,
+    summary:value.summary, scenes, child, caregiver:{ ...adult, role }, relatedCoaching, actions };
+}
 
 export function parseGuidanceInput(raw: Buffer): Input {
   try {
@@ -52,7 +100,8 @@ export function createObservationGuidance(origin: string | null | undefined, sec
         !Array.isArray(o.moments) || o.moments.length > 12 ||
         o.moments.some((m: {note?: unknown} | null) => !m || typeof m.note !== 'string' || m.note.length > 500)) throw unavailable();
     return { reviewerId:data.reviewerId, ageMonths:typeof data.ageMonths === 'number' && Number.isInteger(data.ageMonths) && data.ageMonths >= 0 ? data.ageMonths : null,
-      summary:o.summary?.trim() || '', notes:o.moments.map((m: {note: string}) => m.note.trim()), peopleCount:o.peopleCount };
+      summary:o.summary?.trim() || '', notes:o.moments.map((m: {note: string}) => m.note.trim()), peopleCount:o.peopleCount,
+      display:reviewDisplay(data.display, input) };
   }
   return async (input: Input, token: string, client?: AbortSignal) => {
     if (active >= 12) throw busy();
@@ -77,8 +126,18 @@ export function createObservationGuidance(origin: string | null | undefined, sec
       if (JSON.stringify(latest) !== JSON.stringify(review)) throw changed();
       const iat = Math.floor(now()/1000);
       const result = { summary, recommendations, corpusVersion:CORPUS_VERSION };
-      return { ...result, receipt:signJwt({ iss:'hamkke-ai', aud:'hamkke-api-guidance', typ:'ai-guidance', sub:String(review.reviewerId),
-        cid:input.childId, oid:input.observationId, iat, exp:iat + RECEIPT_TTL_SEC, ...result }, secret) };
+      const receipt = signJwt({ iss:'hamkke-ai', aud:'hamkke-api-guidance', typ:'ai-guidance', sub:String(review.reviewerId),
+        cid:input.childId, oid:input.observationId, iat, exp:iat + RECEIPT_TTL_SEC, ...result }, secret);
+      const display = review.display && {
+        ...review.display,
+        responseOptions: {
+          status:'PREVIEW', corpusVersion:CORPUS_VERSION,
+          items:recommendations.map(({ observation, action, reason, sourceId, sourceTitle, sourcePublisher, sourceUrl, sourceSection }) => ({
+            observation, action, reason, source:{ id:sourceId, title:sourceTitle, publisher:sourcePublisher, url:sourceUrl, section:sourceSection },
+          })),
+        },
+      };
+      return { ...result, receipt, ...(display && { display }) };
     } catch (err) {
       if (err instanceof HttpError) throw err;
       throw unavailable();
