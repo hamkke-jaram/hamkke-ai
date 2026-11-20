@@ -10,6 +10,7 @@ import { independentPeople } from './personBoxes.ts';
 import { reconcilePresence } from './presence.ts';
 import { throwClaim, impactClaim, checkObjectMotion, objectMotionPrompt, releaseTime } from './releasedObject.ts';
 import { confirmedHairNote, hairClaim, verifyHairPhoto } from './hairContact.ts';
+import { verifyFacePhoto, type FaceExpression, type FaceExpressions } from './faceExpression.ts';
 
 const appearances = ['UNRESOLVED', 'CLEAR_CHILDREN_ONLY', 'CLEAR_ADULTS_ONLY', 'MIXED_AGES', 'PARTS_ONLY'] as const;
 const participants = ['ONE_VISIBLE_PARTICIPANT', 'MULTIPLE_VISIBLE_PARTICIPANTS', 'UNRESOLVED'] as const;
@@ -48,6 +49,9 @@ function decodeReview(text: string): Review {
 }
 
 const speech = /비명|고함|함성|울음소리|목소리|큰\s*소리|소리(?:를|가)?\s*(?:지르|질러|질렀|지른|지름|내[요고는며]|내어|냈|들[리려렸]|나[요고는며])|외[치쳐쳤]|대화|이야기(?:를\s*)?(?:나누|나눠|하|해)|말을\s*(?:걸|건|나누|나눠|해|하|주고받)|말(?:해[요주줘]|하[고며면서려는]|했)|대답|질문|칭찬(?:해|하)|설명(?:해|하)/;
+const smileClaim = /웃(?:어요|고|으|었|는|음|지|더|다가|기|다)|미소|깔깔|낄낄|폭소/;
+const smileModifier = /(?:활짝\s*)?(?:웃(?:고\s*있는|는)\s*얼굴로|미소를\s*지은\s*채)\s+/g;
+const openedMouth = /입(?:을|이)?\s*(?:크게\s*)?(?:벌[리려렸린]|열[려렸린])|벌어진\s*입/;
 const together = /(?:함께|같이|서로|(?:아이|어른|사람)(?:와|과|이랑|랑)|두\s*(?:명|사람))[^.!?]{0,18}(?:놀(?:아요|고|며)|놀이(?:를|에|하))/;
 const play = /놀(?:아요|아줘|아주|고\s*(?:있|놀)|며)|놀이(?:를\s*(?:해|하)|하고|해요)/;
 const ageWords = /(?<![가-힣])(아이|어른)(들)?(에게|한테|이랑|랑|은|는|이|가|을|를|와|과|의|도|만|에|로|으로)?(?![가-힣])/g;
@@ -210,6 +214,53 @@ async function reconcileHairContact(observation:Observation, provider:VisionProv
   }
   return { ...observation, moments,
     summary:summary || (moments.length ? null : '확인한 장면에서 구체적인 동작을 구별하기 어려워요.') };
+}
+
+function smileRole(sentence: string): keyof FaceExpressions | null {
+  if (/웃지\s*않|웃는\s*(?:척|듯)|미소[^.!?]{0,10}(?:없|않|듯)|(?:두|다른|여러)\s*아이|아이들|어른들/.test(sentence)) return null;
+  const before = sentence.slice(0, smileClaim.exec(sentence)?.index ?? 0);
+  const actors = [...before.matchAll(/(?:^|[\s,])(아이(?:가|는)|어른(?:이|은))\s+/g)];
+  if (actors.length !== 1 || pairedActors.test(before)) return null;
+  return actors[0]![1]!.startsWith('아이') ? 'child' : 'adult';
+}
+
+/** A smile needs visible facial evidence at the same timestamp. Retain other actions. */
+async function reconcileFaceExpressions(observation: Observation, provider: VisionProvider,
+  images: readonly string[], times: readonly number[], signal:AbortSignal): Promise<Observation> {
+  const momentsWithSmile = observation.moments.filter(moment => smileClaim.test(moment.note));
+  if (!momentsWithSmile.length && !smileClaim.test(observation.summary ?? '')) return observation;
+
+  const atTime = new Map<number, FaceExpressions>();
+  for (const t of [...new Set(momentsWithSmile.map(moment => moment.t))].slice(0, 2)) {
+    const image = images[times.indexOf(t)];
+    if (!image) continue;
+    const expressions = await verifyFacePhoto(provider, image, signal);
+    if (expressions) atTime.set(t, expressions);
+  }
+
+  const observed = { child: new Set<FaceExpression>(), adult: new Set<FaceExpression>() };
+  function checkedText(text: string, expressions?: FaceExpressions) {
+    return text.split(/(?<=[.!?…])\s+|(?<=요[.!?])(?=[가-힣])/).map(sentence => {
+      if (!smileClaim.test(sentence)) return sentence;
+      const remaining = keepVisibleClauses(sentence.replace(smileModifier,''), clause => smileClaim.test(clause));
+      const role = smileRole(sentence);
+      if (!role) return remaining;
+      const expression = expressions?.[role] ??
+        (observed[role].has('SMILE') ? 'SMILE' : observed[role].has('OPEN_MOUTH') ? 'OPEN_MOUTH' : 'UNCLEAR');
+      if (expressions) observed[role].add(expression);
+      const subject = role === 'child' ? '아이가' : '어른이';
+      const face = expression === 'SMILE' ? `${subject} 미소를 지어요.`
+        : expression === 'OPEN_MOUTH' && !openedMouth.test(remaining ?? '') ? `${subject} 입을 벌리고 있어요.` : '';
+      return [remaining, face].filter(Boolean).join(' ');
+    }).filter(Boolean).join(' ');
+  }
+  const moments = observation.moments.flatMap(({t,note}) => {
+    // An unchecked note cannot inherit a different moment's expression.
+    const updated = checkedText(note, atTime.get(t) ?? {child:'UNCLEAR',adult:'UNCLEAR'});
+    return updated ? [{t,note:limitText(updated,Number.POSITIVE_INFINITY,MAX_NOTE_LENGTH)}] : [];
+  });
+  const summary = limitText(checkedText(observation.summary ?? ''),MAX_SUMMARY_SENTENCES,MAX_SUMMARY_LENGTH);
+  return { ...observation, moments, summary:summary || (moments.length ? null : '확인한 장면에서 구체적인 동작을 구별하기 어려워요.') };
 }
 
 export function applyReview(obs: Observation, review: Review, witnesses:readonly FrameWitness[]=[], independent:readonly number[]|null=null, releasedAt:number|null=null,
@@ -492,8 +543,8 @@ export function screenLines(obs: Observation | null): Observation | null {
   const reviewed = [obs.summary ?? '', ...obs.moments.map(m => m.note)].join(' ');
   const claims = [speech, throwClaim, impactClaim, together, play, childCrying];
   // A one-line claim has no timestamp to tie it to a checked point of contact.
-  const supported = (line: string | undefined) => line !== undefined && !hairClaim.test(line) && !otherPersonHand.test(line) && !comforting.test(line)
-    && claims.every(p => !p.test(line) || p.test(reviewed));
+  const supported = (line: string | undefined) => line !== undefined && !hairClaim.test(line) && !otherPersonHand.test(line)
+    && !comforting.test(line) && !smileClaim.test(line) && claims.every(p => !p.test(line) || p.test(reviewed));
   const { childLine, parentLine, ...rest } = obs;
   return {
     ...rest,
@@ -513,8 +564,9 @@ export async function reviewedObservation(provider: VisionProvider, request: Vis
     draft.childStates = draft.childStates.filter(tag => tag !== 'MOVING_AROUND');
   }
   // A no-person scene without an affirmative role/interaction claim needs no second inference.
-  if (draft.peopleCount === 0 && (!draft.summary || draft.summary === '화면에 아이가 보이지 않아요.' ||
-    (!/아이|어른/.test(draft.summary) && !speech.test(draft.summary) && !throwClaim.test(draft.summary) && !play.test(draft.summary)))) {
+  if (draft.peopleCount === 0 && !draft.moments.some(moment=>smileClaim.test(moment.note)) &&
+    (!draft.summary || draft.summary === '화면에 아이가 보이지 않아요.' ||
+    (!/아이|어른/.test(draft.summary) && !speech.test(draft.summary) && !throwClaim.test(draft.summary) && !play.test(draft.summary) && !smileClaim.test(draft.summary)))) {
     return { ...generated, raw, observation:draft };
   }
   let review = unknown;
@@ -545,7 +597,8 @@ export async function reviewedObservation(provider: VisionProvider, request: Vis
   const checked = applyReview(draft, review, witnesses, boxes, releasedAt,
     images.map(image=>frameTimes[request.images.indexOf(image)]!));
   const present = reconcilePresence(checked,draft);
-  const observation = present && await reconcileHairContact(present,provider,request.images,frameTimes,request.signal);
+  const contactChecked = present && await reconcileHairContact(present,provider,request.images,frameTimes,request.signal);
+  const observation = contactChecked && await reconcileFaceExpressions(contactChecked,provider,request.images,frameTimes,request.signal);
   // 선생님용 두 줄: 재확인 결과가 초안과 다르면 빼고(keepLinesIfUnchanged), 재확인을 지나지 않은 주장이 있으면 그 줄만 뺀다
   // (screenLines). 서로 다른 사진이 두 장 미만이면 시간에 걸친 행동을 확인할 수 없어 뺀다.
   const final = keepLinesIfUnchanged(observation, draft);

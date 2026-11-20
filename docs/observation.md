@@ -3,7 +3,7 @@
 세 저장소가 함께 지키는 약속은 hamkke-api 의 `docs/ai-observation.md` 다. 이 문서는 그 가운데 **AI 서버 쪽**을 적는다:
 무엇을 받고 무엇을 돌려주는지, 어떻게 띄우는지, 모델을 어떻게 바꾸는지.
 
-- 영수증 버전: 기본 `obs-v6.7-response`, 7장 이상으로 구간을 분석하면 `obs-v6.7-windowed`
+- 영수증 버전: 기본 `obs-v6.8-expression`, 7장 이상으로 구간을 분석하면 `obs-v6.8-windowed`
 - v1 모델: Ollama `qwen3.5:4b` (사진을 볼 수 있는 모델, 생각 단계는 끄고 부른다)
 - 의료 서비스가 아니고 아이를 평가하지 않는다. VL 모델은 **본 것을 적기만** 하고 조언 문장을 만들지 않는다.
 
@@ -138,7 +138,7 @@ Ollama 는 쓰지 않는 모델을 `keep_alive`(기본 5분)가 지나면 내린
   "observation": { "summary": "…", "childStates": [], "adultResponses": [], "moments": [], "peopleCount": 2 },
   "receipt": "<JWS>",
   "modelVersion": "qwen3.5:4b",
-  "promptVersion": "obs-v6.7-response",
+  "promptVersion": "obs-v6.8-expression",
   "analyzedFrames": 4
 }
 ```
@@ -281,6 +281,8 @@ Prometheus 글 형식(`text/plain; version=0.0.4`). `METRICS_TOKEN` 을 정했�
 `obs-v6.5-windowed`는 시각순 사진을 최대 6장씩 나눠 각 구간에서 같은 관찰과 검토를 실행한다. 검토를 마친 메모 중 뚜렷한 아이 행동과 다른 구간의 장면을 골라 시간순으로 함께 담는다. 요약에는 이미 확인한 문장을 사용한다. 사람 수는 구간별 최댓값을 사용하며 사진에서 보지 못한 시간의 행동은 기록하지 않는다. 영수증 `fc`는 분석에 사용한 사진 수이며 본문 상한은 기존 2 MiB다.
 
 `obs-v6.6-contact`와 `obs-v6.6-windowed`는 머리카락을 잡거나 머리에 손을 대는 메모가 있을 때, 메모와 같은 시각의 사진에서 손의 주인과 머리의 주인을 확인한다. 두 역할이 초안과 확인에서 일치할 때만 역할을 함께 표시한다. 접촉만 보일 때는 머리 쪽에 손이 닿은 모습만 적는다. 접촉을 볼 수 없거나 장면 시각이 없으면 해당 문장을 뺀다. 같이 확인한 걷기, 안기, 울음처럼 독립적인 메모는 보존한다.
+
+`obs-v6.8-expression`은 미소 표현이 있는 장면의 사진에서 아이와 어른의 입 모양을 따로 확인한다. 입꼬리가 올라간 모습이 분명하면 미소를, 입이 벌어진 모습만 분명하면 입 모양을 기록한다. 표정을 확인하기 어려운 경우에는 표정 표현을 빼고 같은 문장의 손동작 같은 관찰을 보존한다.
 
 `server/src/prompt.ts`. 한국어 지시문 + 요청문 + JSON 스키마(Ollama `format`)로 이루어진다.
 

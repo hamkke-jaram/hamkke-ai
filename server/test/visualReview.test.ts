@@ -3,7 +3,7 @@ import type { Observation } from '../src/observation.ts';
 import type { VisionProvider, VisionRequest } from '../src/provider.ts';
 import { ProviderTimeoutError } from '../src/provider.ts';
 import { buildPrompt } from '../src/prompt.ts';
-import { applyReview, reviewedObservation } from '../src/visualReview.ts';
+import { applyReview, reviewedObservation, screenLines } from '../src/visualReview.ts';
 import { decodeFrameWitness } from '../src/frameWitness.ts';
 
 const draft = (summary: string, fields: Partial<Observation> = {}): Observation => ({
@@ -481,5 +481,57 @@ describe('원본 생성 및 별도 화면 점검 순서', () => {
     const result = await reviewedObservation(mockProvider(async () => { n++; return JSON.stringify(before); }), request(), times);
     expect(n).toBe(1);
     expect(result.observation).toEqual(before);
+  });
+});
+
+describe('입 모양과 미소 확인', () => {
+  const roleReview = {appearance:'CLEAR_CHILDREN_ONLY',participants:'ONE_VISIBLE_PARTICIPANT',activity:'UNRESOLVED'};
+  const verify = async (before: Observation, child: string, adult: string) => {
+    const snapshots: string[][] = [];
+    const input = request();
+    const provider = mockProvider(async frame => {
+      if (frame === input) return JSON.stringify(before);
+      if (frame.system.startsWith('Look only at this exact silent photograph.')) {
+        snapshots.push([...frame.images]);
+        return JSON.stringify({child:frame.images[0] === 'a' ? child : 'UNCLEAR',adult});
+      }
+      return JSON.stringify(roleReview);
+    });
+    return { ...await reviewedObservation(provider,input,times), snapshots };
+  };
+
+  it('입을 벌린 아이를 웃었다고 쓰지 않고 같은 장면의 손동작과 다른 시각의 귀 가림을 보존한다', async () => {
+    const falseSmile = '아이가 손을 들어 올리고 웃어요.';
+    const before = draft(falseSmile,{
+      moments:[{t:0,note:falseSmile},{t:1,note:'아이가 손으로 귀를 가려요.'}],
+    });
+    const {observation,snapshots} = await verify(before,'OPEN_MOUTH','SMILE');
+    expect(snapshots).toEqual([['a']]);
+    expect(observation?.summary).toBe('아이가 손을 들어 올리고 있어요. 아이가 입을 벌리고 있어요.');
+    expect(observation?.moments).toEqual([
+      {t:0,note:'아이가 손을 들어 올리고 있어요. 아이가 입을 벌리고 있어요.'},
+      {t:1,note:'아이가 손으로 귀를 가려요.'},
+    ]);
+  });
+
+  it('분명한 미소는 그 사진의 인물과 시각에 기록하고 다른 시각의 표정은 보류한다', async () => {
+    const before = draft('아이가 웃어요.',{moments:[
+      {t:0,note:'아이가 웃는 얼굴로 앉아 있어요.'},{t:1,note:'아이가 웃으며 손을 들어요.'},
+    ]});
+    const {observation,snapshots} = await verify(before,'SMILE','UNCLEAR');
+    expect(snapshots).toEqual([['a'],['b']]);
+    expect(observation?.summary).toBe('아이가 미소를 지어요.');
+    expect(observation?.moments).toEqual([
+      {t:0,note:'아이가 앉아 있어요. 아이가 미소를 지어요.'},
+      {t:1,note:'아이가 손을 들어요.'},
+    ]);
+  });
+
+  it('시각이 없는 교사용 한 줄에 확인하지 않은 표정을 표시하지 않는다', () => {
+    const checked = draft('어른이 미소를 지어요.',{
+      childLine:'아이가 웃어요.',parentLine:'어른이 옆에 앉아요.',peopleCount:2,
+    });
+    expect(screenLines(checked)?.childLine).toBeUndefined();
+    expect(screenLines(checked)?.parentLine).toBe('어른이 옆에 앉아요.');
   });
 });
