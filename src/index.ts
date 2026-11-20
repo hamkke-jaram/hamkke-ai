@@ -4,6 +4,7 @@
  */
 export {
   AnalysisError,
+  AudioUnavailableError,
   LOW_MEMORY_MAX_FILE_BYTES,
   MAX_FILE_BYTES,
   MAX_SECONDS,

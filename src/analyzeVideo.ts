@@ -5,6 +5,7 @@
  */
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 import { SAMPLE_RATE, analyzeAudio, type AudioMetrics } from './audio';
+import { audioTrackPresence } from './audioTrack';
 import { SAMPLE_STEP_SEC, isTogether, jointPlaySeconds, personFromLandmarks, type Person } from './pose';
 
 export const SPEC_VERSION = 'metrics-v1';
@@ -32,6 +33,15 @@ export type Stage = 'loading-model' | 'reading-audio' | 'analyzing-video' | 'don
 export type ProgressFn = (stage: Stage, ratio: number) => void;
 
 export class AnalysisError extends Error {}
+
+export class AudioUnavailableError extends AnalysisError {
+  constructor(readonly reason: 'no-track' | 'unreadable') {
+    super(reason === 'no-track'
+      ? '이 영상 파일에는 소리 트랙이 없어요.'
+      : '이 브라우저에서 영상의 소리를 읽지 못했어요. MP4(AAC 오디오)로 저장해 다시 선택할 수 있어요.');
+    this.name = 'AudioUnavailableError';
+  }
+}
 
 /**
  * 오디오 지표 계산기. 기본값은 같은 스레드에서 계산한다.
@@ -185,26 +195,34 @@ function once(target: EventTarget, ok: string, timeoutMs = 15000): Promise<void>
   });
 }
 
-async function decodeAudio(file: File, durationSec: number): Promise<Float32Array> {
+async function decodeAudio(file: File, durationSec: number, signal?: AbortSignal): Promise<Float32Array> {
   // 인코딩된 파일 전체를 메모리에 읽는다(decodeAudioData 는 나눠 넣을 수 없다). 크기는 analyzeVideo 에서 먼저 제한한다.
   let buf: ArrayBuffer | null;
-  let ctx: OfflineAudioContext;
   try {
     buf = await file.arrayBuffer();
-    const length = Math.max(1, Math.ceil(durationSec * SAMPLE_RATE));
-    ctx = new OfflineAudioContext(1, length, SAMPLE_RATE);
   } catch (err) {
     if (isMemoryError(err)) throw new AnalysisError(MEMORY_MESSAGE);
     throw new AnalysisError('영상 파일을 읽지 못했어요. 다른 영상으로 시도해 주세요.');
   }
-  let decoded: AudioBuffer;
+  throwIfStopped(signal);
+  let decoded: AudioBuffer | undefined;
   try {
+    const length = Math.max(1, Math.ceil(durationSec * SAMPLE_RATE));
+    const ctx = new OfflineAudioContext(1, length, SAMPLE_RATE);
     decoded = await ctx.decodeAudioData(buf);
   } catch (err) {
     if (isMemoryError(err)) throw new AnalysisError(MEMORY_MESSAGE);
-    throw new AnalysisError('영상의 소리를 읽지 못했어요. 소리가 함께 녹음된 영상으로 다시 시도해 주세요.');
   } finally {
     buf = null; // 인코딩된 바이트를 더 붙잡지 않는다(디코딩이 끝나면 버려도 된다)
+  }
+  throwIfStopped(signal);
+  if (!decoded || decoded.length === 0) {
+    const presence = await audioTrackPresence(file, signal).catch((err: unknown) => {
+      if (isMemoryError(err)) throw new AnalysisError(MEMORY_MESSAGE);
+      return 'unknown';
+    });
+    throwIfStopped(signal);
+    throw new AudioUnavailableError(presence === 'absent' ? 'no-track' : 'unreadable');
   }
   // 채널 평균 → 모노 (decodeAudioData가 이미 16kHz로 맞춰 준다)
   let out: Float32Array;
@@ -253,7 +271,7 @@ export async function analyzeVideo(file: File, onProgress: ProgressFn, options: 
 
     // 1) 오디오 (워커에서 계산)
     onProgress('reading-audio', 0);
-    const samples = await untilStopped(decodeAudio(file, duration), signal);
+    const samples = await untilStopped(decodeAudio(file, duration, signal), signal);
     throwIfStopped(signal);
     const pendingAudio = runAudio(samples);
     // 프레임 분석 중 멈추면 이 결과를 기다리지 않는다. 나중에 실패해도 처리되지 않은 거부로 남지 않게 한다.
