@@ -3,7 +3,7 @@
 세 저장소가 함께 지키는 약속은 hamkke-api 의 `docs/ai-observation.md` 다. 이 문서는 그 가운데 **AI 서버 쪽**을 적는다:
 무엇을 받고 무엇을 돌려주는지, 어떻게 띄우는지, 모델을 어떻게 바꾸는지.
 
-- 영수증 버전: `obs-v6.3.2-actions` (`server/src/prompt.ts`)
+- 영수증 버전: `obs-v6.4-release` (`server/src/prompt.ts`)
 - v1 모델: Ollama `qwen3.5:4b` (사진을 볼 수 있는 모델, 생각 단계는 끄고 부른다)
 - 의료 서비스가 아니고 아이를 평가하지 않는다. VL 모델은 **본 것을 적기만** 하고 조언 문장을 만들지 않는다.
 
@@ -138,7 +138,7 @@ Ollama 는 쓰지 않는 모델을 `keep_alive`(기본 5분)가 지나면 내린
   "observation": { "summary": "…", "childStates": [], "adultResponses": [], "moments": [], "peopleCount": 2 },
   "receipt": "<JWS>",
   "modelVersion": "qwen3.5:4b",
-  "promptVersion": "obs-v6.3.2-actions",
+  "promptVersion": "obs-v6.4-release",
   "analyzedFrames": 4
 }
 ```
@@ -270,7 +270,9 @@ Prometheus 글 형식(`text/plain; version=0.0.4`). `METRICS_TOKEN` 을 정했�
 - 그래도 버려지는 맞는 문장이 있다. 예: '반듯하게 앉아 있어요', '손이 닿지 못해', '장난감 말을 들어 올려요', '상자보다 큰 인형', '꼬마 자동차', '블록을 높게 쌓아 보여요'. 이런 글은 `summary` 가 `null` 이 되거나 그 `moment` 가 빠진다(태그는 남는다).
 - **예문 파일** `server/test/wording-cases.json`: 걸려야 하는 문장과 지나가야 하는 문장을 모아 둔 파일이다. `server/test/wording.test.ts` 가 그대로 돌리고, hamkke-api 가 바이트 단위로 같은 사본을 돌린다. 식을 고치면 이 파일과 두 저장소의 식을 함께 고친다. 줄바꿈은 LF, 보이지 않는 글자는 `\u` 로 적는다.
 
-## 7. 프롬프트 `obs-v2`, 영수증 버전 `obs-v6.3.2-actions`
+## 7. 관찰 프롬프트와 영수증 버전
+
+`obs-v6.4-release`는 던지기 후보를 같은 장면 사진으로 다시 점검한다. 먼저 손에 물체가 있고 이어지는 사진에서 손을 떠난 같은 물체가 공중에 보인다는 응답을 요구한다. 서로 다른 두 사진과 순서가 맞고 간격이 2초 이내일 때만 던졌다고 적는다. 성긴 표본은 짧은 동작을 놓칠 수 있다. 시각과 움직임이 불확실할 때는 남아 있는 다른 관찰을 기록한다. 사진에서 소리의 크기, 비명, 화자를 추론하지 않는다.
 
 `server/src/prompt.ts`. 한국어 지시문 + 요청문 + JSON 스키마(Ollama `format`)로 이루어진다.
 

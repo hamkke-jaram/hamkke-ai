@@ -54,7 +54,7 @@ describe('POST /ai/v1/analyze — 성공', () => {
       jti: payload.jti,
       obs: { ...GOOD_OUTPUT, adultResponses: ['WAITING'] },
       mv: 'fake-vl:1',
-      pv: 'obs-v6.3.2-actions',
+      pv: PROMPT_VERSION,
       fc: 3,
       iat: NOW_SEC,
       exp: NOW_SEC + 900,

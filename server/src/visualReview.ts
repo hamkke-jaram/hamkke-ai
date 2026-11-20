@@ -1,6 +1,6 @@
 // Review an existing observation against the same images. The writer always sees its
 // original instructions and never receives this review or the evaluator's labels.
-import { normaliseObservation, parseModelJson, MAX_SUMMARY_SENTENCES, MAX_SUMMARY_LENGTH, MAX_NOTE_LENGTH, limitText } from './observation.ts';
+import { normaliseObservation, parseModelJson, MAX_SUMMARY_SENTENCES, MAX_SUMMARY_LENGTH, MAX_NOTE_LENGTH, MAX_MOMENTS, limitText } from './observation.ts';
 import type { Observation } from './observation.ts';
 import { toVisionOutput, ProviderTimeoutError } from './provider.ts';
 import type { VisionProvider, VisionRequest } from './provider.ts';
@@ -8,6 +8,7 @@ import { inspectFrames, witnessImages } from './frameWitness.ts';
 import type { FrameWitness } from './frameWitness.ts';
 import { independentPeople } from './personBoxes.ts';
 import { reconcilePresence } from './presence.ts';
+import { throwClaim, impactClaim, checkObjectMotion, objectMotionPrompt, releaseTime } from './releasedObject.ts';
 
 const appearances = ['UNRESOLVED', 'CLEAR_CHILDREN_ONLY', 'CLEAR_ADULTS_ONLY', 'MIXED_AGES', 'PARTS_ONLY'] as const;
 const participants = ['ONE_VISIBLE_PARTICIPANT', 'MULTIPLE_VISIBLE_PARTICIPANTS', 'UNRESOLVED'] as const;
@@ -45,7 +46,7 @@ function decodeReview(text: string): Review {
     participation:participation.find(value => value === r.participation) } as Review;
 }
 
-const speech = /대화|이야기(?:를\s*)?(?:나누|나눠|하|해)|말을\s*(?:걸|건|나누|나눠|해|하|주고받)|말(?:해[요주줘]|하[고며면서려는]|했)|대답|질문|칭찬(?:해|하)|설명(?:해|하)/;
+const speech = /비명|고함|함성|울음소리|목소리|큰\s*소리|소리(?:를|가)?\s*(?:지르|질러|질렀|지른|지름|내[요고는며]|내어|냈|들[리려렸]|나[요고는며])|외[치쳐쳤]|대화|이야기(?:를\s*)?(?:나누|나눠|하|해)|말을\s*(?:걸|건|나누|나눠|해|하|주고받)|말(?:해[요주줘]|하[고며면서려는]|했)|대답|질문|칭찬(?:해|하)|설명(?:해|하)/;
 const together = /(?:함께|같이|서로|(?:아이|어른|사람)(?:와|과|이랑|랑)|두\s*(?:명|사람))[^.!?]{0,18}(?:놀(?:아요|고|며)|놀이(?:를|에|하))/;
 const play = /놀(?:아요|아줘|아주|고\s*(?:있|놀)|며)|놀이(?:를\s*(?:해|하)|하고|해요)/;
 const ageWords = /(?<![가-힣])(아이|어른)(들)?(에게|한테|이랑|랑|은|는|이|가|을|를|와|과|의|도|만|에|로|으로)?(?![가-힣])/g;
@@ -139,7 +140,7 @@ function neutralAge(text: string): string {
     '사람' + (plural ?? '') + (afterPerson[particle ?? ''] ?? particle ?? ''));
 }
 
-export function applyReview(obs: Observation, review: Review, witnesses:readonly FrameWitness[]=[], independent:readonly number[]|null=null): Observation | null {
+export function applyReview(obs: Observation, review: Review, witnesses:readonly FrameWitness[]=[], independent:readonly number[]|null=null, releasedAt:number|null=null): Observation | null {
   const sceneText = [obs.summary, ...obs.moments.map(m => m.note)].filter(Boolean).join(' ');
   // A full-body activity in the draft contradicts a claimed hands-only crop. In that
   // situation a second look is not enough to erase the original actor.
@@ -220,7 +221,12 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
   const incompatibleAges = (childOnly || adultOnly) && !supportPair && !((multipleInDraft || groupDetected) && childInDraft && adultInDraft);
 
   function unsupported(text: string): boolean {
-    return speech.test(text) || (!jointGame && together.test(text)) || (!soloGame && !jointGame && play.test(text));
+    // Even a corroborated release says nothing about a target, intention or sound.
+    // Only the time-bounded observation below may describe it as a throw.
+    const unconfirmedCatch = releasedAt !== null && !jointGame
+      && /받아\s*(?:주|줘|줬|준|내|낸|냈)|공을\s*(?:주고\s*받|받아요)/.test(text);
+    return speech.test(text) || throwClaim.test(text) || unconfirmedCatch || (!jointGame && together.test(text))
+      || (!soloGame && !jointGame && play.test(text));
   }
 
   function describeActor(sentence:string):string|null {
@@ -256,6 +262,7 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
 
   function cleanSentence(original:string):string|null {
     const retained = keepVisibleClauses(original, text => unsupported(text) ||
+      (throwClaim.test(original) && /조준|겨냥|일부러|맞히려고|맞추려고|해치려고|겁(?:을)?\s*주려고/.test(text)) ||
       (hideSecondActor && /함께|서로|같이|옆에서\s*지켜|주고\s*받|건네(?:주|줘|요|고|며|는|자|받)|건넨|보여\s*(?:주|줘)|(?:아이|어른|사람)(?:와|과|이랑|랑)\s*(?:아이|어른|사람)|(?:아이|어른)(?:를|을|에게|한테)\s*(?:향|바라|쳐다|도와|건네|보)/.test(text)));
     const parts = retained ? retained.split(/(?<=[.!?…])\s+/).map(describeActor).filter((s):s is string=>!!s) : [];
     if (hideSecondActor) {
@@ -293,6 +300,13 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
     return note ? [{ t:m.t, note }] : [];
   });
   const childStates = obs.childStates.filter(tag => {
+    if (tag === 'THROWING_OR_HITTING') {
+      const childStrike = [summary, ...moments.map(m => m.note)].some(text => text?.split(/[.!?…]/).some(s =>
+        /아이(?:가|는|들이|들은)\s/.test(s) && !/어른(?:이|은)|않|못|안\s*때|처럼|려고/.test(s) && impactClaim.test(s)));
+      return !partial && !adultOnly && childStrike;
+    }
+    if (tag === 'UPSET_CRYING' && speech.test(sceneText) &&
+      !/눈물(?:이|을|자국)|흐느[끼껴]|울먹/.test([summary, ...moments.map(m => m.note)].join(' '))) return false;
     if (tag === 'PLAYING_TOGETHER') return jointGame;
     if (hideSecondActor && (tag === 'SEEKING_ADULT' || soloRole !== 'CLEAR_CHILD')) return false;
     if (tag === 'PLAYING_ALONE') return soloGame;
@@ -305,6 +319,16 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
   if (noPeople) return {
     summary:'확인한 장면에서 사람의 동작을 구별하기 어려워요.', childStates:[], adultResponses:[], moments:[], peopleCount:obs.peopleCount,
   };
+  if (releasedAt !== null) {
+    const action = '손에 들고 있던 물체를 던져요.';
+    summary = limitText([action, summary].filter(Boolean).join(' '), MAX_SUMMARY_SENTENCES, MAX_SUMMARY_LENGTH);
+    const same = moments.find(m => m.t === releasedAt);
+    if (same) same.note = limitText(action + ' ' + same.note, Number.POSITIVE_INFINITY, MAX_NOTE_LENGTH);
+    else if (moments.length < MAX_MOMENTS) {
+      moments.push({ t:releasedAt, note:action });
+      moments.sort((a,b) => a.t-b.t);
+    }
+  }
   // An affirmative placement in the still remains usable when its coarse person count
   // disagreed with the body description, provided the other checks establish one actor.
   const subject = soloRole === 'CLEAR_CHILD' ? '아이가' : soloRole === 'CLEAR_ADULT' ? '어른이' : '한 사람이';
@@ -323,6 +347,9 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
   if (!summary && !moments.length && hasJointClaim(obs) && !jointGame) {
     summary = '화면에서 구체적인 동작을 확인하기 어려워요.';
   }
+  if (!summary && !moments.length && (speech.test(sceneText) || throwClaim.test(sceneText) || obs.childStates.includes('THROWING_OR_HITTING'))) {
+    summary = '확인한 장면에서 구체적인 동작을 구별하기 어려워요.';
+  }
   if (!summary && !moments.length && !childStates.length && !adultResponses.length) return null;
   const peopleCount = dropSecondActor ? 1 : obs.peopleCount;
   return { summary, moments, childStates, adultResponses, peopleCount };
@@ -334,20 +361,29 @@ export async function reviewedObservation(provider: VisionProvider, request: Vis
   const raw = parseModelJson(generated.text);
   const draft = normaliseObservation(raw, frameTimes);
   if (!draft) return { ...generated, raw, observation:null };
+  const distinctImages = new Set(request.images).size;
+  if (distinctImages < 2) {
+    draft.childStates = draft.childStates.filter(tag => tag !== 'MOVING_AROUND');
+  }
   // A no-person scene without an affirmative role/interaction claim needs no second inference.
   if (draft.peopleCount === 0 && (!draft.summary || draft.summary === '화면에 아이가 보이지 않아요.' ||
-    (!/아이|어른/.test(draft.summary) && !speech.test(draft.summary) && !play.test(draft.summary)))) {
+    (!/아이|어른/.test(draft.summary) && !speech.test(draft.summary) && !throwClaim.test(draft.summary) && !play.test(draft.summary)))) {
     return { ...generated, raw, observation:draft };
   }
   let review = unknown;
+  let releasedAt: number | null = null;
   const text = [draft.summary,...draft.moments.map(m=>m.note)].join(' ');
   const checkFrames = checkablePartnerClaim(draft,/아이/.test(text),/어른/.test(text));
   try {
     request.signal.throwIfAborted();
     const handDescription = handFocus.test(text) && !fullFigureAction.test(text);
-    const prompt = hasJointClaim(draft) && !handDescription ? partnerPrompt : reviewPrompt;
+    const basePrompt = hasJointClaim(draft) && !handDescription ? partnerPrompt : reviewPrompt;
+    const inspectMotion = draft.peopleCount > 0 && distinctImages > 1 && checkObjectMotion(draft) &&
+      frameTimes.some((t,i) => i > 0 && t > frameTimes[i - 1]! && t - frameTimes[i - 1]! <= 2);
+    const prompt = inspectMotion ? objectMotionPrompt(basePrompt, frameTimes.length) : basePrompt;
     const result = toVisionOutput(await provider.generate({ ...prompt, images:request.images, signal:request.signal }), provider.modelVersion);
     review = decodeReview(result.text);
+    if (inspectMotion) releasedAt = releaseTime(result.text, frameTimes, request.images);
   } catch (err) {
     if (request.signal.aborted || err instanceof ProviderTimeoutError) throw err;
     // The draft remains usable for physical descriptions; sound and unverified play still get checked.
@@ -359,6 +395,6 @@ export async function reviewedObservation(provider: VisionProvider, request: Vis
   // Optional local evaluation observer. The HTTP service supplies no observer.
   // Only validated categories and box counts are exposed, never image data or prose.
   onEvidence?.({frames:witnesses, detectedPeople:boxes});
-  const checked = applyReview(draft, review, witnesses, boxes);
+  const checked = applyReview(draft, review, witnesses, boxes, releasedAt);
   return { ...generated, raw, observation:reconcilePresence(checked,draft) };
 }
