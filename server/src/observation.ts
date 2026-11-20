@@ -52,6 +52,8 @@ export const MAX_TAGS = 3;
 export const MAX_MOMENTS = 4;
 export const MAX_SUMMARY_LENGTH = 300;
 export const MAX_SUMMARY_SENTENCES = 3;
+/** 선생님용 아이 한 줄·어른 한 줄의 최대 글자 수. */
+export const MAX_LINE_LENGTH = 40;
 export const MAX_NOTE_LENGTH = 120;
 export const MAX_PEOPLE_COUNT = 3;
 
@@ -77,6 +79,10 @@ export interface Observation {
   adultResponses: AdultResponse[];
   moments: Moment[];
   peopleCount: number;
+  /** 선생님에게 넘길 아이 한 줄. 검사를 지나간 경우에만 있다. */
+  childLine?: string;
+  /** 선생님에게 넘길 어른(보호자) 한 줄. 검사를 지나간 경우에만 있다. */
+  parentLine?: string;
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -163,6 +169,52 @@ function acceptText(value: unknown, maxSentences: number, maxLength: number): st
   return limitText(polite.join(' '), maxSentences, maxLength);
 }
 
+/**
+ * 선생님에게 넘길 한 줄(아이 한 줄, 어른 한 줄). 쓸 수 없으면 null 이고, 그때는 태그만 넘어간다.
+ * 요약보다 엄격하다: 한 문장, MAX_LINE_LENGTH 자 안쪽(넘치면 자르지 않고 버린다 — 잘린 문장은 뜻이 바뀔 수 있다),
+ * 숫자 없음(나이·횟수·시각이 드러나지 않게), 그리고 그 줄의 주인공(아이/어른)으로 시작해야 한다.
+ */
+function acceptLine(value: unknown, subject: '아이' | '어른'): string | null {
+  if (typeof value !== 'string' || value.length > MAX_RAW_TEXT_LENGTH) return null;
+  const text = tidy(value);
+  if (text.length === 0 || text.length > MAX_LINE_LENGTH) return null;
+  if (!looksKorean(text) || !passesWordingCheck(text) || /\p{Nd}/u.test(text)) return null;
+  const sentences = splitSentences(text);
+  // 그 줄의 주인공으로 시작해야 한다("아이가 어른 곁으로 가요"는 어른 줄이 아니다).
+  if (sentences.length !== 1 || !endsInHaeyo(text) || !new RegExp(`^${subject}(가|이|는|은|도) `).test(text)) return null;
+  return text;
+}
+
+/**
+ * 선생님용 두 줄을 관찰에 붙인다. 쓸 수 있는 줄만 키를 둔다(없으면 키 자체가 없다 — 예전 hamkke-api 와 예전 기록이 같은 모양).
+ * 아이가 보이지 않으면 둘 다 없고, 사람이 한 명뿐이면 어른 줄이 없다.
+ */
+function withLines(obs: Observation, raw: Record<string, unknown>): Observation {
+  if (obs.peopleCount === 0) return obs;
+  const childLine = acceptLine(raw.childLine, '아이');
+  const parentLine = obs.peopleCount >= 2 ? acceptLine(raw.parentLine, '어른') : null;
+  return {
+    ...obs,
+    ...(childLine !== null && { childLine }),
+    ...(parentLine !== null && { parentLine }),
+  };
+}
+
+/** 사진을 다시 확인하는 단계가 요약이나 태그를 바꿨으면, 처음 쓴 두 줄은 고친 결과와 어긋날 수 있어 뺀다. */
+export function keepLinesIfUnchanged(final: Observation | null, draft: Observation): Observation | null {
+  if (!final || (draft.childLine === undefined && draft.parentLine === undefined)) return final;
+  const same = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
+  const unchanged = final.summary === draft.summary && final.peopleCount === draft.peopleCount &&
+    same(final.childStates, draft.childStates) && same(final.adultResponses, draft.adultResponses);
+  const { childLine: _c, parentLine: _p, ...rest } = final;
+  if (!unchanged) return rest;
+  return {
+    ...rest,
+    ...(draft.childLine !== undefined && { childLine: draft.childLine }),
+    ...(draft.parentLine !== undefined && { parentLine: draft.parentLine }),
+  };
+}
+
 function pickTags<T extends string>(value: unknown, allowed: readonly T[]): T[] {
   if (!Array.isArray(value)) return [];
   const picked: T[] = [];
@@ -229,5 +281,8 @@ export function normaliseObservation(raw: unknown, frameTimes: readonly number[]
     observation.childStates.length === 0 &&
     observation.adultResponses.length === 0 &&
     observation.moments.length === 0;
-  return nothingLeft ? null : observation;
+  if (nothingLeft) return null;
+  // 한 시점 규칙으로 태그를 뺐다면 모델이 쓴 두 줄에 그 행동(기다림·말 걸기 등)이 남아 있을 수 있어 줄을 붙이지 않는다.
+  const singleInstant = frameTimes.length > 0 && frameTimes.every(t => t === frameTimes[0]);
+  return singleInstant ? observation : withLines(observation, raw);
 }

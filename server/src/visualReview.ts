@@ -1,6 +1,6 @@
 // Review an existing observation against the same images. The writer always sees its
 // original instructions and never receives this review or the evaluator's labels.
-import { normaliseObservation, parseModelJson, MAX_SUMMARY_SENTENCES, MAX_SUMMARY_LENGTH, MAX_NOTE_LENGTH, MAX_MOMENTS, limitText } from './observation.ts';
+import { normaliseObservation, parseModelJson, keepLinesIfUnchanged, MAX_SUMMARY_SENTENCES, MAX_SUMMARY_LENGTH, MAX_NOTE_LENGTH, MAX_MOMENTS, limitText } from './observation.ts';
 import type { Observation } from './observation.ts';
 import { toVisionOutput, ProviderTimeoutError } from './provider.ts';
 import type { VisionProvider, VisionRequest } from './provider.ts';
@@ -396,5 +396,6 @@ export async function reviewedObservation(provider: VisionProvider, request: Vis
   // Only validated categories and box counts are exposed, never image data or prose.
   onEvidence?.({frames:witnesses, detectedPeople:boxes});
   const checked = applyReview(draft, review, witnesses, boxes, releasedAt);
-  return { ...generated, raw, observation:reconcilePresence(checked,draft) };
+  // 다시 확인한 결과가 처음 초안과 다르면 선생님용 두 줄을 빼고 태그만 넘긴다(keepLinesIfUnchanged).
+  return { ...generated, raw, observation:keepLinesIfUnchanged(reconcilePresence(checked,draft), draft) };
 }
