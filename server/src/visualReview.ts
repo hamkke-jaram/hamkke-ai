@@ -66,9 +66,10 @@ const handAtHead = /손(?:을)?\s*(?:자기\s*)?머리(?:에|로|\s*(?:옆|쪽)(
 const handOverFace = /손(?:으로|을)\s*(?:자기\s*)?얼굴(?:을|에|\s*쪽에)\s*(?:덮|가리|가려|올|대)|얼굴(?:을|에|\s*쪽에)\s*(?:(?:두|양)\s*)?손(?:을|으로)\s*(?:덮|가리|가려|올|대)/;
 const raisedHands = /손(?:을)?\s*(?:위로\s*)?(?:들(?:어|고|며)|올[리려])/;
 const towardsAdult = /어른(?:에게|한테|\s*쪽으로|\s*곁으로)[^.!?…]{0,25}(?:다가가|걸어가|뻗)/;
-const childCrying = /(?:울(?:어요|고|며|면서|었|기\s*시작)|흐느[끼껴]|울먹)/;
+const childCrying = /(?:울(?:어요|고|며|면서|었|기\s*시작)|울음을?\s*터뜨|흐느[끼껴]|울먹)/;
 const otherPersonHand = /(아이|어른)(?:의)?\s*(?:(?:왼|오른|양(?:쪽)?|한쪽)\s*)?손(?:목|가락)?(?:을|를)\s*(?:붙?잡|움켜쥐|쥐|당[기겨겼])/;
-const namedHandoff = /(?:아이|어른)(?:에게|한테)[^.!?…]{0,23}(?:건네(?:주|줘|요|고|며|는|자)|건넨)/;
+const namedHandoff = /(?:아이|어른)(?:에게|한테|(?:의)?\s*손에)[^.!?…]{0,23}(?:건네(?:주|줘|요|고|며|는|자)|건넨)/;
+const assumedHelpGesture = /어른(?:이|은)\s[^.!?…]{0,26}(?:움직여|흔들어|보여)\s*(?:줘요|주어요|주고|주며)/;
 const toyHandling = /(?:장난감|블록|인형|공을)[^.!?…]{0,16}(?:만지|만져|쌓|올리|올려|옮기|옮겨|굴리|굴려|밀어|내려놓)/;
 const toyCompanion = /^((?:아이(?:가|는)|어른(?:이|은))\s+)(?:아이|어른)(?:와|과|이랑|랑)\s*(?:함께|같이)\s+/;
 const pairedToyActors = /^(?:아이|어른)(?:와|과|이랑|랑)\s*(?:아이|어른)(?:가|이|는|은)\s+/;
@@ -289,14 +290,15 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
   // A single coarse play label cannot override a check of the entire series.
   // Keep real exchanges and repeated photographs with two concrete contributions.
   const corroboratedPlay = reciprocal || groupPhotos.filter(f => f.concretePlayPair && f.secondAction === 'PLAYING_THE_SAME_GAME').length >= 2;
+  const earTimes = witnessTimes.filter((_time,i)=>witnesses[i]?.childCoversOwnEars);
+  const earContextTimes = [...earTimes, ...obs.moments.filter(m=>earGesture(m.note)).map(m=>m.t)];
+  const needsPlayEvidence = soloSeries || earContextTimes.length > 0;
   const jointGame = obs.peopleCount > 0 && !partial && !hideSecondActor && !noPeople && !nonplay &&
-    (soloSeries ? corroboratedPlay : playPhoto || ((!single || groupDetected) && (draftSupportsPair || visualPair)));
+    (needsPlayEvidence ? corroboratedPlay : playPhoto || ((!single || groupDetected) && (draftSupportsPair || visualPair)));
   const soloEvidence = hideSecondActor;
   const soloGame = !partial && (!multipleInDraft || isolated.test(physicalText) || review.activity !== 'SHARED_PLAY');
   const incompatibleAges = (childOnly || adultOnly) && !supportPair && !((multipleInDraft || groupDetected) && childInDraft && adultInDraft);
   const witnessedComfort = witnesses.some(f=>f.adultComfortContact);
-  const earTimes = witnessTimes.filter((_time,i)=>witnesses[i]?.childCoversOwnEars);
-  const earContextTimes = [...earTimes, ...obs.moments.filter(m=>earGesture(m.note)).map(m=>m.t)];
 
   function unsupported(text: string): boolean {
     // Even a corroborated release says nothing about a target, intention or sound.
@@ -339,7 +341,7 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
   }
 
   function cleanSentence(original:string, at:readonly FrameWitness[], earCrying:boolean, nearbyReachUnverified:boolean):string|null {
-    const unconfirmedHandoff = soloSeries && !corroboratedPlay && namedHandoff.test(original);
+    const unconfirmedHandoff = needsPlayEvidence && !corroboratedPlay && namedHandoff.test(original);
     const sentence = !jointGame && toyHandling.test(original) ? original.replace(toyCompanion,'$1') : original;
     const unconfirmedPlayAtEars = earGesture(original) && !toyHandling.test(original);
     const retained = keepVisibleClauses(sentence, text => unsupported(text) ||
@@ -347,6 +349,7 @@ export function applyReview(obs: Observation, review: Review, witnesses:readonly
       (unconfirmedPlayAtEars && play.test(text)) ||
       (nearbyReachUnverified && towardsAdult.test(text)) ||
       (unconfirmedHandoff && (namedHandoff.test(text) || /도와|돕/.test(text))) ||
+      (earContextTimes.length > 0 && !jointGame && assumedHelpGesture.test(text)) ||
       (!jointGame && pairedToyActors.test(text) && toyHandling.test(text)) ||
       (throwClaim.test(original) && /조준|겨냥|일부러|맞히려고|맞추려고|해치려고|겁(?:을)?\s*주려고/.test(text)) ||
       (hideSecondActor && /함께|서로|같이|옆에서\s*지켜|주고\s*받|건네(?:주|줘|요|고|며|는|자|받)|건넨|보여\s*(?:주|줘)|(?:아이|어른|사람)(?:와|과|이랑|랑)\s*(?:아이|어른|사람)|(?:아이|어른)(?:를|을|에게|한테)\s*(?:향|바라|쳐다|도와|건네|보)/.test(text)));

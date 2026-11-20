@@ -282,6 +282,20 @@ describe('같은 화면에서 호칭·대화·놀이만 다시 확인', () => {
     expect(result?.childStates).not.toContain('UPSET_CRYING');
   });
 
+  it('귀를 막는 장면에서 접촉이나 놀이의 근거가 없으면 아이가 한 동작만 남긴다', () => {
+    const before = playing('아이가 손으로 귀를 가리고, 어른이 손가락을 움직여 줘요.');
+    before.moments = [
+      {t:10.5,note:'어른이 아이의 손에 블록을 건네주며 쌓는 모습을 도와줘요.'},
+      {t:12.5,note:'아이가 손을 들어 흔들어요.'},
+      {t:13.8,note:'아이가 양손으로 귀를 막고 울음을 터뜨려요.'},
+    ];
+    const checked = applyReview(before,{...joint,activity:'OTHER_JOINT_ACTION'});
+    expect(checked?.summary).toBe('아이가 손으로 귀를 가리고 있어요.');
+    expect(checked?.moments.map(m=>m.t)).toEqual([12.5,13.8]);
+    expect(checked?.moments[1]?.note).toBe('아이가 양손으로 귀를 막고 있어요.');
+    expect(checked?.childStates).not.toContain('PLAYING_TOGETHER');
+  });
+
   it('단독 물체 동작이 여러 사진에서 일치하면 초안의 다른 어른과 역할 태그를 지운다', () => {
     const before = draft('어른과 아이가 함께 물건을 놓아요.', {peopleCount:2, moments:[{t:0,note:'어른이 상자를 올려요.'}],
       adultResponses:['JOINING_PLAY','WAITING'],childStates:['FOCUSED','SEEKING_ADULT']});
